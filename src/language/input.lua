@@ -4,6 +4,9 @@ function DefineInput( name, type, semantic )
 
 	assert( input[ name ] == nil ) 
 	assert( input.__semantic[ semantic ] == nil )
+	
+	-- :TODO: Validate semantic and type value
+	
 	local input_variable = { type = type, value = "input." .. name, semantic = semantic }
 	input[ name ] = input_variable
 	input.__semantic[ semantic ] = input_variable
