@@ -4,9 +4,17 @@ Language = Language or {}
 Language.OutputMetaType = {
 	__newindex = function( table, key, value )
 	
-		assert( rawget( table, key ) == nil )
-		assert( table.__definition[ key ] ~= nil )
-		assert( table.__definition[ key ].type == value.type )
+		if rawget( table, key ) ~= nil then
+			error( "Entry " .. key .. " of output structure has already been assigned", 2 )
+		end
+		
+		if table.__definition[ key ] == nil then
+			error( "Unknown entry in output structure : " .. key, 2 )
+		end
+		
+		if table.__definition[ key ].type ~= value.type then
+			error( "Invalid type for " .. ", expect " .. table.__definition[ key ].type .. " got " .. value.type, 2 )
+		end
 		
 		rawset( table, key, value );
 	
@@ -19,8 +27,13 @@ setmetatable( output, Language.OutputMetaType );
 
 function DefineOutput( name, type, semantic )
 
-	assert( output.__definition[ name ] == nil ) 
-	assert( output.__semantic[ semantic ] == nil )
+	if output.__definition[ name ] ~= nil then
+		error( "An entry named '" .. name .."' already exists in the output structure", 2 )
+	end
+	
+	if output.__semantic[ semantic ] ~= nil then
+		error( "An entry already have the semantic '" .. semantic .. "' in the output structure", 2 )
+	end
 	
 	-- :TODO: Validate semantic and type value
 	

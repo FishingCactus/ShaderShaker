@@ -14,14 +14,20 @@ end
 
 Language.VectorMetatable = {
 	__add = function( a, b ) 
-		assert( a.type == b.type );
+		if a.type ~= b.type then
+			error( "Can't add two vector of different size", 2 )
+		end
  		local result = { type = a.type, node="add", arguments={a,b} }
  		setmetatable( result, Language.VectorMetatable )
  		return result
 	end,
 	
 	__mul = function( a, b ) 
-		assert( type(a) == "number" or type(b) == "number" or  a.type == b.type );
+		
+		if not( type(a) == "number" or type(b) == "number" or  a.type == b.type ) then
+			error( "You can only multiply a vector by another one of the same size or a number", 2 );
+		end
+		
  		local result = { type = ( type(a) == "number" and b.type ) or a.type, node="mul", arguments={a,b} }
  		setmetatable( result, Language.VectorMetatable )
  		return result
@@ -56,7 +62,10 @@ Language.DefineVectorType = function( type, count )
 
 	_G[ name .. "_new" ] = 
 		function( ... )
-			assert( #{...} == count );
+			if #{...} ~= count then
+				error( "Wrong argument count, expect " .. count .. " got " .. #{...}, 2 )
+			end
+			
 			local var = { type = name, node="variable", value={...} }
 			Language.AttachVectorMetatable( var )
 			

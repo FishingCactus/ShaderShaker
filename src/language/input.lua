@@ -2,8 +2,13 @@ input = { __semantic = {} }
 
 function DefineInput( name, type, semantic )
 
-	assert( input[ name ] == nil ) 
-	assert( input.__semantic[ semantic ] == nil )
+	if input[ name ] ~= nil then
+		error( "An entry named '" .. name .."' already exists in the input structure", 2 )
+	end
+	
+	if input.__semantic[ semantic ] ~= nil then
+		error( "An entry already have the semantic '" .. semantic .. "' in the input structure", 2 )
+	end
 	
 	-- :TODO: Validate semantic and type value
 	
