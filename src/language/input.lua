@@ -1,6 +1,9 @@
-input = { __semantic = {} }
 
-function DefineInput( name, type, semantic )
+function DefineInput()
+	input = { __semantic = {} }
+end
+
+function InputAttribute( name, type, semantic )
 
 	if input[ name ] ~= nil then
 		error( "An entry named '" .. name .."' already exists in the input structure", 2 )
@@ -16,4 +19,8 @@ function DefineInput( name, type, semantic )
 	input[ name ] = input_variable
 	input.__semantic[ semantic ] = input_variable
 	Language.AttachVectorMetatable( input_variable )
+end
+
+function EndInput()
+	-- :TODO: Validate structure
 end

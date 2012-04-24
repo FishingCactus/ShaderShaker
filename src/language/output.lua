@@ -21,11 +21,13 @@ Language.OutputMetaType = {
 	end
 }
 
-output = { __definition={}, __semantic = {} }
-setmetatable( output, Language.OutputMetaType );
 
+function DefineOutput()
+	output = { __definition={}, __semantic = {} }
+	setmetatable( output, Language.OutputMetaType );
+end
 
-function DefineOutput( name, type, semantic )
+function OutputAttribute( name, type, semantic )
 
 	if output.__definition[ name ] ~= nil then
 		error( "An entry named '" .. name .."' already exists in the output structure", 2 )
@@ -40,4 +42,10 @@ function DefineOutput( name, type, semantic )
 	local output_variable = { type = type, value = "output." .. name, semantic = semantic }
 	output.__definition[ name ] = output_variable
 	output.__semantic[ semantic ] = output_variable
+end
+
+function EndOutput()
+
+	-- :TODO: Validate structure
+	
 end

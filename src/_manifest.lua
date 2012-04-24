@@ -8,5 +8,6 @@ return {
 	"language/intrinsics.lua",
 	"language/input.lua",
 	"language/output.lua",
+	"language/technique.lua"
 
 }
