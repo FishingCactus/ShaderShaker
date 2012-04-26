@@ -37,5 +37,8 @@ end
 
 
 function technique( technique_definition )
-	print( table.tostring( technique_definition ) );
+	
+	for k, v in pairs( technique_definition ) do
+		AstToIR( v );
+	end
 end

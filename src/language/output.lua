@@ -16,14 +16,14 @@ Language.OutputMetaType = {
 			error( "Invalid type for " .. ", expect " .. table.__definition[ key ].type .. " got " .. value.type, 2 )
 		end
 		
-		rawset( table, key, value );
+		table.__variable[ key ] = value
 	
 	end
 }
 
 
 function DefineOutput()
-	output = { __definition={}, __semantic = {} }
+	output = { __definition={}, __semantic = {}, __variable = {}, node = "Output" }
 	setmetatable( output, Language.OutputMetaType );
 end
 

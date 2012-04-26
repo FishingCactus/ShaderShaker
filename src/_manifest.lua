@@ -9,6 +9,10 @@ return {
 	"language/input.lua",
 	"language/output.lua",
 	"language/technique.lua",
-	"language/texture.lua"
+	"language/texture.lua",
+	
+	-- Intermediate representation
+	
+	"ir/ast_to_ir.lua",
 
 }

@@ -17,7 +17,7 @@ Language.VectorMetatable = {
 		if a.type ~= b.type then
 			error( "Can't add two vector of different size", 2 )
 		end
- 		local result = { type = a.type, node="add", arguments={a,b} }
+ 		local result = { type = a.type, node=="Operation", operation="add", arguments={a,b} }
  		setmetatable( result, Language.VectorMetatable )
  		return result
 	end,
@@ -28,7 +28,7 @@ Language.VectorMetatable = {
 			error( "You can only multiply a vector by another one of the same size or a number", 2 );
 		end
 		
- 		local result = { type = ( type(a) == "number" and b.type ) or a.type, node="mul", arguments={a,b} }
+ 		local result = { type = ( type(a) == "number" and b.type ) or a.type, node="Operation", operation="mul", arguments={a,b} }
  		setmetatable( result, Language.VectorMetatable )
  		return result
 	end,
@@ -43,7 +43,7 @@ Language.VectorMetatable = {
 			error( "Invalid swizzle", 2 );
 		end
 		
-		local result = { type = "float"..tonumber( string.len(key) ), node="swizzle", arguments={ vector, key } }
+		local result = { type = "float"..tonumber( string.len(key) ), node="Swizzle", arguments={ vector, key } }
 		setmetatable( result, Language.VectorMetatable )
 		return result
 	end
@@ -66,7 +66,8 @@ Language.DefineVectorType = function( type, count )
 				error( "Wrong argument count, expect " .. count .. " got " .. #{...}, 2 )
 			end
 			
-			local var = { type = name, node="variable", value={...} }
+			local var = { type = name, value={...} }
+
 			Language.AttachVectorMetatable( var )
 			
 			return var;
@@ -86,6 +87,7 @@ Language.AttachVectorMetatable = function( variable )
 	
 	assert( variable.type == "float" or variable.type == "float2" or variable.type == "float3" or variable.type == "float4" );
 	
+	variable.node = variable.node or "Variable"
 	setmetatable( variable, Language.VectorMetatable );
 
 end
