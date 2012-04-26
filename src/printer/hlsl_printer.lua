@@ -41,7 +41,7 @@ HLSL.GetOperation = function( operation )
 	
 	assert( #( operation.arguments ) == 2 )
 	
-	return operation.variable .. " = " .. operation.arguments[ 1 ] .. " " .. HLSL.OperationTable[ operation.operation ] .. " " .. operation.arguments[ 2 ]; 
+	return operation.variable .. " = " .. operation.arguments[ 1 ] .. " " .. HLSL.OperationTable[ operation.operation ] .. " " .. operation.arguments[ 2 ] .. ";\n"; 
 end
 
 HLSL.GetAssignment = function( assignment )
