@@ -39,6 +39,6 @@ end
 function technique( technique_definition )
 	
 	for k, v in pairs( technique_definition ) do
-		AstToIR( v );
+		HLSL.Print( AstToIR( v ) );
 	end
 end

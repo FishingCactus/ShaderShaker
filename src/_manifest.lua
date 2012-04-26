@@ -14,5 +14,9 @@ return {
 	-- Intermediate representation
 	
 	"ir/ast_to_ir.lua",
+	
+	-- Printer
+	
+	"printer/hlsl_printer.lua",
 
 }
