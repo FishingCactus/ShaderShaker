@@ -101,3 +101,16 @@ HLSL.PrintCode = function ( representation )
 	
 	print( code )
 end
+
+HLSL.PrintTechnique = function( technique_name, vertex_shader_name, pixel_shader_name )
+
+	local code
+	
+	code = "technique " .. technique_name .. "\n{"
+	code = code .. "\tpass P0\n\t{\n"
+    code = code .. "\t\tVertexShader = compile vs_3_0 " .. vertex_shader_name .. "();\n"
+    code = code .. "\t\tVPixelShader = compile ps_3_0 " .. pixel_shader_name .. "();\n"
+    code = code .. "\t}\n}"
+    
+    print( code )
+end
