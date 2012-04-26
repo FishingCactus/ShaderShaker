@@ -16,12 +16,16 @@ Ir.HandleOutput = function( node, representation )
 
 	for k,v in pairs( node.__variable ) do
 		local variable = Ir.HandleNode( v, representation )
+		local definition = node.__definition[ k ]
 		representation.code[ #(representation.code) + 1 ]  = { type = "Assignment", variable = "output." .. k, value = variable }
+		representation.output[ k ] = { semantic = definition.semantic, type = definition.type }
 	end
 
 end
 
 Ir.HandleInput = function( node, representation )
+
+	representation.input[ node.value ] = { semantic = node.semantic, type = node.type }
 	return "input." .. node.value
 end
 
@@ -91,6 +95,7 @@ Ir.HandleNode = function( ast_node, representation )
 	end
 	
 	if ast_node.node == nil then
+		print( ast_node )
 		print ( "ast_node : " .. table.tostring( ast_node ) )
 		error( "No node field found in ast_node", 2 )
 	end
@@ -110,6 +115,5 @@ function AstToIR( ast )
 
 	Ir.HandleNode( ast, representation )
 	
-	print( "\n\nFinal IR \n\n" .. table.tostring( representation.code ) )
 	return representation
 end

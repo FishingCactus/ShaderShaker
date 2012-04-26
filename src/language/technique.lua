@@ -22,6 +22,7 @@ end
 
 function table.tostring( tbl )
   local result, done = {}, {}
+  if type(tbl) ~= "table" then error( "table expected", 2 ) end
   for k, v in ipairs( tbl ) do
     table.insert( result, table.val_to_str( v ) )
     done[ k ] = true
@@ -37,8 +38,16 @@ end
 
 
 function technique( technique_definition )
+
+	local representation = AstToIR( technique_definition.vs );
+		
+	HLSL.PrintFunctionPrologue( representation, technique_definition.name .. "_ps" )
+	HLSL.PrintCode( representation )
+	HLSL.PrintFunctionEpilogue( representation )
 	
-	for k, v in pairs( technique_definition ) do
-		HLSL.Print( AstToIR( v ) );
-	end
+	representation = AstToIR( technique_definition.ps );
+		
+	HLSL.PrintFunctionPrologue( representation, technique_definition.name .. "_ps" )
+	HLSL.PrintCode( representation )
+	HLSL.PrintFunctionEpilogue( representation )
 end

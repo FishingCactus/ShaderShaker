@@ -53,7 +53,42 @@ HLSL.GetAssignment = function( assignment )
 	end
 end
 
-HLSL.Print = function ( representation )
+HLSL.GenerateStructure = function( prefix, input_definition, function_name )
+	local code
+	
+	code = "struct " .. prefix .. "_" .. function_name .. "\n{\n"
+	
+	for name, description in pairs( input_definition ) do
+		code = code .. description.type .. " " .. name .. " : " .. description.semantic .. ";\n" 
+	end
+	
+	code = code .. "\n};\n"
+	
+	return code;
+end
+
+HLSL.PrintFunctionPrologue = function( representation, function_name )
+	
+	local code
+	
+	code = HLSL.GenerateStructure( "INPUT", representation.input, function_name )
+	code = HLSL.GenerateStructure( "OUTPUT", representation.output, function_name )
+	
+	code = code .. "OUTPUT_" .. function_name .. " " .. function_name .. " ( INPUT_" .. function_name .. " input )\n{\n"
+	code = code .. "OUTPUT_" .. function_name .. " output;\n"
+	
+	print( code )
+end
+
+HLSL.PrintFunctionEpilogue = function( representation, function_name )
+	
+	local code
+	
+	code = "return output;\n}"
+	print( code )
+end
+
+HLSL.PrintCode = function ( representation )
 	local code = ""
 	for i,v in ipairs( representation.code ) do
 	
