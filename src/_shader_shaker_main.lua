@@ -10,5 +10,8 @@ function _shader_shaker_main(scriptpath)
 			dofile(scriptpath .. "/" .. v)
 		end
 	end
+	
+	InitializeOutputPrint()
+	--InitializeOutputFile( "test.shader")
 
 end

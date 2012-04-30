@@ -18,5 +18,7 @@ return {
 	-- Printer
 	
 	"printer/hlsl_printer.lua",
+	
+	"utilities/output.lua"
 
 }

@@ -54,52 +54,39 @@ HLSL.GetAssignment = function( assignment )
 end
 
 HLSL.GenerateStructure = function( prefix, input_definition, function_name )
-	local code
-	
-	code = "struct " .. prefix .. "_" .. function_name .. "\n{\n"
+
+	ShaderPrint( "struct " .. prefix .. "_" .. function_name .. "\n{\n" )
 	
 	for name, description in pairs( input_definition ) do
-		code = code .. description.type .. " " .. name .. " : " .. description.semantic .. ";\n" 
+		ShaderPrint( 1, description.type .. " " .. name .. " : " .. description.semantic .. ";\n" )
 	end
 	
-	code = code .. "\n};\n"
-	
-	return code;
+	ShaderPrint( "\n};\n" )
 end
 
 HLSL.PrintFunctionPrologue = function( representation, function_name )
 	
-	local code
+	HLSL.GenerateStructure( "INPUT", representation.input, function_name )
+	HLSL.GenerateStructure( "OUTPUT", representation.output, function_name )
 	
-	code = HLSL.GenerateStructure( "INPUT", representation.input, function_name )
-	code = HLSL.GenerateStructure( "OUTPUT", representation.output, function_name )
-	
-	code = code .. "OUTPUT_" .. function_name .. " " .. function_name .. " ( INPUT_" .. function_name .. " input )\n{\n"
-	code = code .. "OUTPUT_" .. function_name .. " output;\n"
-	
-	print( code )
+	ShaderPrint( "OUTPUT_" .. function_name .. " " .. function_name .. " ( INPUT_" .. function_name .. " input )\n{\n" )
+	ShaderPrint( 1, "OUTPUT_" .. function_name .. " output;\n" )
+
 end
 
 HLSL.PrintFunctionEpilogue = function( representation, function_name )
-	
-	local code
-	
-	code = "return output;\n}"
-	print( code )
+	ShaderPrint( 1, "return output;\n}\n\n" )
 end
 
 HLSL.PrintCode = function ( representation )
-	local code = ""
 	for i,v in ipairs( representation.code ) do
 	
 		if HLSL[ "Get" .. v.type ] == nil then
 			error( "No printer for type " .. v.type .. " in HLSL printer", 1 )
 		end
 		
-		code = code .. HLSL[ "Get" .. v.type ]( v )
+		ShaderPrint( 1, HLSL[ "Get" .. v.type ]( v ) )
 	end
-	
-	print( code )
 end
 
 HLSL.PrintTechnique = function( technique_name, vertex_shader_name, pixel_shader_name )
@@ -112,5 +99,5 @@ HLSL.PrintTechnique = function( technique_name, vertex_shader_name, pixel_shader
     code = code .. "\t\tVPixelShader = compile ps_3_0 " .. pixel_shader_name .. "();\n"
     code = code .. "\t}\n}"
     
-    print( code )
+    ShaderPrint( code )
 end
