@@ -29,6 +29,23 @@ Ir.HandleInput = function( node, representation )
 	return "input." .. node.value
 end
 
+Ir.HandleConstructor = function( node, representation )
+
+	local variable_table = {}
+	for i,v in ipairs( node.value ) do
+		if type( v ) == "number" then
+			variable_table[i] = v
+		else
+			variable_table[i] = Ir.HandleNode( v, representation )
+		end
+	end
+	local output_variable_name = Ir.CreateVariable( representation, node.type )
+	
+	representation.code[ #(representation.code) + 1 ] = { type = "Constructor", constructor_type = node.type, arguments = variable_table, variable = output_variable_name }
+
+	return output_variable_name
+end
+
 Ir.HandleConstant = function( node, representation )
 	representation.constant[ node.name ] = { type = node.type }
 	return node.name

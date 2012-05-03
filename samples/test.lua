@@ -2,6 +2,8 @@
 Texture2D "DiffuseTexture"
 
 Constant( "float4", "DiffuseColor" ) 
+Constant( "float4x4", "Projection" )
+Constant( "float4x4", "WorldView" )
 
 ItHasDiffuseTexture = true
 
@@ -19,11 +21,11 @@ function VertexShader()
 		OutputAttribute( "Color", "float4", "COLOR0" );
 	EndOutput()
 	
-	a = float4_new( 1, 0, 0, 0 );
-	b = float4_new( 0, 1, 2, 3 );
+	b = float4( 0, 1, 2, 3 );
 	
-	output.Position = a.zxxy;
-	output.Color = 2 * DiffuseColor * input.Color;
+	local wvp = Projection * WorldView;
+	output.Position =  wvp * float4( input.Position, 1 );
+	output.Color = 2 * b * DiffuseColor * input.Color;
 	output.TexCoord = input.TexCoord.xy
 	
 	return output;

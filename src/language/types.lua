@@ -1,9 +1,88 @@
 Language = Language or {}
 
+Language.IsNumber = function( variable )
+	return type( variable ) == "number"
+end
+local IsNumber = Language.IsNumber
+
+Language.IsVector = function( variable )
+	if type( variable ) ~= "string" then error( "Type string expected", 2 ) end
+	
+	return string.match( variable, "float[2-4]*" ) == variable
+end
+local IsVector = Language.IsVector
+
+Language.IsMatrix = function( variable )
+	if type( variable ) ~= "string" then error( "Type string expected", 2 ) end
+	
+	return string.match( variable, "float[2-4]x[2-4]" ) == variable
+end
+local IsMatrix = Language.IsMatrix
+
+Language.GetMatrixSize = function( matrix )
+
+	assert( IsMatrix( matrix ) )
+	local row, column = string.match( matrix, "(%d)x(%d)" )
+
+	return tonumber( row ), tonumber( column )
+end
+local GetMatrixSize = Language.GetMatrixSize
+
+
+Language.GetVectorSize = function( vector )
+	return tonumber( string.sub( string.reverse( vector ), 1, 1 ) ) or 1;
+end
+local GetVectorSize = Language.GetVectorSize
+
+Language.IsValidMultiplication = function( a, b )
+	if a == b then 
+		return true
+	end
+	
+	if IsMatrix( a ) then
+		local row, column = GetMatrixSize( a )
+		local vector_size = GetVectorSize( b )
+		
+		return row == vector_size;
+	else
+		assert( IsMatrix( b ) )
+		
+		local row, column = GetMatrixSize( b )
+		local vector_size = GetVectorSize( a )
+		
+		return column == vector_size;
+		
+	end
+end
+
+local IsValidMultiplication = Language.IsValidMultiplication
+
+Language.MultiplyVectorMatrix = function( a, b )
+
+	assert( IsMatrix( a.type ) ~= IsMatrix( b.type ) )
+	
+	local result = { node="Operation", operation="mul", arguments={a,b}  }
+	
+	if IsMatrix( a.type ) then
+		local row, column = GetMatrixSize( a.type )
+		local vector_size = GetVectorSize( b.type ) 
+		
+		result.type = "float" .. column
+	else
+		local row, column = GetMatrixSize( b.type )
+		local vector_size = GetVectorSize( a.type ) 
+		
+		 result.type = "float" .. row
+	end
+	
+	Language.AttachVectorMetatable( result )
+	return result;
+end
+
 Language.IsValidSwizzle = function( swizzle, type )
 	local position_swizzle = "xyzw"
 	local color_swizzle = "rgba"
-	local parameter_count = tonumber( string.sub( string.reverse( type ), 1, 1 ) );
+	local parameter_count = Language.GetVectorSize( type );
 	
 	parameter_count = parameter_count or 1;
 	
@@ -13,6 +92,7 @@ Language.IsValidSwizzle = function( swizzle, type )
 end
 
 Language.VectorMetatable = {
+
 	__add = function( a, b ) 
 		if a.type ~= b.type then
 			error( "Can't add two vector of different size", 2 )
@@ -22,13 +102,19 @@ Language.VectorMetatable = {
  		return result
 	end,
 	
-	__mul = function( a, b ) 
+	__mul = function( a, b )
 		
-		if not( type(a) == "number" or type(b) == "number" or  a.type == b.type ) then
-			error( "You can only multiply a vector by another one of the same size or a number", 2 );
+		if not( IsNumber(a) or IsNumber(b) or IsValidMultiplication( a.type, b.type ) ) then
+			error( "Mismatch in size, multiplication parameters don't match", 2 );
 		end
 		
- 		local result = { type = ( type(a) == "number" and b.type ) or a.type, node="Operation", operation="mul", arguments={a,b} }
+		local result
+		
+		if not IsNumber( a ) and not IsNumber( b ) and ( IsMatrix( a.type ) or IsMatrix( b.type ) ) then
+			result = Language.MultiplyVectorMatrix( a, b )
+		else
+ 			result = { type = ( IsNumber(a) and b.type ) or a.type, node="Operation", operation="mul", arguments={a,b} }
+ 		end
  		setmetatable( result, Language.VectorMetatable )
  		return result
 	end,
@@ -50,6 +136,52 @@ Language.VectorMetatable = {
 	
 }
 
+Language.MatrixMetatable = {
+
+	__add = function( a, b ) 
+		if a.type ~= b.type then
+			error( "Can't add two matrix of different size", 2 )
+		end
+ 		local result = { type = a.type, node=="Operation", operation="add", arguments={a,b} }
+ 		setmetatable( result, Language.MatrixMetatable )
+ 		return result
+	end,
+	
+	__mul = function( a, b )
+		
+		if not( IsNumber(a) or IsNumber(b) or IsValidMultiplication( a.type, b.type ) ) then
+			error( "Mismatch in size, multiplication parameters don't match", 2 );
+		end
+		
+		local result
+		
+		if not IsNumber( a ) and not IsNumber( b ) and ( IsVector( a.type ) or IsVector( b.type ) ) then
+			result = Language.MultiplyVectorMatrix( a, b )
+		else
+ 			result = { type = ( IsNumber(a) and b.type ) or a.type, node="Operation", operation="mul", arguments={a,b} }
+ 			setmetatable( result, Language.MatrixMetatable )
+ 		end
+ 		return result
+	end,
+	
+	__newindex = function( table, key, value )
+		error( "No support for swizzled assignment yet", 2 )
+	end,
+	
+	__index = function( vector, key )
+	
+		if not IsNumber( key ) or key < 0 or key > 3  then
+			error( "Invalid array index", 2 );
+		end
+		
+		local row, column = GetMatrixSize( vector )
+		local result = { type = "float".. row, node="ArrayIndex", arguments={ vector, key } }
+		setmetatable( result, Language.VectorMetatable )
+		return result
+	end
+	
+}
+
 Language.DefineVectorType = function( type, count )
 
 	local name
@@ -60,15 +192,53 @@ Language.DefineVectorType = function( type, count )
 		name = type .. count
 	end
 
-	_G[ name .. "_new" ] = 
+	_G[ name ] = 
 		function( ... )
-			if #{...} ~= count then
-				error( "Wrong argument count, expect " .. count .. " got " .. #{...}, 2 )
+			local arguments = {...}
+			local parameter_count = 0
+			
+			for _,arg in ipairs( arguments ) do
+				if IsNumber( arg ) then
+					parameter_count = parameter_count + 1
+				elseif IsVector( arg.type ) then
+					parameter_count = parameter_count + GetVectorSize( arg.type )
+				else
+					error( "Wrong argument to constructor " .. name .. ": only vector and number are supported" , 2 )
+				end
 			end
 			
-			local var = { type = name, value={...} }
+			if parameter_count ~= count then
+				error( "Wrong argument count, expect " .. count .. " got " .. parameter_count, 2 )
+			end
+			
+			local var = { type = name, node = "Constructor", value={...} }
 
 			Language.AttachVectorMetatable( var )
+			
+			return var;
+		end
+		
+	return var;
+
+end
+
+Language.DefineMatrixType = function( type, row, column )
+
+	local name
+
+	assert( row ~= 1 and column ~= 1 )
+		
+	name = type .. row .. "x" ..column
+	
+	_G[ name ] = 
+		function( ... )
+			if #{...} ~= count then
+				error( "Wrong argument count, expect " .. ( row * column ) .. " got " .. #{...}, 2 )
+			end
+			
+			local var = { type = name, node = "Constructor", value={...} }
+
+			Language.AttachMatrixMetatable( var )
 			
 			return var;
 		end
@@ -83,11 +253,30 @@ Language.DefineVectorType( "float", 2 )
 Language.DefineVectorType( "float", 3 )
 Language.DefineVectorType( "float", 4 )
 
+Language.DefineVectorType( "float", 2, 2 )
+Language.DefineVectorType( "float", 2, 3 )
+Language.DefineVectorType( "float", 2, 4 )
+Language.DefineVectorType( "float", 3, 2 )
+Language.DefineVectorType( "float", 3, 3 )
+Language.DefineVectorType( "float", 3, 4 )
+Language.DefineVectorType( "float", 4, 2 )
+Language.DefineVectorType( "float", 4, 3 )
+Language.DefineVectorType( "float", 4, 4 )
+
 Language.AttachVectorMetatable = function( variable )
 	
 	assert( variable.type == "float" or variable.type == "float2" or variable.type == "float3" or variable.type == "float4" );
 	
 	variable.node = variable.node or "Variable"
 	setmetatable( variable, Language.VectorMetatable );
+
+end
+
+Language.AttachMatrixMetatable = function( variable )
+	
+	assert( IsMatrix( variable.type ) );
+	
+	variable.node = variable.node or "Variable"
+	setmetatable( variable, Language.MatrixMetatable );
 
 end

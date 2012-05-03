@@ -71,6 +71,24 @@ HLSL.GenerateConstants = function( constants )
 	end
 end
 
+HLSL.GetConstructor = function( constructor )
+
+	local code = constructor.variable .. " = " .. constructor.constructor_type .. " ( "
+	
+	for _, value in ipairs( constructor.arguments ) do
+	
+		if _ ~= 1 then
+			code = code .. ", "
+		end
+		
+		code = code .. value	
+	end
+	
+	code = code .. " );\n" 
+	
+	return code;
+end
+
 HLSL.PrintFunctionPrologue = function( representation, function_name )
 	
 	HLSL.GenerateConstants( representation.constant )
