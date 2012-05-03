@@ -41,7 +41,7 @@ function technique( technique_definition )
 
 	local language_printer = HLSL;
 	local representation = AstToIR( technique_definition.vs );
-		
+
 	language_printer.PrintFunctionPrologue( representation, technique_definition.name .. "_vs" )
 	language_printer.PrintCode( representation )
 	language_printer.PrintFunctionEpilogue( representation )

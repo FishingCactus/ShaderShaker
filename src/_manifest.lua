@@ -10,6 +10,7 @@ return {
 	"language/output.lua",
 	"language/technique.lua",
 	"language/texture.lua",
+	"language/constant.lua",
 	
 	-- Intermediate representation
 	

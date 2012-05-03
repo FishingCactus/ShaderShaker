@@ -29,6 +29,11 @@ Ir.HandleInput = function( node, representation )
 	return "input." .. node.value
 end
 
+Ir.HandleConstant = function( node, representation )
+	representation.constant[ node.name ] = { type = node.type }
+	return node.name
+end
+
 Ir.HandleSwizzle = function( node, representation )
 	local variable_name = Ir.CreateVariable( representation, node.type )
 	local source_variable_name = Ir.HandleNode( node.arguments[ 1 ], representation )
@@ -111,7 +116,7 @@ end
 
 function AstToIR( ast )
 
-	local representation = { code={}, input={}, output={}, variable={}, variable_index = 0 }
+	local representation = { code={}, input={}, output={}, constant={}, variable={}, variable_index = 0 }
 
 	Ir.HandleNode( ast, representation )
 	

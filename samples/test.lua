@@ -1,6 +1,8 @@
 
 Texture2D "DiffuseTexture"
 
+Constant( "float4", "DiffuseColor" ) 
+
 ItHasDiffuseTexture = true
 
 function VertexShader()
@@ -21,7 +23,7 @@ function VertexShader()
 	b = float4_new( 0, 1, 2, 3 );
 	
 	output.Position = a.zxxy;
-	output.Color = 2 * input.Color;
+	output.Color = 2 * DiffuseColor * input.Color;
 	output.TexCoord = input.TexCoord.xy
 	
 	return output;

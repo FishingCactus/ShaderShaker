@@ -64,8 +64,16 @@ HLSL.GenerateStructure = function( prefix, input_definition, function_name )
 	ShaderPrint( "\n};\n" )
 end
 
+HLSL.GenerateConstants = function( constants )
+
+	for constant, value in pairs( constants ) do
+		ShaderPrint( value.type .. " " .. constant ..";\n" );
+	end
+end
+
 HLSL.PrintFunctionPrologue = function( representation, function_name )
 	
+	HLSL.GenerateConstants( representation.constant )
 	HLSL.GenerateStructure( "INPUT", representation.input, function_name )
 	HLSL.GenerateStructure( "OUTPUT", representation.output, function_name )
 	
@@ -90,14 +98,13 @@ HLSL.PrintCode = function ( representation )
 end
 
 HLSL.PrintTechnique = function( technique_name, vertex_shader_name, pixel_shader_name )
-
-	local code
 	
-	code = "technique " .. technique_name .. "\n{"
-	code = code .. "\tpass P0\n\t{\n"
-    code = code .. "\t\tVertexShader = compile vs_3_0 " .. vertex_shader_name .. "();\n"
-    code = code .. "\t\tVPixelShader = compile ps_3_0 " .. pixel_shader_name .. "();\n"
-    code = code .. "\t}\n}"
-    
-    ShaderPrint( code )
+	ShaderPrint( "technique " .. technique_name .. "\n{" )
+	ShaderPrint( 1, "pass P0\n" )
+	ShaderPrint( 1, "{\n" )
+	ShaderPrint( 2, "VertexShader = compile vs_3_0 " .. vertex_shader_name .. "();\n" )
+	ShaderPrint( 2, "PixelShader = compile ps_3_0 " .. pixel_shader_name .. "();\n" )
+	ShaderPrint( 1, "}" )
+	ShaderPrint( "\n}" )
+
 end
