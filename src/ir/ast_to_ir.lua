@@ -81,7 +81,9 @@ Ir.HandleVariable = function( node, representation )
 end
 
 Ir.HandleTexture = function( node, representation )
-	return node.name
+
+	representation.texture[ node.name ] = { type = node.type }
+	return { type = "Texture", name = node.name }
 end
 
 Ir.HandleFunction = function( node, representation )
@@ -133,7 +135,7 @@ end
 
 function AstToIR( ast )
 
-	local representation = { code={}, input={}, output={}, constant={}, variable={}, variable_index = 0 }
+	local representation = { code={}, input={}, output={}, constant={}, texture={}, variable={}, variable_index = 0 }
 
 	Ir.HandleNode( ast, representation )
 	

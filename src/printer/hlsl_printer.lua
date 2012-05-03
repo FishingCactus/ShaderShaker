@@ -16,7 +16,11 @@ HLSL.GetCallFunction = function( call_function )
 			code = code .. ", "
 		end
 		
-		code = code .. v
+		if type(v) == "table" and v.type == "Texture" then
+			code = code .. v.name .. "Sampler"
+		else
+			code = code .. v
+		end
 	end
 	
 	code = code .. " );\n" 
@@ -71,6 +75,20 @@ HLSL.GenerateConstants = function( constants )
 	end
 end
 
+HLSL.SamplerFromTexture = {
+	texture2D = "sampler2D"
+}
+
+HLSL.GenerateTextures = function( textures )
+
+	for texture, value in pairs( textures ) do
+		ShaderPrint( value.type .. " " .. texture ..";\n" );
+		ShaderPrint( HLSL.SamplerFromTexture[ value.type ] .. " " .. texture .. "Sampler = sampler_state\n{\n" )
+		ShaderPrint( 1, "Texture = <" .. texture .. ">;\n" )
+		ShaderPrint( "};\n" )
+	end
+end
+
 HLSL.GetConstructor = function( constructor )
 
 	local code = constructor.variable .. " = " .. constructor.constructor_type .. " ( "
@@ -92,6 +110,7 @@ end
 HLSL.PrintFunctionPrologue = function( representation, function_name )
 	
 	HLSL.GenerateConstants( representation.constant )
+	HLSL.GenerateTextures( representation.texture )
 	HLSL.GenerateStructure( "INPUT", representation.input, function_name )
 	HLSL.GenerateStructure( "OUTPUT", representation.output, function_name )
 	
