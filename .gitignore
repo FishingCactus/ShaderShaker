@@ -18,3 +18,4 @@ bin/*
 #Generated project
 *.xcodeproj
 *.xcworkspace
+src/host/scripts.cpp

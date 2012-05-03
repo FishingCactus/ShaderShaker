@@ -109,11 +109,11 @@
 -- a release build.
 --
 
---	dofile("scripts/embed.lua")
+	dofile("scripts/embed.lua")
 	
 	newaction {
 		trigger     = "embed",
-		description = "Embed scripts in scripts.c; required before release builds",
+		description = "Embed scripts in scripts.cpp; required before release builds",
 		execute     = doembed
 	}
 

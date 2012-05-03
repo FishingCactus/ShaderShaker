@@ -188,7 +188,7 @@ bool load_builtin_scripts(lua_State* L)
 	}
 
 	/* hand off control to the scripts */
-	lua_getglobal(L, "_premake_main");
+	lua_getglobal(L, "_shader_shaker_main");
     
 	if (lua_pcall(L, 0, 1, 0) != 0)
 	{
