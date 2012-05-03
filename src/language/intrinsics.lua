@@ -15,3 +15,22 @@ function tex2D( texcoord, texture )
 	
 	return result;
 end
+
+function lerp( a, b, factor )
+
+	if a.type ~= b.type then 
+		error( "Both values should have the same type ( " .. a.type .. " and " .. b.type " )", 2 )
+	end
+	
+	if !Language.IsNumber( factor ) or factor.type ~= "float"  then
+		error( "Wrong factor type, expect float got " .. factor.type, 2 )
+	end
+	
+	local result = { type = a.type, node="Function", name="lerp", arguments={a, b, factor} };
+	
+	Language.AttachVectorMetatable( result );
+	
+	return result;
+
+	
+end
