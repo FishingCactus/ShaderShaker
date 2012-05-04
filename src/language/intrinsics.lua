@@ -22,7 +22,7 @@ function lerp( a, b, factor )
         error( "Both values should have the same type ( " .. a.type .. " and " .. b.type " )", 2 )
     end
     
-    if !Language.IsNumber( factor ) or factor.type ~= "float"  then
+    if not Language.IsNumber( factor ) or factor.type ~= "float"  then
         error( "Wrong factor type, expect float got " .. factor.type, 2 )
     end
     

@@ -145,3 +145,5 @@ HLSL.PrintTechnique = function( technique_name, vertex_shader_name, pixel_shader
     ShaderPrint( "\n}" )
 
 end
+
+RegisterPrinter( HLSL, "hlsl", "fx" )

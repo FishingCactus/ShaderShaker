@@ -1,4 +1,4 @@
-function _shader_shaker_main(script_path, output_file)
+function _shader_shaker_main(script_path, output_file, override_language)
 
     -- if running off the disk (in debug mode), load everything 
     -- listed in _manifest.lua; the list divisions make sure
@@ -11,6 +11,7 @@ function _shader_shaker_main(script_path, output_file)
         end
     end
     
+    SelectPrinter( output_file, override_language )
     
     if output_file ~= nil then
         InitializeOutputFile( output_file )

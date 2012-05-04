@@ -14,7 +14,8 @@ extern const char* builtin_scripts[];
 
 static const char
     * LocalInputFile = 0,
-    * LocalOutputFile = 0;
+    * LocalOutputFile = 0,
+    * LocalLanguage = 0;
 
 static bool process_command_line( lua_State * L, int argc, const char ** argv );
 static void usage();
@@ -84,6 +85,30 @@ static bool process_command_line( lua_State * L, int argument_count, const char 
                 }
                 break;
                 
+                case 'x':
+                {
+                    if( argument[ 2 ] != 0 )
+                    {
+                        return false;
+                    }
+                    else if( LocalLanguage != 0 )
+                    {
+                        std::cerr << "Two languages given, aborting\n";
+                        return false;
+                    }
+                    else if( argument_index == ( argument_count - 1 ) 
+                        ||  argument_table[ argument_index + 1 ][ 0 ] == '-' 
+                        )
+                    {
+                        std::cerr << "No language given after '-x', aborting\n\n";
+                        return false;
+                    }
+                    
+                    LocalLanguage = argument_table[ argument_index + 1 ];
+                    ++argument_index;
+                }
+                break;
+                
                 case '-':
                 {
                     lua_pushboolean( L, true );
@@ -134,8 +159,6 @@ bool load_builtin_scripts(lua_State* L)
 {
 	const char
         * filename;
-    int
-        argument_count;
         
     //:TODO: option to change scripts directory
     filename = "src/_shader_shaker_main.lua";
@@ -148,14 +171,26 @@ bool load_builtin_scripts(lua_State* L)
 
 	lua_getglobal(L, "_shader_shaker_main");
     lua_pushstring(L, "src" );
-    argument_count = 1;
+    
     if( LocalOutputFile )
     {
         lua_pushstring( L, LocalOutputFile );
-        ++argument_count;
+    }
+    else
+    {
+        lua_pushnil( L );
     }
     
-	if (lua_pcall(L, argument_count, 1, 0) != 0)
+    if( LocalLanguage )
+    {
+        lua_pushstring( L, LocalLanguage );
+    }
+    else
+    {
+        lua_pushnil( L );
+    }
+    
+	if (lua_pcall(L, 3, 1, 0) != 0)
 	{
 		std::cerr << lua_tostring(L, -1);
 		return false;
@@ -189,8 +224,27 @@ bool load_builtin_scripts(lua_State* L)
 
 	/* hand off control to the scripts */
 	lua_getglobal(L, "_shader_shaker_main");
+    lua_pushnil( L );
     
-	if (lua_pcall(L, 0, 1, 0) != 0)
+    if( LocalOutputFile )
+    {
+        lua_pushstring( L, LocalOutputFile );
+    }
+    else
+    {
+        lua_pushnil( L );
+    }
+    
+    if( LocalLanguage )
+    {
+        lua_pushstring( L, LocalLanguage );
+    }
+    else
+    {
+        lua_pushnil( L );
+    }
+    
+	if (lua_pcall(L, 3, 1, 0) != 0)
 	{
 		std::cerr << lua_tostring(L, -1);
 		return false;
