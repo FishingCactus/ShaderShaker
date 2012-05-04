@@ -38,7 +38,7 @@ int main(int argc, const char** argv)
     }
     
 	result = load_builtin_scripts(L);
-    result = result && load_shader_file( L, argv[ 1 ] );
+    result = result && load_shader_file( L, LocalInputFile );
     
 
 	lua_close(L);
