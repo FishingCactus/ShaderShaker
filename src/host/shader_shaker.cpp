@@ -37,12 +37,12 @@ int main(int argc, const char** argv)
         return -1;
     }
     
-	result = load_builtin_scripts(L);
+    result = load_builtin_scripts(L);
     result = result && load_shader_file( L, LocalInputFile );
     
 
-	lua_close(L);
-	return result ? 0 : 1;
+    lua_close(L);
+    return result ? 0 : 1;
 }
 
 
@@ -142,11 +142,11 @@ void usage()
 
 bool load_shader_file(lua_State* L, const char * shader_file_name )
 {
-	if (luaL_dofile(L, shader_file_name))
-	{
-		std::cerr << lua_tostring(L, -1);
-		return false;
-	}
+    if (luaL_dofile(L, shader_file_name))
+    {
+        std::cerr << lua_tostring(L, -1);
+        return false;
+    }
 
     return true;
 }
@@ -157,19 +157,19 @@ bool load_shader_file(lua_State* L, const char * shader_file_name )
  */
 bool load_builtin_scripts(lua_State* L)
 {
-	const char
+    const char
         * filename;
         
     //:TODO: option to change scripts directory
     filename = "src/_shader_shaker_main.lua";
 
-	if (luaL_dofile(L, filename))
-	{
-		std::cerr << lua_tostring(L, -1);
-		return false;
-	}
+    if (luaL_dofile(L, filename))
+    {
+        std::cerr << lua_tostring(L, -1);
+        return false;
+    }
 
-	lua_getglobal(L, "_shader_shaker_main");
+    lua_getglobal(L, "_shader_shaker_main");
     lua_pushstring(L, "src" );
     
     if( LocalOutputFile )
@@ -190,15 +190,15 @@ bool load_builtin_scripts(lua_State* L)
         lua_pushnil( L );
     }
     
-	if (lua_pcall(L, 3, 1, 0) != 0)
-	{
-		std::cerr << lua_tostring(L, -1);
-		return false;
-	}
-	else
-	{
-		return lua_tonumber(L, -1) == 0;
-	}
+    if (lua_pcall(L, 3, 1, 0) != 0)
+    {
+        std::cerr << lua_tostring(L, -1);
+        return false;
+    }
+    else
+    {
+        return lua_tonumber(L, -1) == 0;
+    }
 }
 #endif
 
@@ -211,19 +211,19 @@ bool load_builtin_scripts(lua_State* L)
  */
 bool load_builtin_scripts(lua_State* L)
 {
-	int i;
-	for (i = 0; builtin_scripts[i]; ++i)
-	{
-		if (luaL_dostring(L, builtin_scripts[i]) != 0 )
-		{
-			std::cerr << lua_tostring(L, -1);
+    int i;
+    for (i = 0; builtin_scripts[i]; ++i)
+    {
+        if (luaL_dostring(L, builtin_scripts[i]) != 0 )
+        {
+            std::cerr << lua_tostring(L, -1);
             
-			return false;
-		}
-	}
+            return false;
+        }
+    }
 
-	/* hand off control to the scripts */
-	lua_getglobal(L, "_shader_shaker_main");
+    /* hand off control to the scripts */
+    lua_getglobal(L, "_shader_shaker_main");
     lua_pushnil( L );
     
     if( LocalOutputFile )
@@ -244,14 +244,14 @@ bool load_builtin_scripts(lua_State* L)
         lua_pushnil( L );
     }
     
-	if (lua_pcall(L, 3, 1, 0) != 0)
-	{
-		std::cerr << lua_tostring(L, -1);
-		return false;
-	}
-	else
-	{
-		return lua_tonumber(L, -1) == 0;
-	}
+    if (lua_pcall(L, 3, 1, 0) != 0)
+    {
+        std::cerr << lua_tostring(L, -1);
+        return false;
+    }
+    else
+    {
+        return lua_tonumber(L, -1) == 0;
+    }
 }
 #endif
