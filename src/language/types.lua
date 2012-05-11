@@ -1,25 +1,25 @@
 Language = Language or {}
 
-Language.IsNumber = function( variable )
+function Language.IsNumber( variable )
     return type( variable ) == "number"
 end
 local IsNumber = Language.IsNumber
 
-Language.IsVector = function( variable )
+function Language.IsVector( variable )
     if type( variable ) ~= "string" then error( "Type string expected", 2 ) end
     
     return string.match( variable, "float[2-4]*" ) == variable
 end
 local IsVector = Language.IsVector
 
-Language.IsMatrix = function( variable )
+function Language.IsMatrix( variable )
     if type( variable ) ~= "string" then error( "Type string expected", 2 ) end
     
     return string.match( variable, "float[2-4]x[2-4]" ) == variable
 end
 local IsMatrix = Language.IsMatrix
 
-Language.GetMatrixSize = function( matrix )
+function Language.GetMatrixSize( matrix )
 
     assert( IsMatrix( matrix ) )
     local row, column = string.match( matrix, "(%d)x(%d)" )
@@ -29,12 +29,12 @@ end
 local GetMatrixSize = Language.GetMatrixSize
 
 
-Language.GetVectorSize = function( vector )
+function Language.GetVectorSize( vector )
     return tonumber( string.sub( string.reverse( vector ), 1, 1 ) ) or 1;
 end
 local GetVectorSize = Language.GetVectorSize
 
-Language.IsValidMultiplication = function( a, b )
+function Language.IsValidMultiplication( a, b )
     if a == b then 
         return true
     end
@@ -57,7 +57,7 @@ end
 
 local IsValidMultiplication = Language.IsValidMultiplication
 
-Language.MultiplyVectorMatrix = function( a, b )
+function Language.MultiplyVectorMatrix( a, b )
 
     assert( IsMatrix( a.type ) ~= IsMatrix( b.type ) )
     
@@ -79,7 +79,7 @@ Language.MultiplyVectorMatrix = function( a, b )
     return result;
 end
 
-Language.IsValidSwizzle = function( swizzle, type )
+function Language.IsValidSwizzle( swizzle, type )
     local position_swizzle = "xyzw"
     local color_swizzle = "rgba"
     local parameter_count = Language.GetVectorSize( type );
@@ -182,7 +182,7 @@ Language.MatrixMetatable = {
     
 }
 
-Language.DefineVectorType = function( type, count )
+function Language.DefineVectorType( type, count )
 
     local name
 
@@ -222,7 +222,7 @@ Language.DefineVectorType = function( type, count )
 
 end
 
-Language.DefineMatrixType = function( type, row, column )
+function Language.DefineMatrixType( type, row, column )
 
     local name
 
@@ -263,7 +263,7 @@ Language.DefineVectorType( "float", 4, 2 )
 Language.DefineVectorType( "float", 4, 3 )
 Language.DefineVectorType( "float", 4, 4 )
 
-Language.AttachVectorMetatable = function( variable )
+function Language.AttachVectorMetatable( variable )
     
     assert( variable.type == "float" or variable.type == "float2" or variable.type == "float3" or variable.type == "float4" );
     
@@ -272,7 +272,7 @@ Language.AttachVectorMetatable = function( variable )
 
 end
 
-Language.AttachMatrixMetatable = function( variable )
+function Language.AttachMatrixMetatable( variable )
     
     assert( IsMatrix( variable.type ) );
     

@@ -1,11 +1,11 @@
 HLSL = HLSL or {}
 
 
-HLSL.GetDeclaration = function( declaration )
+function HLSL.GetDeclaration( declaration )
     return declaration.variable_type .. " " .. declaration.name .. ";\n"
 end
 
-HLSL.GetCallFunction = function( call_function )
+function HLSL.GetCallFunction( call_function )
     local code
     
     code = call_function.variable .. " = " .. call_function.name .. "( "
@@ -28,7 +28,7 @@ HLSL.GetCallFunction = function( call_function )
     return code 
 end
 
-HLSL.GetSwizzle = function( swizzle )
+function HLSL.GetSwizzle( swizzle )
     
     return swizzle.variable .. " = " .. swizzle.arguments[ 1 ] .. "." .. swizzle.arguments[ 2 ] .. ";\n"
 
@@ -41,14 +41,14 @@ HLSL.OperationTable = {
     div = "/"
 }
 
-HLSL.GetOperation = function( operation )
+function HLSL.GetOperation( operation )
     
     assert( #( operation.arguments ) == 2 )
     
     return operation.variable .. " = " .. operation.arguments[ 1 ] .. " " .. HLSL.OperationTable[ operation.operation ] .. " " .. operation.arguments[ 2 ] .. ";\n"; 
 end
 
-HLSL.GetAssignment = function( assignment )
+function HLSL.GetAssignment( assignment )
 
     if type( assignment.value ) == "table" then
         return assignment.variable .. " = " .. assignment.variable_type .. "(" .. table.concat( assignment.value, "," ) .. ");\n"
@@ -57,7 +57,7 @@ HLSL.GetAssignment = function( assignment )
     end
 end
 
-HLSL.GenerateStructure = function( prefix, input_definition, function_name )
+function HLSL.GenerateStructure( prefix, input_definition, function_name )
 
     ShaderPrint( "struct " .. prefix .. "_" .. function_name .. "\n{\n" )
     
@@ -68,7 +68,7 @@ HLSL.GenerateStructure = function( prefix, input_definition, function_name )
     ShaderPrint( "\n};\n" )
 end
 
-HLSL.GenerateConstants = function( constants )
+function HLSL.GenerateConstants( constants )
 
     for constant, value in pairs( constants ) do
         ShaderPrint( value.type .. " " .. constant ..";\n" );
@@ -79,7 +79,7 @@ HLSL.SamplerFromTexture = {
     texture2D = "sampler2D"
 }
 
-HLSL.GenerateTextures = function( textures )
+function HLSL.GenerateTextures( textures )
 
     for texture, value in pairs( textures ) do
         ShaderPrint( value.type .. " " .. texture ..";\n" );
@@ -89,7 +89,7 @@ HLSL.GenerateTextures = function( textures )
     end
 end
 
-HLSL.GetConstructor = function( constructor )
+function HLSL.GetConstructor( constructor )
 
     local code = constructor.variable .. " = " .. constructor.constructor_type .. " ( "
     
@@ -107,7 +107,7 @@ HLSL.GetConstructor = function( constructor )
     return code;
 end
 
-HLSL.PrintFunctionPrologue = function( representation, function_name )
+function HLSL.PrintFunctionPrologue( representation, function_name )
     
     HLSL.GenerateConstants( representation.constant )
     HLSL.GenerateTextures( representation.texture )
@@ -119,11 +119,11 @@ HLSL.PrintFunctionPrologue = function( representation, function_name )
 
 end
 
-HLSL.PrintFunctionEpilogue = function( representation, function_name )
+function HLSL.PrintFunctionEpilogue( representation, function_name )
     ShaderPrint( 1, "return output;\n}\n\n" )
 end
 
-HLSL.PrintCode = function ( representation )
+function HLSL.PrintCode( representation )
     for i,v in ipairs( representation.code ) do
     
         if HLSL[ "Get" .. v.type ] == nil then
@@ -134,7 +134,7 @@ HLSL.PrintCode = function ( representation )
     end
 end
 
-HLSL.PrintTechnique = function( technique_name, vertex_shader_name, pixel_shader_name )
+function HLSL.PrintTechnique( technique_name, vertex_shader_name, pixel_shader_name )
     
     ShaderPrint( "technique " .. technique_name .. "\n{" )
     ShaderPrint( 1, "pass P0\n" )

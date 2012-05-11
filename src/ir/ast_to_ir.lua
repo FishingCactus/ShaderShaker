@@ -2,7 +2,7 @@
 
 Ir = Ir or {}
 
-Ir.CreateVariable = function( representation, variable_type )
+function Ir.CreateVariable( representation, variable_type )
     local variable_name = "temp" .. representation.variable_index
     representation.variable_index = representation.variable_index + 1
     
@@ -12,7 +12,7 @@ Ir.CreateVariable = function( representation, variable_type )
 
 end
 
-Ir.HandleOutput = function( node, representation )
+function Ir.HandleOutput( node, representation )
 
     for k,v in pairs( node.__variable ) do
         local variable = Ir.HandleNode( v, representation )
@@ -23,13 +23,13 @@ Ir.HandleOutput = function( node, representation )
 
 end
 
-Ir.HandleInput = function( node, representation )
+function Ir.HandleInput( node, representation )
 
     representation.input[ node.value ] = { semantic = node.semantic, type = node.type }
     return "input." .. node.value
 end
 
-Ir.HandleConstructor = function( node, representation )
+function Ir.HandleConstructor( node, representation )
 
     local variable_table = {}
     for i,v in ipairs( node.value ) do
@@ -46,12 +46,12 @@ Ir.HandleConstructor = function( node, representation )
     return output_variable_name
 end
 
-Ir.HandleConstant = function( node, representation )
+function Ir.HandleConstant( node, representation )
     representation.constant[ node.name ] = { type = node.type }
     return node.name
 end
 
-Ir.HandleSwizzle = function( node, representation )
+function Ir.HandleSwizzle( node, representation )
     local variable_name = Ir.CreateVariable( representation, node.type )
     local source_variable_name = Ir.HandleNode( node.arguments[ 1 ], representation )
     
@@ -62,7 +62,7 @@ Ir.HandleSwizzle = function( node, representation )
     return variable_name
 end
 
-Ir.HandleVariable = function( node, representation )
+function Ir.HandleVariable( node, representation )
     
     local value = rawget( node, "value" )
     local variable_name
@@ -80,13 +80,13 @@ Ir.HandleVariable = function( node, representation )
     return variable_name
 end
 
-Ir.HandleTexture = function( node, representation )
+function Ir.HandleTexture( node, representation )
 
     representation.texture[ node.name ] = { type = node.type }
     return { type = "Texture", name = node.name }
 end
 
-Ir.HandleFunction = function( node, representation )
+function Ir.HandleFunction( node, representation )
     local variable_name_table = {}
     for i,v in ipairs( node.arguments ) do
         variable_name_table[i] = Ir.HandleNode( v, representation )
@@ -97,7 +97,7 @@ Ir.HandleFunction = function( node, representation )
     return output_variable_name
 end
 
-Ir.HandleOperation = function( node, representation )
+function Ir.HandleOperation( node, representation )
     local variable_name_table = {}
     for i,v in ipairs( node.arguments ) do
         variable_name_table[i] = Ir.HandleNode( v, representation )
@@ -109,7 +109,7 @@ Ir.HandleOperation = function( node, representation )
     return output_variable_name
 end
 
-Ir.HandleNode = function( ast_node, representation )
+function Ir.HandleNode( ast_node, representation )
 
     if type( ast_node ) == "number" then
         local varname = Ir.CreateVariable( representation, "float" )
