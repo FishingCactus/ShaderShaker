@@ -17,7 +17,7 @@
 		language    "C++"
 		kind        "ConsoleApp"
 		flags       { "No64BitChecks", "ExtraWarnings", "StaticRuntime" }	
-		includedirs { "src/host/lua-5.2.0/src" }
+		includedirs { "src/host/lua-5.2.0/src", "contrib", "src/hlsl_parser" }
 
 		files 
 		{
