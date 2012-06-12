@@ -29,7 +29,7 @@ function SelectPrinter( filename, override_name )
         error( "Language should be specified when outputing to the console" )
     end
     
-    local extension = string.match( filename, "%w%.(%w)" )
+    local extension = string.match( filename, "%w+%.(%w+)" )
     
     if extension == nil then
         error( "Unable to extract file extension" );
