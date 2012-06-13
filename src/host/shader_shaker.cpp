@@ -8,6 +8,7 @@ extern "C"
 }
 
 #include <iostream>
+#include "HLSLConverter.h"
 
 // Embedded scripts ( found in scripts.cpp )
 extern const char* builtin_scripts[];
@@ -36,6 +37,9 @@ int main(int argc, const char** argv)
         lua_close( L );
         return -1;
     }
+    
+    lua_pushcfunction( L, &HLSLConverter::ConvertHLSLToSSL );
+    lua_setglobal( L, "ConvertHLSLToSSL" );
     
     result = load_builtin_scripts(L);
     result = result && load_shader_file( L, LocalInputFile );
@@ -142,10 +146,23 @@ void usage()
 
 bool load_shader_file(lua_State* L, const char * shader_file_name )
 {
-    if (luaL_dofile(L, shader_file_name))
+    lua_getglobal(L, "_shaker_shaker_load_shader_file");
+    lua_pushstring( L, shader_file_name );
+    
+    if (lua_pcall(L, 1, 1, 0) != 0)
     {
         std::cerr << lua_tostring(L, -1);
         return false;
+    }
+    else
+    {
+        if( lua_isstring( L, -1 ) && !lua_isnumber( L, -1 ) )
+        {
+            std::cerr << lua_tostring( L, -1 ) << std::endl;
+            return false;
+        }
+        
+        return true;
     }
 
     return true;

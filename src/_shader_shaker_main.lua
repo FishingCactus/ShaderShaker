@@ -20,3 +20,27 @@ function _shader_shaker_main(script_path, output_file, override_language)
     end
 
 end
+
+
+function _shaker_shaker_load_shader_file( filename )
+
+    local extension = string.match( filename, "%w+%.(%w+)" )
+    
+    ShaderPrint( filename .. " " .. extension .. "\n" )
+    
+    if extension == "lua" or extension == "ssl" then
+        dofile( filename )
+    elseif extension == "fx" then
+        converted_ssl = ConvertHLSLToSSL( filename )
+        local text_as_function = load( converted_ssl )
+        
+        if text_as_function == nil then
+            return "Fail to load converted code from " .. filename;
+        end
+    else
+        return "Unsupported file extension while trying to load " .. filename
+    end
+        
+    return 0
+
+end

@@ -19,7 +19,14 @@ options {
 @parser::includes
 {
    #include "HLSLLexer.hpp"
+   #include "HLSLParserListener.h"
    #include <iostream>
+}
+
+@parser::members
+{
+    HLSLParserListener
+        * Listener;
 }
 
 translation_unit
@@ -33,17 +40,17 @@ global_declaration
 	;
 	
 technique
-	:	'technique' ID LEFT_CURLY { std::cout << "technique\n{\n\tname=\"" << $ID.text << "\",\n"; } ( pass )* RIGHT_CURLY { std::cout << "}"; }
+	:	'technique' ID LEFT_CURLY { Listener->StartTechnique( $ID.text ); } ( pass )* RIGHT_CURLY { Listener->EndTechnique(); }
 	;
 
-pass 	:	'pass' ID LEFT_CURLY vertex_shader_definition pixel_shader_definition RIGHT_CURLY
+pass 	:	'pass' ID { Listener->StartPass( $ID.text ); } LEFT_CURLY vertex_shader_definition pixel_shader_definition RIGHT_CURLY { Listener->EndPass(); }
 	;
 	
 vertex_shader_definition
-	:	'VertexShader' '=' 'compile' 'vs_3_0' ID '(' ')' ';' { std::cout << "\tvs = " << $ID.text << "(),\n"; };
+	:	'VertexShader' '=' 'compile' 'vs_3_0' ID '(' ')' ';' { Listener->SetVertexShader( $ID.text ); };
         
 pixel_shader_definition
-	:     	'PixelShader' '=' 'compile' 'ps_3_0' ID '(' ')' ';'{ std::cout << "\tps = " << $ID.text << "(),\n"; };
+	:     	'PixelShader' '=' 'compile' 'ps_3_0' ID '(' ')' ';'{ Listener->SetPixelShader( $ID.text ); };
 
 type_definition
 	:	'struct' ID LEFT_CURLY field_declaration+ RIGHT_CURLY ';'
