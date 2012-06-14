@@ -12,12 +12,12 @@ function Ir.CreateVariable( representation, variable_type )
 
 end
 
-function Ir.HandleOutput( node, representation )
+function Ir.HandleStructure( node, representation )
 
     for k,v in pairs( node.__variable ) do
         local variable = Ir.HandleNode( v, representation )
         local definition = node.__definition[ k ]
-        representation.code[ #(representation.code) + 1 ]  = { type = "Assignment", variable = "output." .. k, value = variable }
+        representation.code[ #(representation.code) + 1 ]  = { type = "Assignment", variable = node.name .. "." .. k, value = variable }
         representation.output[ k ] = { semantic = definition.semantic, type = definition.type }
     end
 

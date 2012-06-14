@@ -66,6 +66,18 @@ public:
     // ~~
 
     void EndFunction();
+
+    // ~~
+
+    void ProcessReturnStatement(
+        const std::string & return_statement
+        );
+
+    // ~~
+
+    void Print( 
+        const std::string & text 
+        );
         
     // Accessors
         
@@ -96,6 +108,8 @@ private:
         TypeTable;
     std::shared_ptr<TypeDefinition>
         CurrentType;
+    bool
+        ItHasASimpleReturnValue;
     
 };
 

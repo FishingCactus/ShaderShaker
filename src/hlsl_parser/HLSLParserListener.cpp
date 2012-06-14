@@ -157,47 +157,78 @@ void HLSLParserListener::StartFunction(
         ShaderOutput << "EndInput()\n";
     }
 
-    if( semantic.empty() )
+    if( !semantic.empty() )
     {
-        std::map<std::string, std::shared_ptr<TypeDefinition> >::const_iterator
-            return_type;
+        ShaderOutput << "__output = DefineStructure( \"__output\"  )\n";
 
-        return_type = TypeTable.find( type );
+        ShaderOutput << "StructureAttribute( \"value\", \"" 
+            << type << "\", \"" 
+            << semantic << "\" )\n";
 
-        assert( return_type != TypeTable.end() );
-        
-        const TypeDefinition
-            & type_definition = *return_type->second;
+        ShaderOutput << "EndStructure()\n";
 
-        ShaderOutput << "DefineOutput()\n";
-
-        for( size_t field_index = 0; field_index < type_definition.FieldTable.size(); ++field_index )
-        {
-            ShaderOutput << "OutputAttribute( \"" 
-                << type_definition.FieldTable[ field_index ].Name << "\", \""
-                << type_definition.FieldTable[ field_index ].Type << "\", \"" 
-                << type_definition.FieldTable[ field_index ].Semantic << "\" )\n";
-        }
-
-        ShaderOutput << "EndOutput()\n";
+        ItHasASimpleReturnValue = true;
     }
     else
     {
-        ShaderOutput << "DefineOutput()\n";
-
-        ShaderOutput << "OutputAttribute( \"result\", " 
-                << type << "\", \"" 
-                << semantic << "\" )\n";
-
-        ShaderOutput << "EndOutput()\n";
+        ItHasASimpleReturnValue = false;
     }
 
 }
+
+/*
+std::map<std::string, std::shared_ptr<TypeDefinition> >::const_iterator
+return_type;
+
+return_type = TypeTable.find( type );
+
+assert( return_type != TypeTable.end() );
+
+const TypeDefinition
+& type_definition = *return_type->second;
+
+ShaderOutput << "DefineStructure( \"" <<  << "\" )\n";
+
+for( size_t field_index = 0; field_index < type_definition.FieldTable.size(); ++field_index )
+{
+ShaderOutput << "StructureAttribute( \"" 
+<< type_definition.FieldTable[ field_index ].Name << "\", \""
+<< type_definition.FieldTable[ field_index ].Type << "\", \"" 
+<< type_definition.FieldTable[ field_index ].Semantic << "\" )\n";
+}
+
+ShaderOutput << "EndStructure()\n";
+*/
 
 // ~~
 
 void HLSLParserListener::EndFunction()
 {
-
     ShaderOutput << "end\n";
+}
+
+// ~~
+
+void HLSLParserListener::ProcessReturnStatement(
+    const std::string & return_statement
+    )
+{
+    if( ItHasASimpleReturnValue )
+    {
+        ShaderOutput << "__output.value = " << return_statement << std::endl;
+        ShaderOutput << "return __output" << std::endl;
+    }
+    else
+    {
+        ShaderOutput << "return " << return_statement << std::endl;
+    }
+}
+
+// ~~
+
+void HLSLParserListener::Print( 
+    const std::string & text 
+    )
+{
+    ShaderOutput << text << "\n";
 }

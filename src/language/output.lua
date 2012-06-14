@@ -22,30 +22,37 @@ Language.OutputMetaType = {
 }
 
 
-function DefineOutput()
-    output = { __definition={}, __semantic = {}, __variable = {}, node = "Output" }
-    setmetatable( output, Language.OutputMetaType );
+function DefineStructure( name )
+    
+	__defined_structure = { __definition={}, __semantic = {}, __variable = {}, name = name, node = "Structure" }
+    setmetatable( __defined_structure, Language.OutputMetaType );
+
+	return __defined_structure
 end
 
-function OutputAttribute( name, type, semantic )
+function StructureAttribute( name, type, semantic )
 
-    if output.__definition[ name ] ~= nil then
-        error( "An entry named '" .. name .."' already exists in the output structure", 2 )
+    if __defined_structure.__definition[ name ] ~= nil then
+        error( "An entry named '" .. name .."' already exists in " .. __defined_structure.name, 2 )
     end
     
-    if output.__semantic[ semantic ] ~= nil then
-        error( "An entry already have the semantic '" .. semantic .. "' in the output structure", 2 )
+    if semantic and __defined_structure.__semantic[ semantic ] ~= nil then
+        error( "An entry already have the semantic '" .. semantic .. "' in " .. __defined_structure.name, 2 )
     end
     
     -- :TODO: Validate semantic and type value
     
     local output_variable = { type = type, value = "output." .. name, semantic = semantic }
-    output.__definition[ name ] = output_variable
-    output.__semantic[ semantic ] = output_variable
+    __defined_structure.__definition[ name ] = output_variable
+    
+	if semantic then 
+		__defined_structure.__semantic[ semantic ] = output_variable
+	end
 end
 
-function EndOutput()
+function EndStructure()
 
     -- :TODO: Validate structure
+	__defined_structure = nil
     
 end

@@ -15,11 +15,11 @@ function VertexShader()
 		InputAttribute( "Color", "float4", "COLOR0" );
 	EndInput()
 	
-	DefineOutput()
-		OutputAttribute( "Position", "float4", "POSITION" );
-		OutputAttribute( "TexCoord", "float2", "TEXCOORD0" );
-		OutputAttribute( "Color", "float4", "COLOR0" );
-	EndOutput()
+	local output = DefineStructure(  "output" )
+		StructureAttribute( "Position", "float4", "POSITION" );
+		StructureAttribute( "TexCoord", "float2", "TEXCOORD0" );
+		StructureAttribute( "Color", "float4", "COLOR0" );
+	EndStructure()
 	
 	b = float4( 0, 1, 2, 3 );
 	
@@ -38,9 +38,9 @@ function PixelShader()
 		InputAttribute( "Color", "float4", "COLOR0" );
 	EndInput()
 	
-	DefineOutput()
-		OutputAttribute( "Color", "float4", "COLOR0" );
-	EndOutput()
+	local output = DefineStructure( "output" )
+		StructureAttribute( "Color", "float4", "COLOR0" );
+	EndStructure()
 	
 	output.Color = input.Color * tex2D( input.TexCoord, DiffuseTexture ); 
 	return output;

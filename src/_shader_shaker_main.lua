@@ -34,6 +34,8 @@ function _shaker_shaker_load_shader_file( filename )
         
         if text_as_function == nil then
             return "Fail to load converted code from " .. filename;
+		else
+			text_as_function()
         end
     else
         return "Unsupported file extension while trying to load " .. filename

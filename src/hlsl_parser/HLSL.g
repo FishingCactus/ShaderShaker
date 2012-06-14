@@ -128,10 +128,10 @@ parameter_declaration returns [ Parameter parameter ]
 
 statement
 	:	variable_declaration
-	|	'return' exp ';'
+	|	'return' exp ';' { Listener->ProcessReturnStatement( $exp.text ); }
 	|	exp ';';
 	
-exp 	:
+exp	:
 	function_call
 	| variable ('=' exp)?
 	| constructor
