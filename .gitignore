@@ -1,4 +1,4 @@
-﻿# Compiled Object files
+# Compiled Object files
 *.slo
 *.lo
 *.o
@@ -19,6 +19,9 @@ bin/*
 *.xcodeproj
 *.xcworkspace
 src/host/scripts.cpp
+src/hlsl_parser/HLSLParser.*
+src/hlsl_parser/HLSLLexer.*
 *.sln
 *.vcxproj
 *.filters
+*.tokens
