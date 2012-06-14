@@ -66,9 +66,13 @@ type_definition
 	;
 	
 variable_declaration
-	:	type ID ';'
+	:	type variable_declaration_body ( ',' variable_declaration_body )* ';'
 	| 	texture_type ID ';' { Listener->Print( $texture_type.text + " \"" + $ID.text + "\"\n" ); }
 	|	sampler;
+	
+variable_declaration_body 
+	: ID ( '[' INT ']' )? ( '=' initializer_list ) ?
+	;
 	
 sampler	
 	:	sampler_type ID LEFT_CURLY sampler_parameter* RIGHT_CURLY ';'
@@ -129,18 +133,33 @@ parameter_declaration returns [ Parameter parameter ]
 statement
 	:	variable_declaration
 	|	'return' exp ';' { Listener->ProcessReturnStatement( $exp.text ); }
-	|	exp { Listener->Print( $exp.text ); }';';
+	|	exp { Listener->Print( $exp.text ); }';'
+	| 	variable ('=' exp)? { Listener->Print( $statement.text ); }
+	;
 	
 exp	:
-	function_call
-	| variable ('=' exp)?
+	right_value ( operator_name right_value )?
+	;
+	
+right_value : 
 	| constructor
+	| variable
+	//| function_call
 	| number
+	;
+	
+operator_name
+	:
+	| '+'
+	| '-'
+	| '*'
+	| '/'
 	;
 	
 variable 
 	:	ID '.' variable
-	|	ID;
+	|	ID
+	;
 	
 function_call
 	:	ID '(' ( exp ( ',' exp )* )? ')'
@@ -148,6 +167,11 @@ function_call
 	
 constructor 
 	:	number_type '(' exp  ( ',' exp )* ')' 
+	;
+	
+initializer_list 
+	:
+	'{' number ( ',' number )* '}'
 	;
 	
 ID  :	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
@@ -162,9 +186,9 @@ INT :	'0'..'9'+
     ;
 
 FLOAT
-    :   ('0'..'9')+ '.' ('0'..'9')* EXPONENT?
-    |   '.' ('0'..'9')+ EXPONENT?
-    |   ('0'..'9')+ EXPONENT
+    :   ('0'..'9')+ '.' ('0'..'9')* EXPONENT? 'f'?
+    |   '.' ('0'..'9')+ EXPONENT? 'f'?
+    |   ('0'..'9')+ EXPONENT 'f'?
     ;
 
 COMMENT
