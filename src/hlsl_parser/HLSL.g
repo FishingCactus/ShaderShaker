@@ -50,10 +50,10 @@ vertex_shader_definition
 	:	'VertexShader' '=' 'compile' 'vs_3_0' ID '(' ')' ';' { Listener->SetVertexShader( $ID.text ); };
         
 pixel_shader_definition
-	:     	'PixelShader' '=' 'compile' 'ps_3_0' ID '(' ')' ';'{ Listener->SetPixelShader( $ID.text ); };
+	:    'PixelShader' '=' 'compile' 'ps_3_0' ID '(' ')' ';'{ Listener->SetPixelShader( $ID.text ); };
 
 type_definition
-	:	'struct' ID LEFT_CURLY field_declaration+ RIGHT_CURLY ';'
+	:	'struct' ID LEFT_CURLY { Listener->StartTypeDefinition( $ID.text ); } field_declaration+ RIGHT_CURLY ';' { Listener->EndTypeDefinition(); }
 	;
 	
 variable_declaration
@@ -91,7 +91,7 @@ type	:	number_type
 	;
 	
 field_declaration
-	: 	type ID ':' semantic ';'
+	: 	type ID ':' semantic ';' { Listener->AddField( $type.text, $ID.text, $semantic.text ); }
 	;
 	
 semantic 

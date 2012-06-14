@@ -26,8 +26,6 @@ function _shaker_shaker_load_shader_file( filename )
 
     local extension = string.match( filename, "%w+%.(%w+)" )
     
-    ShaderPrint( filename .. " " .. extension .. "\n" )
-    
     if extension == "lua" or extension == "ssl" then
         dofile( filename )
     elseif extension == "fx" then

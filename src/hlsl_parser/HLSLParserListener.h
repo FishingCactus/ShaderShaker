@@ -3,6 +3,8 @@
 
 #include <string>
 #include <sstream>
+#include <vector>
+#include <map>
 
 class HLSLParserListener
 {
@@ -31,6 +33,25 @@ public:
     void SetPixelShader(
         const std::string& vertex_shader_name
         );
+
+
+    // Types
+
+    void StartTypeDefinition(
+        const std::string & type_name
+        );
+
+    // ~~
+
+    void EndTypeDefinition();
+
+    // ~~
+
+    void AddField(
+        const std::string & type,
+        const std::string & name,
+        const std::string & semantic
+        );
         
     // Accessors
         
@@ -41,8 +62,26 @@ public:
         
 private:
 
+    struct FieldDefinition
+    {
+        std::string 
+            Type,
+            Name,
+            Semantic;
+    };
+
+    struct TypeDefinition
+    {
+        std::vector< FieldDefinition >
+            FieldTable;
+    };
+
     std::ostringstream
         ShaderOutput;
+    std::map<std::string, std::shared_ptr<TypeDefinition> >
+        TypeTable;
+    std::shared_ptr<TypeDefinition>
+        CurrentType;
     
 };
 
