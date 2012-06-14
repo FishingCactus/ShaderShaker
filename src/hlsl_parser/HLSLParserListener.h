@@ -5,6 +5,7 @@
 #include <sstream>
 #include <vector>
 #include <map>
+struct Parameter;
 
 class HLSLParserListener
 {
@@ -52,6 +53,19 @@ public:
         const std::string & name,
         const std::string & semantic
         );
+
+    // Function
+
+    void StartFunction(
+        const std::string & type, 
+        const std::string & name, 
+        const std::vector<Parameter> & parameter_table,
+        const std::string & semantic 
+        );
+
+    // ~~
+
+    void EndFunction();
         
     // Accessors
         

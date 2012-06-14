@@ -18,9 +18,18 @@ options {
 
 @parser::includes
 {
-   #include "HLSLLexer.hpp"
-   #include "HLSLParserListener.h"
-   #include <iostream>
+    #include "HLSLLexer.hpp"
+    #include "HLSLParserListener.h"
+    #include <iostream>
+	#include <string>
+   
+    struct Parameter
+    {
+		std::string
+			Type,
+			Name,
+			Semantic;
+	};
 }
 
 @parser::members
@@ -101,10 +110,20 @@ semantic
 	;
 	
 function 
-	:	type ID '(' ( parameter_declaration ( ',' parameter_declaration )* )? ')' ( ':' semantic )? '{' statement* '}';
+		@init{ std::vector<Parameter> parameter_table; }
+	:
+		type ID '(' 
+			( first = parameter_declaration { parameter_table.push_back( $first.parameter ); }
+			( ',' other = parameter_declaration { parameter_table.push_back( $other.parameter ); } )* )? 
+			')' ( ':' semantic )? '{' 
+			{ Listener->StartFunction( $type.text, $ID.text, parameter_table, $semantic.text ); }
+			statement* 
+			
+			{ Listener->EndFunction(); }
+			'}';
 	
-parameter_declaration
-	:	type ID ( ':' semantic )?
+parameter_declaration returns [ Parameter parameter ]
+	:	type ID {parameter.Type = $type.text; parameter.Name = $ID.text;} ( ':' semantic { parameter.Semantic = $semantic.text; } )?
 	;
 
 statement
