@@ -133,33 +133,46 @@ parameter_declaration returns [ Parameter parameter ]
 statement
 	:	variable_declaration
 	|	'return' exp ';' { Listener->ProcessReturnStatement( $exp.text ); }
-	|	exp { Listener->Print( $exp.text ); }';'
-	| 	variable ('=' exp)? { Listener->Print( $statement.text ); }
+	| 	variable assignment_operator_name exp { Listener->Print( $statement.text ); } ';'
+	|	exp { Listener->Print( $exp.text ); } ';'
 	;
 	
-exp	:
-	right_value ( operator_name right_value )?
+exp
+    :
+	right_value ( operator_name right_value )*
 	;
 	
 right_value : 
-	| constructor
+	constructor
+	| function_call
 	| variable
-	//| function_call
 	| number
 	;
 	
+assignment_operator_name
+    :
+    '='
+    | '+='
+    | '-='
+    | '*='
+    | '/='
+    ;
+    	
 operator_name
 	:
-	| '+'
+	'+'
 	| '-'
 	| '*'
 	| '/'
 	;
 	
 variable 
-	:	ID '.' variable
-	|	ID
+	:	variable_fragment ( '.' variable_fragment )*
 	;
+
+variable_fragment
+    :   ID ( '[' INT ']' )?
+    ;
 	
 function_call
 	:	ID '(' ( exp ( ',' exp )* )? ')'
