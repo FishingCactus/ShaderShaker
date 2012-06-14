@@ -67,7 +67,7 @@ type_definition
 	
 variable_declaration
 	:	type ID ';'
-	| 	texture_type ID ';' { std::cout << $texture_type.text << " \"" << $ID.text << "\";" << std::endl; }
+	| 	texture_type ID ';' { Listener->Print( $texture_type.text + " \"" + $ID.text + "\"\n" ); }
 	|	sampler;
 	
 sampler	
@@ -129,7 +129,7 @@ parameter_declaration returns [ Parameter parameter ]
 statement
 	:	variable_declaration
 	|	'return' exp ';' { Listener->ProcessReturnStatement( $exp.text ); }
-	|	exp ';';
+	|	exp { Listener->Print( $exp.text ); }';';
 	
 exp	:
 	function_call
