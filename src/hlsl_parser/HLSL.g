@@ -198,10 +198,14 @@ number
 INT :	'0'..'9'+
     ;
 
-FLOAT
-    :   ('0'..'9')+ '.' ('0'..'9')* EXPONENT? 'f'?
-    |   '.' ('0'..'9')+ EXPONENT? 'f'?
-    |   ('0'..'9')+ EXPONENT 'f'?
+FLOAT_NUMBER
+    :   ('0'..'9')+ '.' ('0'..'9')* EXPONENT? 
+    |   '.' ('0'..'9')+ EXPONENT?
+    |   ('0'..'9')+ EXPONENT
+    ;
+    
+FLOAT 
+    : FLOAT_NUMBER 'f'?  { setText( $FLOAT_NUMBER.text ); }
     ;
 
 COMMENT
