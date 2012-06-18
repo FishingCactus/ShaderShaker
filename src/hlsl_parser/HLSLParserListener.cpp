@@ -2,7 +2,30 @@
 #include "HLSLParser.hpp"
 
 
-
+HLSLParserListener::HLSLParserListener()
+{
+    SimpleTypeTable.insert( "float" );
+    SimpleTypeTable.insert( "float2" );
+    SimpleTypeTable.insert( "float3" );
+    SimpleTypeTable.insert( "float4" );
+    SimpleTypeTable.insert( "float1x1" );
+    SimpleTypeTable.insert( "float1x2" );
+    SimpleTypeTable.insert( "float1x3" );
+    SimpleTypeTable.insert( "float1x4" );
+    SimpleTypeTable.insert( "float2x1" );
+    SimpleTypeTable.insert( "float2x2" );
+    SimpleTypeTable.insert( "float2x3" );
+    SimpleTypeTable.insert( "float2x4" );
+    SimpleTypeTable.insert( "float3x1" );
+    SimpleTypeTable.insert( "float3x2" );
+    SimpleTypeTable.insert( "float3x3" );
+    SimpleTypeTable.insert( "float3x4" );
+    SimpleTypeTable.insert( "float4x1" );
+    SimpleTypeTable.insert( "float4x2" );
+    SimpleTypeTable.insert( "float4x3" );
+    SimpleTypeTable.insert( "float4x4" );
+    SimpleTypeTable.insert( "int" );
+}
 
 void HLSLParserListener::StartTechnique(
     const std::string & technique
@@ -47,7 +70,7 @@ void HLSLParserListener::StartTypeDefinition(
     const std::string & type_name
     )
 {
-    CurrentType = std::shared_ptr<TypeDefinition>( new TypeDefinition );
+    CurrentType = new TypeDefinition;
 
     TypeTable[ type_name ] = CurrentType;
 }
@@ -56,7 +79,7 @@ void HLSLParserListener::StartTypeDefinition(
 
 void HLSLParserListener::EndTypeDefinition()
 {
-    CurrentType.reset();
+    CurrentType = 0;
 }
 
 // ~~
@@ -104,7 +127,7 @@ void HLSLParserListener::StartFunction(
     {
         if( parameter->Semantic.empty() )
         {
-            std::map<std::string, std::shared_ptr<TypeDefinition> >::const_iterator
+            std::map<std::string, TypeDefinition* >::const_iterator
                 type;
 
             type = TypeTable.find( parameter->Type );
@@ -176,30 +199,6 @@ void HLSLParserListener::StartFunction(
 
 }
 
-/*
-std::map<std::string, std::shared_ptr<TypeDefinition> >::const_iterator
-return_type;
-
-return_type = TypeTable.find( type );
-
-assert( return_type != TypeTable.end() );
-
-const TypeDefinition
-& type_definition = *return_type->second;
-
-ShaderOutput << "DefineStructure( \"" <<  << "\" )\n";
-
-for( size_t field_index = 0; field_index < type_definition.FieldTable.size(); ++field_index )
-{
-ShaderOutput << "StructureAttribute( \"" 
-<< type_definition.FieldTable[ field_index ].Name << "\", \""
-<< type_definition.FieldTable[ field_index ].Type << "\", \"" 
-<< type_definition.FieldTable[ field_index ].Semantic << "\" )\n";
-}
-
-ShaderOutput << "EndStructure()\n";
-*/
-
 // ~~
 
 void HLSLParserListener::EndFunction()
@@ -226,9 +225,59 @@ void HLSLParserListener::ProcessReturnStatement(
 
 // ~~
 
+void HLSLParserListener::DeclareVariable(
+    const std::string & type,
+    const std::string & name,
+    const int array_item_count, // 0 means not an array
+    const std::string & initializer
+    )
+{
+    if( IsSimpleType( type ) )
+    {
+        ShaderOutput << "local " << name << " = " << type << "( " << initializer << " )" << std::endl;
+    }
+    else
+    {
+        std::map<std::string, TypeDefinition* >::const_iterator
+            return_type;
+
+        return_type = TypeTable.find( type );
+
+        assert( return_type != TypeTable.end() );
+
+        const TypeDefinition
+            & type_definition = *return_type->second;
+
+        ShaderOutput << "local " << name << " = " << "DefineStructure( \"" << name << "\" )\n";
+
+        for( size_t field_index = 0; field_index < type_definition.FieldTable.size(); ++field_index )
+        {
+            ShaderOutput << "StructureAttribute( \"" 
+                << type_definition.FieldTable[ field_index ].Name << "\", \""
+                << type_definition.FieldTable[ field_index ].Type << "\", \"" 
+                << type_definition.FieldTable[ field_index ].Semantic << "\" )\n";
+        }
+
+        ShaderOutput << "EndStructure()\n";
+    }
+}
+
+// ~~
+
 void HLSLParserListener::Print( 
     const std::string & text 
     )
 {
     ShaderOutput << text << "\n";
 }
+
+// ~~
+
+bool HLSLParserListener::IsSimpleType(
+    const std::string & type
+    ) const
+{
+    return SimpleTypeTable.find( type ) != SimpleTypeTable.end();
+}
+
+

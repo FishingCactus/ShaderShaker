@@ -13,7 +13,7 @@ int HLSLConverter::ConvertHLSLToSSL(
     converter.ConvertToShaderShakerLanguage( lua_tostring( lua_state, -1 ) );
     
     lua_pushstring( lua_state, converter.GetConvertedCode().c_str() );
-    OutputDebugString( converter.GetConvertedCode().c_str() );
+    printf( "%s", converter.GetConvertedCode().c_str() );
     
     return 1;   
 }

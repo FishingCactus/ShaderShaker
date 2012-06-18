@@ -7,13 +7,26 @@ options {
 
 @lexer::traits 
 {
+    #include <sstream>
 
-     class HLSLLexer; class HLSLParser;
+    class HLSLLexer; class HLSLParser;
 
-     typedef antlr3::Traits< HLSLLexer, HLSLParser > HLSLLexerTraits;
+    class HLSLLexerTraits : public antlr3::Traits< HLSLLexer, HLSLParser > 
+    {
+        public:
+                                               
+        static int ConvertToInt32( const std::string & type )
+        {
+            int 
+                return_value;
+        
+            std::istringstream( type ) >> return_value;
 
-     typedef HLSLLexerTraits HLSLParserTraits;
+            return return_value;
+        }
+    };
 
+    typedef HLSLLexerTraits HLSLParserTraits;
 }
 
 @parser::includes
@@ -66,12 +79,13 @@ type_definition
 	;
 	
 variable_declaration
-	:	type variable_declaration_body ( ',' variable_declaration_body )* ';'
+	:	type variable_declaration_body[ $type.text ] ( ',' variable_declaration_body[ $type.text ] )* ';'
 	| 	texture_type ID ';' { Listener->Print( $texture_type.text + " \"" + $ID.text + "\"\n" ); }
 	|	sampler;
 	
-variable_declaration_body 
-	: ID ( '[' INT ']' )? ( '=' initializer_list ) ?
+variable_declaration_body [ StringType type_name ] @init{ int array_count = 0; }
+	: ID ( '[' INT ']' { array_count = $INT.int; }  )? ( '=' initializer_list ) ? 
+	{ Listener->DeclareVariable( type_name, $ID.text, array_count, $initializer_list.text ); }
 	;
 	
 sampler	

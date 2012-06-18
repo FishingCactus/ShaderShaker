@@ -5,11 +5,14 @@
 #include <sstream>
 #include <vector>
 #include <map>
+#include <set>
 struct Parameter;
 
 class HLSLParserListener
 {
 public:
+
+    HLSLParserListener();
     
     // Techique
     
@@ -72,6 +75,15 @@ public:
     void ProcessReturnStatement(
         const std::string & return_statement
         );
+        
+    // ~~
+
+    void DeclareVariable(
+        const std::string & type,
+        const std::string & name,
+        const int array_item_count, // 0 means not an array
+        const std::string & initializer
+        );
 
     // ~~
 
@@ -101,13 +113,19 @@ private:
         std::vector< FieldDefinition >
             FieldTable;
     };
+    
+    bool IsSimpleType(
+        const std::string & type
+        ) const;
 
     std::ostringstream
         ShaderOutput;
-    std::map<std::string, std::shared_ptr<TypeDefinition> >
+    std::map<std::string, TypeDefinition* >
         TypeTable;
-    std::shared_ptr<TypeDefinition>
-        CurrentType;
+    std::set<std::string>
+        SimpleTypeTable;
+    TypeDefinition
+        * CurrentType;
     bool
         ItHasASimpleReturnValue;
     
