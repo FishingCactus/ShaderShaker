@@ -232,7 +232,7 @@ function Language.DefineMatrixType( type, row, column )
     
     _G[ name ] = 
         function( ... )
-            if #{...} ~= count then
+            if #{...} ~= count and #{...} ~= 0 then
                 error( "Wrong argument count, expect " .. ( row * column ) .. " got " .. #{...}, 2 )
             end
             
@@ -253,15 +253,15 @@ Language.DefineVectorType( "float", 2 )
 Language.DefineVectorType( "float", 3 )
 Language.DefineVectorType( "float", 4 )
 
-Language.DefineVectorType( "float", 2, 2 )
-Language.DefineVectorType( "float", 2, 3 )
-Language.DefineVectorType( "float", 2, 4 )
-Language.DefineVectorType( "float", 3, 2 )
-Language.DefineVectorType( "float", 3, 3 )
-Language.DefineVectorType( "float", 3, 4 )
-Language.DefineVectorType( "float", 4, 2 )
-Language.DefineVectorType( "float", 4, 3 )
-Language.DefineVectorType( "float", 4, 4 )
+Language.DefineMatrixType( "float", 2, 2 )
+Language.DefineMatrixType( "float", 2, 3 )
+Language.DefineMatrixType( "float", 2, 4 )
+Language.DefineMatrixType( "float", 3, 2 )
+Language.DefineMatrixType( "float", 3, 3 )
+Language.DefineMatrixType( "float", 3, 4 )
+Language.DefineMatrixType( "float", 4, 2 )
+Language.DefineMatrixType( "float", 4, 3 )
+Language.DefineMatrixType( "float", 4, 4 )
 
 function Language.AttachVectorMetatable( variable )
     
