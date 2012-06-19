@@ -155,7 +155,14 @@ parameter_declaration returns [ Parameter parameter ]
 statement
 	:	variable_declaration
 	|	'return' exp ';' { Listener->ProcessReturnStatement( $exp.text ); }
-	| 	variable assignment_operator_name exp { Listener->Print( $statement.text ); } ';'
+	| 	variable '=' exp { Listener->Print( $statement.text ); } ';'
+	| 	variable assignment_operator_name exp 
+	    { Listener->Print( 
+	        $variable.text + " = " 
+	        + $variable.text 
+	        + $assignment_operator_name.operator_name 
+	        + $exp.text );  
+	    } ';'
 	|	exp { Listener->Print( $exp.text ); } ';'
 	;
 	
@@ -171,13 +178,12 @@ right_value :
 	| number
 	;
 	
-assignment_operator_name
+assignment_operator_name returns [HLSLParser::StringType operator_name]
     :
-    '='
-    | '+='
-    | '-='
-    | '*='
-    | '/='
+    '+=' { operator_name = "+"; }
+    | '-=' { operator_name = "-"; }
+    | '*=' { operator_name = "*"; }
+    | '/=' { operator_name = "/"; }
     ;
     	
 operator_name
