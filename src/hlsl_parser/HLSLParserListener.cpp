@@ -163,14 +163,14 @@ void HLSLParserListener::StartFunction(
         }
         else
         {
-            input_table << "InputAttribute( \"" << parameter->Name << "\", \"" << parameter->Type << "\", \"" << parameter->Semantic << "\" )\n";
+            input_table << "local " << parameter->Name <<  " = InputAttribute( \"" << parameter->Name << "\", \"" << parameter->Type << "\", \"" << parameter->Semantic << "\" )\n";
             it_has_input_definition = true;
         }
     }
 
 
     ShaderOutput << "function " << name << "(";
-    
+    ShaderOutput << parameter_list.str();
     ShaderOutput << ")\n";
 
     if( it_has_input_definition )
@@ -276,10 +276,20 @@ void HLSLParserListener::DeclareSampler(
         
     for( size_t parameter_index = 0; parameter_index < parameter_table.size(); ++parameter_index )
     {
-        ShaderOutput << "\t" 
-            << parameter_table[ parameter_index ].Name << " = \"" 
-            << parameter_table[ parameter_index ].Value << "\"," 
-            << std::endl;
+        if( parameter_table[ parameter_index ].Name == "texture" )
+        {
+            ShaderOutput << "\t" 
+                << parameter_table[ parameter_index ].Name << " = " 
+                << parameter_table[ parameter_index ].Value << "," 
+                << std::endl;
+        }
+        else
+        {
+            ShaderOutput << "\t" 
+                << parameter_table[ parameter_index ].Name << " = \"" 
+                << parameter_table[ parameter_index ].Value << "\"," 
+                << std::endl;
+        }
     }
     
     ShaderOutput << "}" << std::endl;

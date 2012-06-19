@@ -1,8 +1,8 @@
 
-function tex2D( texcoord, texture )
+function tex2D( texture, texcoord )
     
-    if texture.type ~= "texture2D" then 
-        error( "Wrong texture, expect texture2D got " .. texture.type, 2 )
+    if texture.type ~= "texture2D" and texture.type ~= "sampler" then 
+        error( "Wrong texture, expect texture2D or sampler got " .. texture.type, 2 )
     end
     
     if texcoord.type ~= "float2" then

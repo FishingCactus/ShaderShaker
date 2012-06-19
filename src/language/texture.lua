@@ -10,5 +10,5 @@ end
 
 function Sampler( parameter )
 
-    _G[ parameter.name ] = { type = "sampler", node = "Sampler", name = parameter.name, parameters = parameter }
+    _G[ parameter.name ] = { type = "sampler", node = "Sampler", name = parameter.name, texture = parameter.texture, parameters = parameter }
 end

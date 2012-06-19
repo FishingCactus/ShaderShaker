@@ -19,6 +19,8 @@ function InputAttribute( name, type, semantic )
     input[ name ] = input_variable
     input.__semantic[ semantic ] = input_variable
     Language.AttachVectorMetatable( input_variable )
+    
+    return input_variable;
 end
 
 function EndInput()

@@ -42,7 +42,7 @@ function PixelShader()
 		StructureAttribute( "Color", "float4", "COLOR0" );
 	EndStructure()
 	
-	output.Color = input.Color * tex2D( input.TexCoord, DiffuseTexture ); 
+	output.Color = input.Color * tex2D( DiffuseTexture, input.TexCoord ); 
 	return output;
 end
 

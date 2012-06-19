@@ -86,6 +86,14 @@ function Ir.HandleTexture( node, representation )
     return { type = "Texture", name = node.name }
 end
 
+function Ir.HandleSampler( node, representation )
+
+    representation.sampler[ node.name ] = { type = node.type, texture = node.texture }
+    
+    Ir.HandleNode( node.texture, representation );
+    return { type = "Sampler", name = node.name }
+end
+
 function Ir.HandleFunction( node, representation )
     local variable_name_table = {}
     for i,v in ipairs( node.arguments ) do
@@ -135,7 +143,7 @@ end
 
 function AstToIR( ast )
 
-    local representation = { code={}, input={}, output={}, constant={}, texture={}, variable={}, variable_index = 0 }
+    local representation = { code={}, input={}, output={}, constant={}, texture={}, sampler={}, variable={}, variable_index = 0 }
 
     Ir.HandleNode( ast, representation )
     
