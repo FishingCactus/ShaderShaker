@@ -35,23 +35,30 @@ end
 local GetVectorSize = Language.GetVectorSize
 
 function Language.IsValidMultiplication( a, b )
+    
     if a == b then 
         return true
     end
     
-    if IsMatrix( a ) then
+    if IsVector( b ) then
         local row, column = GetMatrixSize( a )
         local vector_size = GetVectorSize( b )
         
         return row == vector_size;
-    else
-        assert( IsMatrix( b ) )
+    elseif IsVector( a ) then
         
         local row, column = GetMatrixSize( b )
         local vector_size = GetVectorSize( a )
         
         return column == vector_size;
+    else
         
+        assert( IsMatrix( a ) and IsMatrix( b ) )
+        
+        local rowa, columna = GetMatrixSize( a.type )
+        local rowb, columnb = GetMatrixSize( b.type )
+        
+        return columna == rowb
     end
 end
 
@@ -72,10 +79,31 @@ function Language.MultiplyVectorMatrix( a, b )
         local row, column = GetMatrixSize( b.type )
         local vector_size = GetVectorSize( a.type ) 
         
-         result.type = "float" .. row
+        result.type = "float" .. row
     end
     
     Language.AttachVectorMetatable( result )
+    return result;
+end
+
+local MultiplyVectorMatrix = Language.MultiplyVectorMatrix
+
+function Language.MultiplyMatrixMatrix( a, b )
+
+    assert( IsMatrix( a.type ) and IsMatrix( b.type ) )
+    
+    local result = { node="Operation", operation="mul", arguments={a,b}  }
+    
+    local rowa, columna = GetMatrixSize( a.type )
+    local rowb, columnb = GetMatrixSize( b.type )
+        
+    if columna ~= rowb then
+        error( "Invalid matrix product", 2 )
+    end
+    
+    result.type = "float" .. rowa .. "x" .. columnb
+    
+    Language.AttachMatrixMetatable( result )
     return result;
 end
 
@@ -181,6 +209,46 @@ Language.MatrixMetatable = {
     end
     
 }
+
+function mul( a, b )
+
+    local result
+    
+    result = { arguments={a, b} }
+    
+    if IsNumber( a ) then
+        result.type = b.type
+        
+        if IsVector( b ) then
+            AttachVectorMetatable( result )
+        else
+            AttachMatrixMetatable( result )
+        end
+    elseif IsNumber( b ) then
+        result.type = a.type
+        
+        if IsVector( a.type ) then
+            AttachVectorMetatable( result )
+        else
+            AttachMatrixMetatable( result )
+        end
+    else
+        if not IsValidMultiplication( a.type, b.type ) then
+            error( "Mismatch in size, multiplication parameters don't match", 2 );
+        end
+        
+        if IsVector( a.type ) or IsVector( b.type ) then
+            result = MultiplyVectorMatrix( a, b )
+        else
+            result = MultiplyMatrixMatrix( a, b )
+        end
+    end
+    
+    result.node = "Function"
+    result.name = "mul"
+    
+    return result
+end
 
 function Language.DefineVectorType( type, count )
 

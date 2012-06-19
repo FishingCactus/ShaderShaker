@@ -9,9 +9,9 @@ function tex2D( texture, texcoord )
         error( "Wrong coordinate type, expect float2 got " .. texcoord.type, 2 )
     end
     
-    local result = { type = "float4", node="Function", name="tex2D", arguments={texcoord, texture} };
+    local result = { type = "float4", node="Function", name="tex2D", arguments={texcoord, texture} }
     
-    Language.AttachVectorMetatable( result );
+    Language.AttachVectorMetatable( result )
     
     return result;
 end
@@ -26,11 +26,9 @@ function lerp( a, b, factor )
         error( "Wrong factor type, expect float got " .. factor.type, 2 )
     end
     
-    local result = { type = a.type, node="Function", name="lerp", arguments={a, b, factor} };
+    local result = { type = a.type, node="Function", name="lerp", arguments={a, b, factor} }
     
-    Language.AttachVectorMetatable( result );
+    Language.AttachVectorMetatable( result )
     
-    return result;
-
-    
+    return result
 end
