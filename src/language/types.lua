@@ -207,7 +207,7 @@ function Language.DefineVectorType( type, count )
                 end
             end
             
-            if parameter_count ~= count then
+            if parameter_count ~= count and parameter_count ~= 0 then
                 error( "Wrong argument count, expect " .. count .. " got " .. parameter_count, 2 )
             end
             
@@ -253,6 +253,11 @@ Language.DefineVectorType( "float", 2 )
 Language.DefineVectorType( "float", 3 )
 Language.DefineVectorType( "float", 4 )
 
+Language.DefineVectorType( "int", 1 )
+Language.DefineVectorType( "int", 2 )
+Language.DefineVectorType( "int", 3 )
+Language.DefineVectorType( "int", 4 )
+
 Language.DefineMatrixType( "float", 2, 2 )
 Language.DefineMatrixType( "float", 2, 3 )
 Language.DefineMatrixType( "float", 2, 4 )
@@ -265,7 +270,16 @@ Language.DefineMatrixType( "float", 4, 4 )
 
 function Language.AttachVectorMetatable( variable )
     
-    assert( variable.type == "float" or variable.type == "float2" or variable.type == "float3" or variable.type == "float4" );
+    assert( 
+        variable.type == "float" 
+        or variable.type == "float2" 
+        or variable.type == "float3" 
+        or variable.type == "float4"
+        or variable.type == "int" 
+        or variable.type == "int2" 
+        or variable.type == "int3" 
+        or variable.type == "int4"
+        );
     
     variable.node = variable.node or "Variable"
     setmetatable( variable, Language.VectorMetatable );
