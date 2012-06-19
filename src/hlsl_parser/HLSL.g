@@ -43,6 +43,13 @@ options {
 			Name,
 			Semantic;
 	};
+	
+	struct SamplerParameter
+	{
+	    std::string
+	        Name,
+	        Value;
+	};
 }
 
 @parser::members
@@ -88,17 +95,18 @@ variable_declaration_body [ StringType type_name ] @init{ int array_count = 0; }
 	{ Listener->DeclareVariable( type_name, $ID.text, array_count, $initializer_list.text ); }
 	;
 	
-sampler	
-	:	sampler_type ID LEFT_CURLY sampler_parameter* RIGHT_CURLY ';'
+sampler	@init{ std::vector<SamplerParameter> parameter_table; }
+	:	sampler_type ID LEFT_CURLY ( sampler_parameter {parameter_table.push_back( $sampler_parameter.parameter ); } )* RIGHT_CURLY ';' 
+	{ Listener->DeclareSampler( $sampler_type.text, $ID.text, parameter_table ); }
 	;
 	
 sampler_type 
 	:	'sampler2D'
 	;
 	
-sampler_parameter
-	:	'Texture' '=' '<' ID '>' ';'
-	|	ID '=' ID ';'
+sampler_parameter returns [ SamplerParameter parameter ]
+	:	'Texture' '=' '<' ID '>' ';' { parameter.Name = "texture"; parameter.Value = $ID.text; }
+	|	name=ID '=' value=ID ';' { parameter.Name = $name.text; parameter.Value = $value.text; }
 	; 
 number_type	
 	:	'float'

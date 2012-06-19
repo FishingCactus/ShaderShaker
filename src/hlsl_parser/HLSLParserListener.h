@@ -7,6 +7,7 @@
 #include <map>
 #include <set>
 struct Parameter;
+struct SamplerParameter;
 
 class HLSLParserListener
 {
@@ -83,6 +84,14 @@ public:
         const std::string & name,
         const int array_item_count, // 0 means not an array
         const std::string & initializer
+        );
+        
+    // ~~
+        
+    void DeclareSampler(
+        const std::string & type,
+        const std::string & name,
+        const std::vector<SamplerParameter> & parameter
         );
 
     // ~~

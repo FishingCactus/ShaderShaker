@@ -263,6 +263,29 @@ void HLSLParserListener::DeclareVariable(
 }
 
 // ~~
+        
+void HLSLParserListener::DeclareSampler(
+    const std::string & type,
+    const std::string & name,
+    const std::vector<SamplerParameter> & parameter_table
+    )
+{
+    ShaderOutput << "Sampler{" << std::endl
+        << "\tname = \"" << name << "\"," << std::endl
+        << "\ttype = \"" << type << "\"," << std::endl;
+        
+    for( size_t parameter_index = 0; parameter_index < parameter_table.size(); ++parameter_index )
+    {
+        ShaderOutput << "\t" 
+            << parameter_table[ parameter_index ].Name << " = \"" 
+            << parameter_table[ parameter_index ].Value << "\"," 
+            << std::endl;
+    }
+    
+    ShaderOutput << "}" << std::endl;
+}
+
+// ~~
 
 void HLSLParserListener::Print( 
     const std::string & text 
