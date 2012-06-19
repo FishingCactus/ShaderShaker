@@ -27,6 +27,7 @@ options {
     };
 
     typedef HLSLLexerTraits HLSLParserTraits;
+    using std::string;
 }
 
 @parser::includes
@@ -92,7 +93,7 @@ variable_declaration
 	
 variable_declaration_body [ StringType type_name ] @init{ int array_count = 0; }
 	: ID ( '[' INT ']' { array_count = $INT.int; }  )? ( '=' initializer_list ) ? 
-	{ Listener->DeclareVariable( type_name, $ID.text, array_count, $initializer_list.text ); }
+	{ Listener->DeclareVariable( type_name, $ID.text, array_count, $initializer_list.list ); }
 	;
 	
 sampler	@init{ std::vector<SamplerParameter> parameter_table; }
@@ -178,7 +179,7 @@ right_value :
 	| number
 	;
 	
-assignment_operator_name returns [HLSLParser::StringType operator_name]
+assignment_operator_name returns [string operator_name]
     :
     '+=' { operator_name = "+"; }
     | '-=' { operator_name = "-"; }
@@ -210,9 +211,9 @@ constructor
 	:	number_type '(' exp  ( ',' exp )* ')' 
 	;
 	
-initializer_list 
+initializer_list returns [string list] @init{ std::ostringstream list_stream; } 
 	:
-	'{' number ( ',' number )* '}'
+	'{' first=number{ list_stream << $first.text; } ( ',' other=number { list_stream << ", " << $other.text; } )* '}' { list = list_stream.str(); }
 	;
 	
 ID  :	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
