@@ -61,8 +61,8 @@ public:
 		};
 
 		AllocatorType() throw() {}
-		AllocatorType( const AllocatorType& alloc ) throw() {}
-		template<typename U> AllocatorType(const AllocatorType<U>& alloc) throw(){}
+		AllocatorType( const AllocatorType& ) throw() {}
+		template<typename U> AllocatorType(const AllocatorType<U>& ) throw(){}
 	};
 
 	template<class TYPE>
