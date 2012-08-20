@@ -11,21 +11,20 @@
 	solution "ShaderShaker"
 		configurations { "Release", "Debug" }
 		location ( _OPTIONS["to"] )
-	
-	project "ShaderShaker"
+		
 		targetname  "shader_shaker"
 		language    "C++"
 		kind        "ConsoleApp"
 		flags       { "No64BitChecks", "ExtraWarnings", "StaticRuntime" }	
-		includedirs { "src/host/lua-5.2.0/src", "contrib", "src/hlsl_parser" }
-
+		includedirs { "include", "src/host/lua-5.2.0/src", "contrib", "src/hlsl_parser" }
+		
 		files 
 		{
 			"*.txt", "**.lua", 
 			"src/**.h", "src/**.cpp", "src/**.c",
 			"src/host/scripts.cpp"
 		}
-
+		
 		excludes
 		{
 			"src/host/lua-5.2.0/src/lua.c",
@@ -34,14 +33,12 @@
 			"src/host/lua-5.2.0/**.lua",
 			"src/host/lua-5.2.0/etc/*.c"
 		}
-			
+		
 		configuration "Debug"
-			targetdir   "bin/debug"
 			defines     "_DEBUG"
 			flags       { "Symbols" }
 			
 		configuration "Release"
-			targetdir   "bin/release"
 			defines     "NDEBUG"
 			flags       { "OptimizeSize" }
 
@@ -75,6 +72,25 @@
 			
 		configuration { "solaris" }
 			linkoptions { "-Wl,--export-dynamic" }
+	
+	project "ShaderShaker"
+	
+		configuration "Debug"
+			targetdir   "bin/debug"
+			
+		configuration "Release"
+			targetdir   "bin/release"
+			
+	project "ShaderShakerDll"
+		defines{ "SHADERSHAKER_IN_DLL" }
+		
+		configuration "Debug"
+			kind "SharedLib"
+			targetdir   "bin/debug_dll"
+			
+		configuration "Release"
+			kind "SharedLib"
+			targetdir   "bin/release_dll"
 
 
 
