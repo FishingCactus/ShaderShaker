@@ -77,27 +77,45 @@ pass 	:	'pass' ID { Listener->StartPass( $ID.text ); } LEFT_CURLY vertex_shader_
 	;
 	
 vertex_shader_definition
-	:	'VertexShader' '=' 'compile' 'vs_3_0' ID '(' ')' ';' { Listener->SetVertexShader( $ID.text ); };
+	:	'VertexShader' '=' 'compile' 'vs_3_0' ID '(' shader_definition_parameter_list? ')' ';' { Listener->SetVertexShader( $ID.text ); };
         
 pixel_shader_definition
-	:    'PixelShader' '=' 'compile' 'ps_3_0' ID '(' ')' ';'{ Listener->SetPixelShader( $ID.text ); };
+	:    'PixelShader' '=' 'compile' 'ps_3_0' ID '(' shader_definition_parameter_list? ')' ';'{ Listener->SetPixelShader( $ID.text ); };
+
+shader_definition_parameter_list
+	: shader_definition_parameter ',' shader_definition_parameter_list
+	| shader_definition_parameter
+	;
+	
+shader_definition_parameter 
+	: number
+	| 'true'
+	| 'false'
+	;
 
 type_definition
 	:	'struct' ID LEFT_CURLY { Listener->StartTypeDefinition( $ID.text ); } field_declaration+ RIGHT_CURLY ';' { Listener->EndTypeDefinition(); }
 	;
 	
 variable_declaration
-	:	type variable_declaration_body[ $type.text ] ( ',' variable_declaration_body[ $type.text ] )* ';'
+	:	(variable_qualifier)? type variable_declaration_body[ $type.text ] ( ',' variable_declaration_body[ $type.text ] )* ';'
+	|   type variable_declaration_body[ $type.text ] ( ',' variable_declaration_body[ $type.text ] )* ';'
 	| 	texture_type ID ';' { Listener->Print( $texture_type.text + " \"" + $ID.text + "\"\n" ); }
 	|	sampler;
 	
+variable_qualifier
+	: 
+	'shared'
+	| 'const'
+	;
+
 variable_declaration_body [ StringType type_name ] @init{ int array_count = 0; }
 	: ID ( '[' INT ']' { array_count = $INT.int; }  )? ( '=' initializer_list ) ? 
 	{ Listener->DeclareVariable( type_name, $ID.text, array_count, $initializer_list.list ); }
 	;
 	
 sampler	@init{ std::vector<SamplerParameter> parameter_table; }
-	:	sampler_type ID LEFT_CURLY ( sampler_parameter {parameter_table.push_back( $sampler_parameter.parameter ); } )* RIGHT_CURLY ';' 
+	:	sampler_type ID ( '=' 'sampler_state' )? LEFT_CURLY ( sampler_parameter {parameter_table.push_back( $sampler_parameter.parameter ); } )* RIGHT_CURLY ';' 
 	{ Listener->DeclareSampler( $sampler_type.text, $ID.text, parameter_table ); }
 	;
 	
@@ -120,6 +138,7 @@ number_type
 	
 texture_type
 	:	'Texture'
+	|	'texture2D'
 	;
 
 type	:	number_type
@@ -132,8 +151,16 @@ field_declaration
 	
 semantic 
 	:	'POSITION'
+	|	'NORMAL'
 	|	'TEXCOORD0'
+	|	'TEXCOORD1'
+	|	'TEXCOORD2'
+	|	'TEXCOORD3'
 	| 	'COLOR0'
+	| 	'COLOR1'
+	| 	'COLOR2'
+	| 	'COLOR3'
+	|	'VPOS'
 	;
 	
 function 
@@ -150,7 +177,11 @@ function
 			'}';
 	
 parameter_declaration returns [ Parameter parameter ]
-	:	type ID {parameter.Type = $type.text; parameter.Name = $ID.text;} ( ':' semantic { parameter.Semantic = $semantic.text; } )?
+	:	( parameter_qualifier )? type ID {parameter.Type = $type.text; parameter.Name = $ID.text;} ( ':' semantic { parameter.Semantic = $semantic.text; } )?
+	;
+	
+parameter_qualifier
+	: 'uniform'
 	;
 
 statement
@@ -165,18 +196,41 @@ statement
 	        + $exp.text );  
 	    } ';'
 	|	exp { Listener->Print( $exp.text ); } ';'
+	| 	if_statement { Listener->Print( $if_statement.text ); } 
+	| 	do_while_statement { Listener->Print( $do_while_statement.text ); } 
 	;
 	
+if_statement
+	:	'if' '(' exp ')' '{' statement* '}' 
+		( 'elseif' '(' exp ')' '{' statement* '}' )* 
+		( 'else' '{' statement* '}' ) ?
+	;
+	
+do_while_statement : 
+	'do' '{' statement* '}' 'while' '(' exp ')' ';' 
+	;
+
 exp
     :
-	right_value ( operator_name right_value )*
+    ( '-'? '(' exp ')'| right_value ) ( ( binary_operator | comparison_operator ) exp )*
 	;
 	
-right_value : 
+right_value 
+	: 
+	prefix_unary_operator? right_value_without_swizzle ( '.' SWIZZLE )? postfix_unary_operator?
+	;
+	
+right_value_without_swizzle
+	:
 	constructor
 	| function_call
 	| variable
 	| number
+	;
+	
+SWIZZLE
+	: ('x'|'y'|'z'|'w')+
+	| ('r'|'g'|'b'|'a')+
 	;
 	
 assignment_operator_name returns [string operator_name]
@@ -187,7 +241,7 @@ assignment_operator_name returns [string operator_name]
     | '/=' { operator_name = "/"; }
     ;
     	
-operator_name
+binary_operator
 	:
 	'+'
 	| '-'
@@ -195,8 +249,31 @@ operator_name
 	| '/'
 	;
 	
-variable 
-	:	variable_fragment ( '.' variable_fragment )*
+comparison_operator
+	:
+	'=='
+	| '!='
+	|'>'
+	|'>='
+	| '<'
+	| '<='
+	;
+
+prefix_unary_operator
+	:
+	'-'
+	| '--'
+	| '++'
+	;
+	
+postfix_unary_operator
+	:
+	'--'
+	| '++' 
+	;
+	
+variable options{ k=2; greedy=false; }
+	:	variable_fragment ( '.' variable_fragment )* ( '.' SWIZZLE )?
 	;
 
 variable_fragment
@@ -213,7 +290,9 @@ constructor
 	
 initializer_list returns [string list] @init{ std::ostringstream list_stream; } 
 	:
-	'{' first=number{ list_stream << $first.text; } ( ',' other=number { list_stream << ", " << $other.text; } )* '}' { list = list_stream.str(); }
+	number { list = $number.text; }
+	| '(' type ')' exp { list = $type.text + '(' + $exp.text + ')'; }
+	| '{' first=number{ list_stream << $first.text; } ( ',' other=number { list_stream << ", " << $other.text; } )* '}' { list = list_stream.str(); }
 	;
 	
 ID  :	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
@@ -233,9 +312,9 @@ FLOAT
     
 fragment
 FLOAT_NUMBER
-    :   ('0'..'9')+ '.' ('0'..'9')* EXPONENT? 
-    |   '.' ('0'..'9')+ EXPONENT?
-    |   ('0'..'9')+ EXPONENT
+    :   ('-')?('0'..'9')+ '.' ('0'..'9')* EXPONENT? 
+    |   ('-')?'.' ('0'..'9')+ EXPONENT?
+    |   ('-')?('0'..'9')+ EXPONENT
     ;
 
 COMMENT
