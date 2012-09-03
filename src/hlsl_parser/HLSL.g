@@ -299,7 +299,7 @@ ID  :	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
     ;
 
 number	
-	:	FLOAT
+	:	FLOAT 
 	|	INT
 	;
 
@@ -307,7 +307,7 @@ INT :	'0'..'9'+
     ;
     
 FLOAT 
-    : FLOAT_NUMBER 'f'?  { setText( $FLOAT_NUMBER.text ); }
+    : FLOAT_NUMBER 'f'?  { std::string float_text = $FLOAT_NUMBER.text; if( float_text[float_text.length()-1] == '.' ) float_text += '0'; setText( float_text ); }
     ;
     
 fragment
