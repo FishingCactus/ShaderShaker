@@ -31,7 +31,6 @@ static bool load_builtin_scripts(lua_State* L, const char * output_file, const c
 
 #ifndef SHADERSHAKER_IN_DLL
 
-    static bool load_shader_file(lua_State* L, const char * shader_file_name );
     static bool process_command_line( int argc, const char ** argv, std::vector<std::string> & flag_table );
     static void usage();
 
@@ -75,7 +74,7 @@ static bool load_builtin_scripts(lua_State* L, const char * output_file, const c
                     ShaderShakerSetFlag( context, (*it).c_str(), true );
                 }
 
-                result = context && load_shader_file( context->L, LocalInputFile );
+                result = ShaderShakerLoadShaderFile( context, LocalInputFile );
 
                 return_value = result ? 0 : 1;
             }
@@ -242,21 +241,21 @@ void ShaderShakerSetFlag( ShaderShakerContext * context, const char * flag, bool
     lua_setglobal( context->L, flag );
 }
 
-bool load_shader_file(lua_State* L, const char * shader_file_name )
+bool ShaderShakerLoadShaderFile( ShaderShakerContext * context, const char * shader_file_name )
 {
-    lua_getglobal(L, "_shaker_shaker_load_shader_file");
-    lua_pushstring( L, shader_file_name );
+    lua_getglobal( context->L, "_shaker_shaker_load_shader_file");
+    lua_pushstring( context->L, shader_file_name );
     
-    if (lua_pcall(L, 1, 1, 0) != 0)
+    if (lua_pcall( context->L, 1, 1, 0) != 0)
     {
-        std::cerr << lua_tostring(L, -1);
+        std::cerr << lua_tostring( context->L, -1);
         return false;
     }
     else
     {
-        if( lua_isstring( L, -1 ) && !lua_isnumber( L, -1 ) )
+        if( lua_isstring( context->L, -1 ) && !lua_isnumber( context->L, -1 ) )
         {
-            std::cerr << lua_tostring( L, -1 ) << std::endl;
+            std::cerr << lua_tostring( context->L, -1 ) << std::endl;
             return false;
         }
         
