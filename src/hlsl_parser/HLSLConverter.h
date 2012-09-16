@@ -19,7 +19,7 @@
             
         std::string GetConvertedCode() const
         {
-            return Listener.GetShaderOuput();
+            return "";
         }
             
             

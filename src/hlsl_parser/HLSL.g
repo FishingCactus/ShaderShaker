@@ -36,278 +36,188 @@ options {
     #include "HLSLParserListener.h"
     #include <iostream>
 	#include <string>
-   
-    struct Parameter
-    {
-		std::string
-			Type,
-			Name,
-			Semantic;
-	};
-	
-	struct SamplerParameter
-	{
-	    std::string
-	        Name,
-	        Value;
-	};
+	#include <set>
+
 }
 
 @parser::members
 {
     HLSLParserListener
         * Listener;
+    std::set<std::string>
+        TypeTable;
 }
 
 translation_unit
-	:	global_declaration* technique*
+	: global_declaration* EOF
 	;
 	
 global_declaration
-	:	type_definition
-	|	variable_declaration
-	|	function
+	: variable_declaration
+	| struct_definition
+	| function_declaration
 	;
 	
-technique
-	:	'technique' ID LEFT_CURLY { Listener->StartTechnique( $ID.text ); } ( pass )* RIGHT_CURLY { Listener->EndTechnique(); }
-	;
+// Function
 
-pass 	:	'pass' ID { Listener->StartPass( $ID.text ); } LEFT_CURLY vertex_shader_definition pixel_shader_definition RIGHT_CURLY { Listener->EndPass(); }
+function_declaration 
+    : storage_class* ( PRECISE )? ReturnValue=type Name=ID '(' argument_list ')' ( ':' SEMANTIC )?
+    '{'
+        //[StatementBlock]
+    '}'
 	;
 	
-vertex_shader_definition
-	:	'VertexShader' '=' 'compile' 'vs_3_0' ID '(' shader_definition_parameter_list? ')' ';' { Listener->SetVertexShader( $ID.text ); };
-        
-pixel_shader_definition
-	:    'PixelShader' '=' 'compile' 'ps_3_0' ID '(' shader_definition_parameter_list? ')' ';'{ Listener->SetPixelShader( $ID.text ); };
+argument_list
+    : argument ( ',' argument )* 
+    ;
+    
+argument
+    : input_modifier? type Name=ID ( ':' SEMANTIC )? ( INTERPOLATION_MODIFIER )? ( '=' initial_value )?
+    ;
+    
+input_modifier
+    : IN
+    | OUT
+    | INOUT
+    | UNIFORM
+    ;
 
-shader_definition_parameter_list
-	: shader_definition_parameter ',' shader_definition_parameter_list
-	| shader_definition_parameter
-	;
-	
-shader_definition_parameter 
-	: number
-	| 'true'
-	| 'false'
-	;
+// Variables
 
-type_definition
-	:	'struct' ID LEFT_CURLY { Listener->StartTypeDefinition( $ID.text ); } field_declaration+ RIGHT_CURLY ';' { Listener->EndTypeDefinition(); }
-	;
-	
 variable_declaration
-	:	(variable_qualifier)? type variable_declaration_body[ $type.text ] ( ',' variable_declaration_body[ $type.text ] )* ';'
-	|   type variable_declaration_body[ $type.text ] ( ',' variable_declaration_body[ $type.text ] )* ';'
-	| 	texture_type ID ';' { Listener->Print( $texture_type.text + " \"" + $ID.text + "\"\n" ); }
-	|	sampler;
-	
-variable_qualifier
-	: 
-	'shared'
-	| 'const'
-	;
-
-variable_declaration_body [ StringType type_name ] @init{ int array_count = 0; }
-	: ID ( '[' INT ']' { array_count = $INT.int; }  )? ( '=' initializer_list ) ? 
-	{ Listener->DeclareVariable( type_name, $ID.text, array_count, $initializer_list.list ); }
+    : storage_class* type_modifier* type 
+        variable_declaration_body ( ',' variable_declaration_body )* ';'
 	;
 	
-sampler	@init{ std::vector<SamplerParameter> parameter_table; }
-	:	sampler_type ID ( '=' 'sampler_state' )? LEFT_CURLY ( sampler_parameter {parameter_table.push_back( $sampler_parameter.parameter ); } )* RIGHT_CURLY ';' 
-	{ Listener->DeclareSampler( $sampler_type.text, $ID.text, parameter_table ); }
-	;
-	
-sampler_type 
-	:	'sampler2D'
-	;
-	
-sampler_parameter returns [ SamplerParameter parameter ]
-	:	'Texture' '=' '<' ID '>' ';' { parameter.Name = "texture"; parameter.Value = $ID.text; }
-	|	name=ID '=' value=ID ';' { parameter.Name = $name.text; parameter.Value = $value.text; }
-	; 
-number_type	
-	:	'float'
-	|	'float2'
-	|	'float3'
-	|	'float4'
-	|	'float1x1'
-	|	'float1x2'
-	;
-	
-texture_type
-	:	'Texture'
-	|	'texture2D'
-	;
-
-type	:	number_type
-	|	ID
-	;
-	
-field_declaration
-	: 	type ID ':' semantic ';' { Listener->AddField( $type.text, $ID.text, $semantic.text ); }
-	;
-	
-semantic 
-	:	'POSITION'
-	|	'NORMAL'
-	|	'TEXCOORD0'
-	|	'TEXCOORD1'
-	|	'TEXCOORD2'
-	|	'TEXCOORD3'
-	| 	'COLOR0'
-	| 	'COLOR1'
-	| 	'COLOR2'
-	| 	'COLOR3'
-	|	'VPOS'
-	;
-	
-function 
-		@init{ std::vector<Parameter> parameter_table; }
-	:
-		type ID '(' 
-			( first = parameter_declaration { parameter_table.push_back( $first.parameter ); }
-			( ',' other = parameter_declaration { parameter_table.push_back( $other.parameter ); } )* )? 
-			')' ( ':' semantic )? '{' 
-			{ Listener->StartFunction( $type.text, $ID.text, parameter_table, $semantic.text ); }
-			statement* 
-			
-			{ Listener->EndFunction(); }
-			'}';
-	
-parameter_declaration returns [ Parameter parameter ]
-	:	( parameter_qualifier )? type ID {parameter.Type = $type.text; parameter.Name = $ID.text;} ( ':' semantic { parameter.Semantic = $semantic.text; } )?
-	;
-	
-parameter_qualifier
-	: 'uniform'
-	;
-
-statement
-	:	variable_declaration
-	|	'return' exp ';' { Listener->ProcessReturnStatement( $exp.text ); }
-	| 	variable '=' exp { Listener->Print( $statement.text ); } ';'
-	| 	variable assignment_operator_name exp 
-	    { Listener->Print( 
-	        $variable.text + " = " 
-	        + $variable.text 
-	        + $assignment_operator_name.operator_name 
-	        + $exp.text );  
-	    } ';'
-	|	exp { Listener->Print( $exp.text ); } ';'
-	| 	if_statement { Listener->Print( $if_statement.text ); } 
-	| 	do_while_statement { Listener->Print( $do_while_statement.text ); } 
-	;
-	
-if_statement
-	:	'if' '(' exp ')' '{' statement* '}' 
-		( 'elseif' '(' exp ')' '{' statement* '}' )* 
-		( 'else' '{' statement* '}' ) ?
-	;
-	
-do_while_statement : 
-	'do' '{' statement* '}' 'while' '(' exp ')' ';' 
-	;
-
-exp
-    :
-    ( '-'? '(' exp ')'| right_value ) ( ( binary_operator | comparison_operator ) exp )*
-	;
-	
-right_value 
-	: 
-	prefix_unary_operator? right_value_without_swizzle ( '.' SWIZZLE )? postfix_unary_operator?
-	;
-	
-right_value_without_swizzle
-	:
-	constructor
-	| function_call
-	| variable
-	| number
-	;
-	
-SWIZZLE
-	: ('x'|'y'|'z'|'w')+
-	| ('r'|'g'|'b'|'a')+
-	;
-	
-assignment_operator_name returns [string operator_name]
-    :
-    '+=' { operator_name = "+"; }
-    | '-=' { operator_name = "-"; }
-    | '*=' { operator_name = "*"; }
-    | '/=' { operator_name = "/"; }
+variable_declaration_body
+    : ID ( '[' INT ']' )?
+        ( ':' SEMANTIC ) ?
+        ( ':' packoffset )?
+        ( ':' register_rule ) ?
+        annotations ?
+        ( '=' initial_value ) ?
     ;
-    	
-binary_operator
-	:
-	'+'
-	| '-'
-	| '*'
-	| '/'
-	;
-	
-comparison_operator
-	:
-	'=='
-	| '!='
-	|'>'
-	|'>='
-	| '<'
-	| '<='
-	;
-
-prefix_unary_operator
-	:
-	'-'
-	| '--'
-	| '++'
-	;
-	
-postfix_unary_operator
-	:
-	'--'
-	| '++' 
-	;
-	
-variable options{ k=2; greedy=false; }
-	:	variable_fragment ( '.' variable_fragment )* ( '.' SWIZZLE )?
-	;
-
-variable_fragment
-    :   ID ( '[' INT ']' )?
+	 
+storage_class
+    : EXTERN
+    | NOINTERPOLATION
+    | PRECISE
+    | SHARED
+    | GROUPSHARED
+    | STATIC
+    | UNIFORM
+    | VOLATILE
     ;
-	
-function_call
-	:	ID '(' ( exp ( ',' exp )* )? ')'
-	;
-	
-constructor 
-	:	number_type '(' exp  ( ',' exp )* ')' 
-	;
-	
-initializer_list returns [string list] @init{ std::ostringstream list_stream; } 
-	:
-	number { list = $number.text; }
-	| '(' type ')' exp { list = $type.text + '(' + $exp.text + ')'; }
-	| '{' first=number{ list_stream << $first.text; } ( ',' other=number { list_stream << ", " << $other.text; } )* '}' { list = list_stream.str(); }
-	;
-	
+    
+type_modifier
+    : 'const'
+    | 'row_major'
+    | 'column_major'
+    ;
+
+packoffset
+    :;
+    
+register_rule
+    :;
+
+annotations
+    :;
+        
+initial_value
+    : constant_expression
+    | '{' constant_expression ( ',' constant_expression )* '}'
+    ;
+    
+type
+    : intrinsic_type 
+    | user_defined_type
+    ;
+   
+intrinsic_type 
+    : MATRIX_TYPE
+    | VECTOR_TYPE
+    | SCALAR_TYPE
+    ;
+    
+user_defined_type // :TODO: validates that it's a valid type
+    : ID  { TypeTable.find( $ID.text) != TypeTable.end() }? => 
+    ;
+    
+struct_definition
+    : 'struct' Name=ID { TypeTable.insert( $Name.text ); } 
+    '{'
+        ( INTERPOLATION_MODIFIER? intrinsic_type MemberName=ID  ( ':' SEMANTIC )? ';' )+ 
+    '}' ';'
+    ;
+
+constant_expression
+  : //(ID) => variable_expression
+  //| 
+  literal_value ;
+
+literal_value
+  : FLOAT
+  | INT
+  ;
+
+SEMANTIC
+    : 'POSITION'
+    | 'NORMAL'
+    | 'SV_POSITION'
+    | 'COLOR' ('0'..'4')?
+    | 'TEXCOORD' ('0'..'8')?
+    ;
+  
+
+EXTERN:             'extern';
+NOINTERPOLATION:    'nointerpolation';
+PRECISE:            'precise';
+SHARED:             'shared';
+GROUPSHARED:        'groupshared';
+STATIC:             'static';
+UNIFORM:            'uniform';
+VOLATILE:           'volatile';
+IN:                 'in';
+OUT:                'out';
+INOUT:              'inout';
+    
+INTERPOLATION_MODIFIER  
+    : 'linear'
+    | 'centroid'
+    | 'nointerpolation'
+    | 'noperspective'
+    | 'sample'
+    ;
+    
+MATRIX_TYPE
+    : VECTOR_TYPE 'x' INDEX
+    ;
+    
+VECTOR_TYPE
+    : SCALAR_TYPE INDEX
+    ;
+    
+SCALAR_TYPE
+    : 'bool'
+    | 'int'
+    | 'float'
+    | 'double'
+    ;
+    
 ID  :	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
     ;
-
-number	
-	:	FLOAT 
-	|	INT
-	;
 
 INT :	'0'..'9'+
     ;
     
 FLOAT 
-    : FLOAT_NUMBER 'f'?  { std::string float_text = $FLOAT_NUMBER.text; if( float_text[float_text.length()-1] == '.' ) float_text += '0'; setText( float_text ); }
+    : FLOAT_NUMBER 'f'?
+    ;
+    
+fragment 
+INDEX
+    :  '1' | '2' | '3' | '4'
     ;
     
 fragment
@@ -347,11 +257,4 @@ OCTAL_ESC
     |   '\\' ('0'..'7') ('0'..'7')
     |   '\\' ('0'..'7')
     ;
-
-LEFT_CURLY
-	:	'{'
-	;
-
-RIGHT_CURLY
-	:	'}'
-	;
+    
