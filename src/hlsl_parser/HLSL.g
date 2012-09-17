@@ -130,7 +130,7 @@ if_statement
 
 iteration_statement
     : WHILE LPAREN expression RPAREN statement
-    | FOR LPAREN assignment_statement
+    | FOR LPAREN ( assignment_statement | variable_declaration )
         equality_expression SEMI modify_expression RPAREN statement
     | DO statement WHILE LPAREN expression RPAREN SEMI
     ;
@@ -259,7 +259,7 @@ argument_expression_list
 // Function
 
 function_declaration 
-    : storage_class* ( PRECISE )? ReturnValue=type Name=ID LPAREN argument_list RPAREN ( COLON SEMANTIC )?
+    : storage_class* ( PRECISE )? ReturnValue=( type | VOID_TOKEN ) Name=ID LPAREN (argument_list)? RPAREN ( COLON SEMANTIC )?
     LCURLY
         statement*
     RCURLY
@@ -429,6 +429,7 @@ BITWISE_OR:         '|';
 BITWISE_XOR:        '^';
 BITWISE_SHIFTL:     '<<';
 BITWISE_SHIFTR:     '>>';
+VOID_TOKEN:               'void';
     
 INTERPOLATION_MODIFIER  
     : 'linear'
