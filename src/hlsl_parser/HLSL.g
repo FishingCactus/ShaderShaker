@@ -241,11 +241,15 @@ assignment_operator
     ;
   
 primary_expression
-    //: constructor
-    : variable_expression
+    : constructor
     | call_expression
+    | variable_expression
     | literal_value
     | LPAREN expression RPAREN
+    ;
+    
+constructor 
+    : type LPAREN argument_expression_list RPAREN
     ;
   
 call_expression
