@@ -67,7 +67,7 @@ options {
 }
 
 translation_unit
-	: global_declaration* EOF
+	: global_declaration* technique* EOF
 	;
 	
 global_declaration
@@ -77,6 +77,22 @@ global_declaration
 	| struct_definition
 	| function_declaration
 	;
+	
+technique
+    : TECHNIQUE Name=ID LCURLY pass* RCURLY
+    ;
+    
+pass
+    : PASS Name=ID LCURLY shader_definition* RCURLY
+    ;
+
+shader_definition
+    : ( VERTEX_SHADER|PIXEL_SHADER ) ASSIGN COMPILE ID ID LPAREN shader_argument_list? RPAREN SEMI
+    ;
+    
+shader_argument_list
+    : constant_expression ( COMMA constant_expression )*
+    ;
 	
 // Statements
 
@@ -411,6 +427,11 @@ WHILE:              'while';
 IF:                 'if';
 ELSE:               'else';
 FOR:                'for';
+TECHNIQUE:          'technique';
+PASS:               'pass';
+VERTEX_SHADER:      'VertexShader';
+PIXEL_SHADER:       'PixelShader';
+COMPILE:            'compile'; 
 LBRACKET:           '[';
 RBRACKET:           ']';
 LPAREN:             '(';
