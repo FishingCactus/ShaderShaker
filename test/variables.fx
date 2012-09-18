@@ -21,3 +21,5 @@ shared float
     shared_variable;
 const int
     const_variable;
+float 
+    casting_test = (float) some_variable;

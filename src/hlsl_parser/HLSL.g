@@ -72,6 +72,8 @@ translation_unit
 	
 global_declaration
 	: variable_declaration
+	| texture_declaration
+	| sampler_declaration
 	| struct_definition
 	| function_declaration
 	;
@@ -206,7 +208,7 @@ multiplicative_expression
     ;
 
 cast_expression
-    : LBRACKET type RBRACKET cast_expression
+    : LPAREN type RPAREN cast_expression
     | unary_expression
     ;
 
@@ -284,6 +286,20 @@ input_modifier
     | UNIFORM
     ;
 
+// Texture & sampler
+
+texture_declaration
+    : TEXTURE_TYPE ID SEMI;
+    
+sampler_declaration
+    : SAMPLER_TYPE Name=ID ( ASSIGN SAMPLER_TYPE )? LCURLY sampler_body* RCURLY SEMI
+    ;
+    
+sampler_body
+    : 'Texture' ASSIGN '<' ID '>' SEMI
+    | ID ASSIGN ID SEMI  
+    ;
+    
 // Variables
 
 variable_declaration
@@ -327,8 +343,9 @@ annotations
     :;
         
 initial_value
-    : constant_expression
-    | LCURLY constant_expression ( COMMA constant_expression )* RCURLY
+    : 
+    expression
+    | LCURLY expression ( COMMA expression )* RCURLY
     ;
     
 type
@@ -368,6 +385,7 @@ SEMANTIC
     | 'SV_POSITION'
     | 'COLOR' ('0'..'4')?
     | 'TEXCOORD' ('0'..'8')?
+    | 'VPOS'
     ;
   
 SEMI:               ';';
@@ -434,6 +452,26 @@ BITWISE_XOR:        '^';
 BITWISE_SHIFTL:     '<<';
 BITWISE_SHIFTR:     '>>';
 VOID_TOKEN:               'void';
+
+TEXTURE_TYPE
+    : 'texture'
+    | 'texture1D'
+    | 'texture1DArray'
+    | 'texture2D'
+    | 'texture2DArray'
+    | 'texture3D'
+    | 'textureCube'
+    ;
+    
+SAMPLER_TYPE
+    : 'sampler'
+    | 'sampler1D'
+    | 'sampler2D'
+    | 'sampler3D'
+    | 'samplerCUBE'
+    | 'sampler_state'
+    | 'SamplerState'
+    ;
     
 INTERPOLATION_MODIFIER  
     : 'linear'
