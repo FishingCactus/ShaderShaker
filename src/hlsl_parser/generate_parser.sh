@@ -1,3 +1,3 @@
 #!/bin/bash
 
-java -cp ../../contrib/antlr.jar org.antlr.Tool HLSL.g
+java -Xmx512M -cp ../../contrib/antlr.jar org.antlr.Tool -report -Xwatchconversion HLSL.g

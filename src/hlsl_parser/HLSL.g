@@ -71,11 +71,11 @@ translation_unit
 	;
 	
 global_declaration
-    : variable_declaration
+    : variable_declaration {ast_assign();}
 	| texture_declaration
 	| sampler_declaration
 	| struct_definition
-	| function_declaration
+	| function_declaration {ast_assign();}
 	;
 	
 technique
@@ -143,7 +143,9 @@ expression_statement
     ;
     
 if_statement
-    : IF LPAREN expression RPAREN statement ( ELSE IF LPAREN expression RPAREN statement )* ( ELSE statement )?
+    : IF LPAREN {ast_push("if");ast_push("if_block");} expression {ast_assign();} RPAREN statement{ast_assign();ast_assign();}  
+        ( ELSE IF LPAREN {ast_push("else_if_block");}expression {ast_assign();} RPAREN statement {ast_assign();ast_assign();} )* 
+        ( ELSE {ast_push("else_block");} statement {ast_assign();ast_assign();} )?
     ;
 
 iteration_statement
@@ -180,50 +182,51 @@ expression
     ;
   
 conditional_expression
-    : logical_or_expression ( QUESTION expression COLON conditional_expression )?
+    : logical_or_expression ( { ast_push("inline_if");ast_swap();ast_assign();} QUESTION expression{ast_assign();} COLON conditional_expression {ast_assign();} )?
     ;
 
 logical_or_expression
-    : exclusive_or_expression (  OR exclusive_or_expression ) +
-    | exclusive_or_expression
+    :  exclusive_or_expression ( {ast_push("||");ast_swap();ast_assign();} OR logical_or_expression {ast_assign();} )*
     ;
 
 logical_and_expression
-    : ( NOT )? inclusive_or_expression ( AND ( NOT )? inclusive_or_expression )*
+    : not_expression ( AND {ast_push("&&"); ast_swap(); ast_assign();} logical_and_expression {ast_assign();} )*
     ;
+    
+not_expression 
+    : NOT {ast_push( "!" );} inclusive_or_expression {ast_assign();} 
+    | inclusive_or_expression;
 
 inclusive_or_expression
-    : exclusive_or_expression (BITWISE_OR exclusive_or_expression )*
+    : exclusive_or_expression ( BITWISE_OR  {ast_push("|"); ast_swap(); ast_assign();} inclusive_or_expression{ast_assign();} )*
     ;
 
 exclusive_or_expression
-  : and_expression ( BITWISE_XOR and_expression )*
+  : and_expression ( BITWISE_XOR  {ast_push("^"); ast_swap(); ast_assign();} and_expression{ast_assign();})*
   ;
 
 and_expression
-    : equality_expression ( BITWISE_AND equality_expression )*
+    : equality_expression ( BITWISE_AND {ast_push("&"); ast_swap(); ast_assign();} equality_expression {ast_assign();})*
     ;
 
 equality_expression
-    : relational_expression ( (EQUAL|NOT_EQUAL) relational_expression )*
+    : relational_expression (op=(EQUAL|NOT_EQUAL) {ast_push($op.text);ast_swap();ast_assign();} relational_expression{ast_assign();} )*
     ;
 
 relational_expression
-    : shift_expression ( (LT_TOKEN|GT|LTE|GTE) shift_expression )*
+    : shift_expression ( op=(LT_TOKEN|GT|LTE|GTE){ast_push($op.text);ast_swap();ast_assign();} shift_expression{ast_assign();} )?
     ;
 
 shift_expression
-    : additive_expression ( (BITWISE_SHIFTL|BITWISE_SHIFTR) additive_expression )*
+    : additive_expression (op=(BITWISE_SHIFTL|BITWISE_SHIFTR){ast_push($op.text);ast_swap();ast_assign();} additive_expression{ast_assign();} )*
     ;
 
 additive_expression
-    : {ast_push();} multiplicative_expression{ast_assign();} op=(PLUS|MINUS){ast_setname($op.text);} additive_expression{ast_assign();}
-    | multiplicative_expression
+    : multiplicative_expression ( op=(PLUS|MINUS){ast_push($op.text);ast_swap();ast_assign();} multiplicative_expression{ast_assign();} )*
     ;
 
 multiplicative_expression
-    : {ast_push();} cast_expression{ast_assign();} op=(MUL|DIV|MOD) {ast_setname($op.text);} multiplicative_expression{ast_assign();}
-    | cast_expression
+    : cast_expression ( op=(MUL|DIV|MOD) {ast_push($op.text);ast_swap();ast_assign();} cast_expression{ast_assign();} )*
     ;
 
 cast_expression

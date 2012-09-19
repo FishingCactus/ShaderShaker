@@ -18,10 +18,12 @@ public:
     
     void PushNode();
     void PushNode( const char * name );
+    void PushNode( const std::string & name ){ PushNode( name.c_str() ); }
     void AddValue( const std::string & value );
     void SetKeyValue( const std::string & key, const std::string & value );
     void Assign();
     void PopNode();
+    void SwapTopNodes();
     
 private:
 
@@ -36,5 +38,6 @@ private:
 #define ast_addvalue( _value_ ) Listener->AddValue( _value_ )
 #define ast_assign()    Listener->Assign()
 #define ast_pop()   Listener->PopNode()
+#define ast_swap()   Listener->SwapTopNodes()
 
 #endif

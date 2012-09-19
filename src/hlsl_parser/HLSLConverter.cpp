@@ -1,23 +1,30 @@
 #include "HLSLConverter.h"
 #include "HLSLLexer.hpp"
 #include "HLSLParser.hpp"
+#include <iostream>
 
 
-int HLSLConverter::ConvertHLSLToSSL(
+int HLSLConverter::ParseAst(
     lua_State * lua_state
     )
 {
     HLSLConverter
         converter( lua_state );
+    int
+        top;
     
     lua_newtable( lua_state );
+    top = lua_gettop( lua_state );
+    
+    converter.LoadAst( lua_tostring( lua_state, -2 ) );
 
-    converter.ConvertToShaderShakerLanguage( lua_tostring( lua_state, -2 ) );
+    if( top != lua_gettop( lua_state ) )
+    {
+        std::cerr << "Something went wrong with the parsing, there's items left on the stack : it was " << top
+                  << " now is " << lua_gettop( lua_state ) << std::endl;
+    }
     
     assert( lua_istable( lua_state, -1 ) );
-    
-    //lua_pushstring( lua_state, converter.GetConvertedCode().c_str() );
-    printf( "%s", converter.GetConvertedCode().c_str() );
     
     lua_getglobal( lua_state, "table" );
     lua_getfield( lua_state, -1, "tostring_ast" );
@@ -32,7 +39,7 @@ int HLSLConverter::ConvertHLSLToSSL(
     return 1;   
 }
 
-void HLSLConverter::ConvertToShaderShakerLanguage(
+void HLSLConverter::LoadAst(
     const std::string & filename
     )
 {

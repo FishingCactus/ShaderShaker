@@ -67,3 +67,9 @@ void HLSLParserListener::PopNode()
 {
     lua_pop( State, 1 );
 }
+
+void HLSLParserListener::SwapTopNodes()
+{
+    lua_pushvalue(State, -2 );
+    lua_remove(State, -3 );
+}

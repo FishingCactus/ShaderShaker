@@ -191,7 +191,7 @@ ShaderShakerContext * ShaderShakerCreateContext( const char * output_file )
         
     context->L = luaL_newstate();
     luaL_openlibs( context->L );
-    lua_pushcfunction( context->L, &HLSLConverter::ConvertHLSLToSSL );
+    lua_pushcfunction( context->L, &HLSLConverter::ParseAst );
     lua_setglobal( context->L, "ConvertHLSLToSSL" );
 
     if( load_builtin_scripts( context->L, output_file, 0 ) )
@@ -215,7 +215,7 @@ ShaderShakerContext * ShaderShakerCreateContextWithLanguage( const char * langua
 
     context->L = luaL_newstate();
     luaL_openlibs( context->L );
-    lua_pushcfunction( context->L, &HLSLConverter::ConvertHLSLToSSL );
+    lua_pushcfunction( context->L, &HLSLConverter::ParseAst );
     lua_setglobal( context->L, "ConvertHLSLToSSL" );
 
     if( load_builtin_scripts( context->L, 0, language ) )

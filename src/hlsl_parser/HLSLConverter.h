@@ -18,17 +18,11 @@
         
         }
     
-        void ConvertToShaderShakerLanguage(
+        void LoadAst(
             const std::string & filename
             );
             
-        std::string GetConvertedCode() const
-        {
-            return "";
-        }
-            
-            
-        static int ConvertHLSLToSSL(
+        static int ParseAst(
             lua_State * lua_state
             );
             
