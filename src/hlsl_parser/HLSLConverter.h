@@ -13,6 +13,11 @@
     {
     public:
     
+        HLSLConverter( lua_State * state ) : Listener( state )
+        {
+        
+        }
+    
         void ConvertToShaderShakerLanguage(
             const std::string & filename
             );

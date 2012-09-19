@@ -23,6 +23,7 @@ return {
     
     -- Utilities
     
-    "utilities/output.lua"
+    "utilities/output.lua",
+    "utilities/debug.lua"
 
 }

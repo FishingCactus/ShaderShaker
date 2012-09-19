@@ -35,3 +35,38 @@ function table.tostring( tbl )
   end
   return "{" .. table.concat( result, "," ) .. "}"
 end
+
+function table.val_to_str_ast( v, indentation )
+  if "string" == type( v ) then
+    v = string.gsub( v, "\n", "\\n" )
+    if string.match( string.gsub(v,"[^'\"]",""), '^"+$' ) then
+      return string.rep( "    ", indentation ).. "'" .. v .. "'"
+    end
+    return string.rep( "    ", indentation ).. '"' .. string.gsub(v,'"', '\\"' ) .. '"'
+  else
+    return "table" == type( v ) and table.tostring_ast( v, indentation ) or
+      tostring( v )
+  end
+end
+
+function table.tostring_ast( ast, indentation )
+  local result, done = {}, {}
+  indentation = indentation or 0
+
+  if type(ast) ~= "table" then error( "table expected", 2 ) end
+  for k, v in ipairs( ast ) do
+    table.insert( result, table.val_to_str_ast( v, indentation + 1 ) )
+    done[ k ] = true
+  end
+  for k, v in pairs( ast ) do
+    if not done[ k ] and k ~= "name" then
+      table.insert( result,
+        table.key_to_str( k ) .. "=" .. table.val_to_str_ast( v, indentation + 1 ) )
+    end
+  end
+  local prefix = string.rep( "    ", indentation )
+  return prefix .. ast.name .. "\n"
+        .. prefix .. "{\n" 
+        .. table.concat( result, ",\n" ) .. "\n" 
+        .. prefix .. "}"   
+end

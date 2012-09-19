@@ -4,5 +4,8 @@ float test_function(
     float c
     )
 {
-    return a * b + c - ( a + b )  / c * 0.5;
+    const float d = 1.0;
+    const float e = 2.0;
+    const float f = 3.0;
+    return a * b + c - ( d + e ) / f * 0.5;
 }

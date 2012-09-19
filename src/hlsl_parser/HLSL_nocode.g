@@ -71,7 +71,7 @@ translation_unit
 	;
 	
 global_declaration
-    : variable_declaration
+	: variable_declaration
 	| texture_declaration
 	| sampler_declaration
 	| struct_definition
@@ -91,7 +91,7 @@ shader_definition
     ;
     
 shader_argument_list
-    : constant_expression {ast_assign();}( COMMA constant_expression {ast_assign();} )*
+    : constant_expression ( COMMA constant_expression )*
     ;
 	
 // Statements
@@ -163,7 +163,7 @@ modify_expression
 jump_statement
     : BREAK SEMI
     | CONTINUE SEMI
-    | RETURN {ast_push("return");} ( expression {ast_assign();} )? SEMI 
+    | RETURN ( expression )? SEMI
     | DISCARD SEMI
     ;
    
@@ -172,7 +172,7 @@ lvalue_expression
     ;
 
 variable_expression
-    : {ast_push("variable");} ID{ast_addvalue($ID.text);}( LBRACKET {ast_push("index");}expression {ast_assign();ast_assign();}RBRACKET )? 
+    : ID ( LBRACKET expression RBRACKET )? 
     ;
 
 expression
@@ -184,8 +184,7 @@ conditional_expression
     ;
 
 logical_or_expression
-    : exclusive_or_expression (  OR exclusive_or_expression ) +
-    | exclusive_or_expression
+    : exclusive_or_expression ( OR exclusive_or_expression )*
     ;
 
 logical_and_expression
@@ -217,13 +216,11 @@ shift_expression
     ;
 
 additive_expression
-    : {ast_push();} multiplicative_expression{ast_assign();} op=(PLUS|MINUS){ast_setname($op.text);} additive_expression{ast_assign();}
-    | multiplicative_expression
+    : multiplicative_expression ( (PLUS|MINUS) multiplicative_expression )*
     ;
 
 multiplicative_expression
-    : {ast_push();} cast_expression{ast_assign();} op=(MUL|DIV|MOD) {ast_setname($op.text);} multiplicative_expression{ast_assign();}
-    | cast_expression
+    : cast_expression ( (MUL|DIV|MOD) cast_expression )*
     ;
 
 cast_expression
@@ -284,21 +281,18 @@ argument_expression_list
 // Function
 
 function_declaration 
-    : { ast_push("function"); } storage_class* ( PRECISE )? 
-        ( type { ast_assign(); }| VOID_TOKEN ) 
-        ID{ ast_push("ID"); ast_addvalue($ID.text); ast_assign();} 
-        LPAREN ( {ast_push("argument_list");} argument_list {ast_assign();})? RPAREN ( COLON SEMANTIC )?
+    : storage_class* ( PRECISE )? ReturnValue=( type | VOID_TOKEN ) Name=ID LPAREN (argument_list)? RPAREN ( COLON SEMANTIC )?
     LCURLY
-        {ast_push("function_body");}( statement {ast_assign();} )*{ast_assign();}
+        statement*
     RCURLY
 	;
 	
 argument_list
-    : argument {ast_assign();} ( COMMA argument {ast_assign();} )* 
+    : argument ( COMMA argument )* 
     ;
     
 argument
-    : {ast_push("argument");} input_modifier? type{ast_assign();} Name=ID{ast_push("ID");ast_addvalue($ID.text);ast_assign();} ( COLON SEMANTIC )? ( INTERPOLATION_MODIFIER )? ( ASSIGN initial_value )?
+    : input_modifier? type Name=ID ( COLON SEMANTIC )? ( INTERPOLATION_MODIFIER )? ( ASSIGN initial_value )?
     ;
     
 input_modifier
@@ -325,17 +319,17 @@ sampler_body
 // Variables
 
 variable_declaration
-    : {ast_push("variable_declaration");} storage_class* type_modifier* type{ast_assign();}
-        variable_declaration_body{ast_assign();} ( COMMA variable_declaration_body{ast_assign();} )* SEMI
+    : storage_class* type_modifier* type 
+        variable_declaration_body ( COMMA variable_declaration_body )* SEMI
 	;
 	
 variable_declaration_body
-    : {ast_push("variable");}ID{ast_addvalue($ID.text);}( LBRACKET INT{ast_set("size", $INT.text);} RBRACKET )?
-        ( COLON SEMANTIC {ast_set("semantic", $INT.text);} ) ?
+    : ID ( LBRACKET INT RBRACKET )?
+        ( COLON SEMANTIC ) ?
         ( COLON packoffset )?
         ( COLON register_rule ) ?
         annotations ?
-        ( ASSIGN initial_value {ast_assign();} ) ?
+        ( ASSIGN initial_value ) ?
     ;
 	 
 storage_class
@@ -371,12 +365,11 @@ initial_value
     ;
     
 type
-    @after{ ast_push("type"); ast_addvalue($type.text); }
     : intrinsic_type 
     | user_defined_type
     ;
    
-intrinsic_type  
+intrinsic_type 
     : MATRIX_TYPE
     | VECTOR_TYPE
     | SCALAR_TYPE
@@ -394,13 +387,13 @@ struct_definition
     ;
 
 constant_expression
-    : (ID) => variable_expression
-    | literal_value 
-    ;
-    
+  : (ID) => variable_expression
+  | literal_value ;
+
 literal_value
-    :  value=( FLOAT | INT )  { ast_push("literal"); ast_addvalue($value.text); }
-    ;
+  : FLOAT
+  | INT
+  ;
 
 SEMANTIC
     : 'POSITION'
