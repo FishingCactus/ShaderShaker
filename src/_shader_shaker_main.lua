@@ -29,14 +29,13 @@ function _shaker_shaker_load_shader_file( filename )
     if extension == "lua" or extension == "ssl" then
         dofile( filename )
     elseif extension == "fx" then
-        converted_ssl = ConvertHLSLToSSL( filename )
-        local text_as_function = load( converted_ssl )
+        local ast = ParseHLSL( filename )
         
-        if text_as_function == nil then
-            return "Fail to load converted code from " .. filename;
-		else
-			text_as_function()
+        if ast == nil then
+            return "Fail to load hlsl code from " .. filename;
         end
+        
+        -- TODO Process ast
     else
         return "Unsupported file extension while trying to load " .. filename
     end

@@ -17,10 +17,13 @@ bool test(
     }
     else if( a - x < 5.0f )
     {
+        a = 1.0;
         return a >= x;
     }
     else
     {
-        return a != x;
+        a = x;
     }
+    
+    return false;
 }

@@ -110,7 +110,7 @@ statement
     ;
   
 assignment_statement
-    :  lvalue_expression assignment_operator expression SEMI 
+    :  {ast_push();} lvalue_expression{ast_assign();} assignment_operator{ast_setname($assignment_operator.text);} expression{ast_assign();}  SEMI 
     ;
     
 pre_modify_statement
@@ -135,7 +135,7 @@ self_modify_operator
     ;
   
 block_statement
-    : LCURLY (statement)* RCURLY
+    : {ast_push("block");}LCURLY (statement{ast_assign();})* RCURLY
     ;
   
 expression_statement
