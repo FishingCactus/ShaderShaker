@@ -66,7 +66,9 @@ function table.tostring_ast( ast, indentation )
   end
   local prefix = string.rep( "    ", indentation )
   
-  if #result == 1 and string.find(result[1], '\n') == nil then
+  if #result == 0 then
+    return prefix .. ( ast.name or "" ) .. "{}"
+  elseif #result == 1 and string.find(result[1], '\n') == nil then
     return prefix .. ( ast.name or "" ) .. "{" .. string.sub(result[1], (indentation+1)
      * 4 + 1) .. "}"
   else

@@ -16,7 +16,6 @@ float4x4
 int
 	scalar_int,
 	scalar_int_with_value = 5;
-	
 shared float
     shared_variable;
 const int

@@ -230,7 +230,7 @@ multiplicative_expression
     ;
 
 cast_expression
-    : LPAREN type RPAREN cast_expression
+    : {ast_push("cast");}LPAREN type {ast_assign();} RPAREN cast_expression{ast_assign();}
     | unary_expression
     ;
 
@@ -328,7 +328,10 @@ sampler_body
 // Variables
 
 variable_declaration
-    : {ast_push("variable_declaration");} storage_class* type_modifier* type{ast_assign();}
+    : {ast_push("variable_declaration");} 
+        {ast_push("storage");}(storage_class {ast_addvalue($storage_class.text);} )*{ast_assign();} 
+        {ast_push("modifier");} ( type_modifier {ast_addvalue($type_modifier.text);} )* {ast_assign();}
+        type{ast_assign();}
         variable_declaration_body{ast_assign();} ( COMMA variable_declaration_body{ast_assign();} )* SEMI
 	;
 	
@@ -374,9 +377,7 @@ initial_value
     ;
     
 type
-    @after{ ast_push("type"); ast_addvalue($type.text); }
-    : intrinsic_type 
-    | user_defined_type
+    : type = ( intrinsic_type | user_defined_type ) { ast_push("type"); ast_addvalue($type.text); }
     ;
    
 intrinsic_type  

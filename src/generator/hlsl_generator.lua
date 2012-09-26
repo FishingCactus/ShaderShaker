@@ -9,7 +9,7 @@ HLSLGenerator = {
             end
 
             i = 0
-            ShaderPrint( HLSLGenerator[ "process_" .. value.name ]( value ) )
+            ShaderPrint( HLSLGenerator[ "process_" .. value.name ]( value ) .. '\n' )
             
         end
     
@@ -77,17 +77,26 @@ HLSLGenerator = {
     [ "process_variable_declaration" ] = function( node )
 
         local prefix = string.rep( [[    ]], i )
-        local output = prefix .. node[1][1] .. '\n'
-        local index = 2
+        local output = prefix
+        local index
         local previous_i = i
         
-        i = i +1
+        if #node[1] ~= 0 then
+            output = output .. table.concat( node[1], ' ' ) .. ' ';
+        end
         
+        if #node[2] ~= 0 then
+            output = output .. table.concat( node[2], ' ' ) .. ' ';
+        end
+        
+        output = output .. node[3][1] .. '\n'
+        i = i +1
+        index = 4
         while node[index] ~= nil do
         
             local prefix = string.rep( [[    ]], i )
             
-            if index ~= 2 then
+            if index ~= 4 then
                 output = output .. ',\n'
             end
             
@@ -120,6 +129,21 @@ HLSLGenerator = {
     
     ["process_literal"] = function( node )
         return node[ 1 ]
+    end,
+    
+    ["process_initial_value_table"] = function( node )
+        local result= {}
+        
+        for _, value in ipairs( node ) do
+            result[ _ ] = HLSLGenerator.ProcessNode( value )
+        end
+        
+        return '{' .. table.concat( result, ', ' ) .. '}';
+    end,
+    
+    ["process_cast"] = function( node )
+    
+        return '(' ..node[1][1] .. ')' .. HLSLGenerator.ProcessNode( node[2] )
     end
 }
 
