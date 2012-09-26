@@ -94,7 +94,17 @@ HLSLGenerator = {
     
     ["process_argument"] = function( argument )
 
-        return argument[ 1 ][ 1 ] .. ' ' .. argument[ 2 ][ 1 ]
+        local output = argument[ 1 ][ 1 ] .. ' ' .. argument[ 2 ][ 1 ]
+        
+        if #argument > 2 then
+            for i=3, #argument do
+                if argument[i].name == "semantic" then
+                    output = output .. ':' .. argument[i][1]
+                end
+            end
+        end
+        
+        return output
     end,
     
     [ "process_variable_declaration" ] = function( node )

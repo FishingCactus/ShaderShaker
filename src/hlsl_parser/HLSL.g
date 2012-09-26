@@ -301,7 +301,10 @@ argument_list
     ;
     
 argument
-    : {ast_push("argument");} input_modifier? type{ast_assign();} Name=ID{ast_push("ID");ast_addvalue($ID.text);ast_assign();} ( COLON SEMANTIC )? ( INTERPOLATION_MODIFIER )? ( ASSIGN initial_value )?
+    : {ast_push("argument");} input_modifier? type{ast_assign();} 
+        Name=ID{ast_push("ID");ast_addvalue($ID.text);ast_assign();} 
+        ( COLON SEMANTIC {ast_push("semantic");ast_addvalue($SEMANTIC.text);ast_assign();} )? 
+        ( INTERPOLATION_MODIFIER )? ( ASSIGN initial_value {ast_assign();} )?
     ;
     
 input_modifier
