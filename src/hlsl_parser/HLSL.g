@@ -114,19 +114,19 @@ assignment_statement
     ;
     
 pre_modify_statement
-    : pre_modify_expression SEMI 
+    : pre_modify_expression SEMI {ast_setname( "pre_modify_statement" );}
     ;
 
 pre_modify_expression
-    : self_modify_operator lvalue_expression 
+    : {ast_push("pre_modify");} self_modify_operator{ast_addvalue($self_modify_operator.text);} lvalue_expression{ast_assign();}
     ;
 
 post_modify_statement
-    : post_modify_expression SEMI 
+    : post_modify_expression SEMI {ast_setname( "post_modify_statement" );}
     ;
 
 post_modify_expression
-    : lvalue_expression self_modify_operator 
+    : {ast_push("post_modify");}lvalue_expression {ast_assign();} self_modify_operator {ast_addvalue($self_modify_operator.text);}
     ;
 
 self_modify_operator
@@ -149,10 +149,10 @@ if_statement
     ;
 
 iteration_statement
-    : WHILE LPAREN expression RPAREN statement
-    | FOR LPAREN ( assignment_statement | variable_declaration )
-        equality_expression SEMI modify_expression RPAREN statement
-    | DO statement WHILE LPAREN expression RPAREN SEMI
+    : WHILE {ast_push("while");} LPAREN expression{ast_assign();} RPAREN statement{ast_assign();}
+    | FOR LPAREN {ast_push("for");}( assignment_statement | variable_declaration ){ast_assign();}
+        equality_expression{ast_assign();} SEMI modify_expression{ast_assign();} RPAREN statement{ast_assign();}
+    | DO {ast_push("do_while");}statement{ast_assign();} WHILE LPAREN expression{ast_assign();} RPAREN SEMI
     ;
   
 modify_expression
@@ -163,7 +163,7 @@ modify_expression
     ;
     
 jump_statement
-    : BREAK SEMI
+    : BREAK SEMI {ast_push("break");}
     | CONTINUE SEMI
     | RETURN {ast_push("return");} ( expression {ast_assign();} )? SEMI 
     | DISCARD SEMI

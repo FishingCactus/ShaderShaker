@@ -35,16 +35,17 @@ HLSLGenerator = {
         
         i = i + 1
         
-        output = prefix .. function_node[ 1 ][ 1 ] .. " " .. function_node[ 2 ][ 1 ] .. "(\n"
+        output = prefix .. function_node[ 1 ][ 1 ] .. ' ' .. function_node[ 2 ][ 1 ]
         
         if function_node[ 3 ].name == "argument_list" then
             function_body_index = 4
-            output = output .. HLSLGenerator.process_argument_list( function_node[ 3 ] )
+            output = output .. '(\n' .. HLSLGenerator.process_argument_list( function_node[ 3 ] ) .. '\n' .. prefix
         else
-            fuction_body_index = 3
+            output = output .. '('
+            function_body_index = 3
         end
         
-        output = output .. '\n' .. prefix .. ')\n' .. prefix .. '{\n'
+        output = output .. ')\n' .. prefix .. '{\n'
         
         for _, statement in ipairs( function_node[ function_body_index ] ) do
         
@@ -121,6 +122,11 @@ HLSLGenerator = {
         else
             return prefix .. 'return ' .. HLSLGenerator.ProcessNode( node[ 1 ] ) .. ';'
         end
+    end,
+    
+    ["process_break"] = function( node )
+        local prefix = string.rep( [[    ]], i )
+        return prefix .. 'break;'
     end,
     
     ["process_variable"] = function( node )
@@ -204,6 +210,25 @@ HLSLGenerator = {
         return output .. '\n'
     end,
     
+    [ "process_for" ] = function( node )
+        local previous_i = i
+        local prefix = string.rep([[    ]], i )
+        
+        i = 0
+        
+        local output = prefix .. 
+            'for( ' .. HLSLGenerator.ProcessNode( node[1] ) 
+            .. HLSLGenerator.ProcessNode( node[2] ) .. ';' 
+            .. HLSLGenerator.ProcessNode( node[3] ) .. ')\n'
+            
+        i = previous_i + 1
+        output = output .. HLSLGenerator.ProcessNode( node[4] )
+            
+        i = previous_i
+        
+        return output
+    end,
+    
     [ "process_block" ] = function( node )
         local previous_i = i
         local prefix = string.rep([[    ]], i - 1 )
@@ -227,7 +252,15 @@ HLSLGenerator = {
         local prefix = string.rep([[    ]], i )
         
         return prefix .. HLSLGenerator.ProcessNode( node[ 1 ] ) .. ' = ' .. HLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
-    end 
+    end,
+    
+    [ "process_pre_modify" ] = function( node )
+        return node[1] .. HLSLGenerator.ProcessNode( node[2] )
+    end,
+    
+    [ "process_post_modify" ] = function( node )
+        return HLSLGenerator.ProcessNode( node[1] ) .. node[2]
+    end
     
 }
 
