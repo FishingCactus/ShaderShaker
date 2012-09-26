@@ -144,7 +144,91 @@ HLSLGenerator = {
     ["process_cast"] = function( node )
     
         return '(' ..node[1][1] .. ')' .. HLSLGenerator.ProcessNode( node[2] )
-    end
+    end,
+    
+    -- If statement
+    
+    ["process_if"] = function( node )
+    
+        local output = ''
+    
+        for _, block in ipairs( node ) do
+            output = output .. HLSLGenerator.ProcessNode( block )
+        end
+        
+        return output
+    end,
+    
+    ["process_if_block"] = function( node )
+        local prefix = string.rep( [[    ]], i )
+        local previous_i = i
+        
+        i = i + 1
+        
+        local output = prefix .. 'if (' .. HLSLGenerator.ProcessNode( node[1] ) .. ')\n'
+        
+        output = output .. HLSLGenerator.ProcessNode( node[ 2 ] )
+        
+        i = previous_i
+        
+        return output .. '\n'
+    end,
+    
+    ["process_else_if_block"] = function( node )
+        local prefix = string.rep( [[    ]], i )
+        local previous_i = i
+        
+        i = i + 1
+        
+        local output = prefix .. 'else if (' .. HLSLGenerator.ProcessNode( node[1] ) .. ')\n'
+        
+        output = output .. HLSLGenerator.ProcessNode( node[ 2 ] )
+        
+        i = previous_i
+        
+        return output .. '\n'
+    end,
+    
+     ["process_else_block"] = function( node )
+        local prefix = string.rep( [[    ]], i )
+        local previous_i = i
+        
+        i = i + 1
+        
+        local output = prefix .. 'else\n'
+        
+        output = output .. HLSLGenerator.ProcessNode( node[ 1 ] )
+        
+        i = previous_i
+        
+        return output .. '\n'
+    end,
+    
+    [ "process_block" ] = function( node )
+        local previous_i = i
+        local prefix = string.rep([[    ]], i - 1 )
+        
+        local output = prefix .. '{\n'
+        
+        for _, statement in ipairs( node ) do
+            output = output .. HLSLGenerator.ProcessNode( statement ) .. '\n'
+        end
+        
+        output = output .. prefix .. '}'
+        
+        return output
+    end,
+    
+    [ "process_=" ] = function( node )
+        return HLSLGenerator.ProcessNode( node[ 1 ] ) .. ' = ' .. HLSLGenerator.ProcessNode( node[ 2 ] )
+    end,
+    
+    [ "process_=_statement" ] = function( node )
+        local prefix = string.rep([[    ]], i )
+        
+        return prefix .. HLSLGenerator.ProcessNode( node[ 1 ] ) .. ' = ' .. HLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
+    end 
+    
 }
 
 local function AddOperator( operator )
@@ -153,9 +237,20 @@ local function AddOperator( operator )
         return '(' .. HLSLGenerator.ProcessNode( node[ 1 ] ) .. ') ' .. operator .. ' (' .. HLSLGenerator.ProcessNode( node[ 2 ] ) .. ')'
     end
 end
+
 AddOperator( '+' )
 AddOperator( '-' )
 AddOperator( '*' )
 AddOperator( '/' )
+AddOperator( '==' )
+AddOperator( '||' )
+AddOperator( '&&' )
+AddOperator( '&' )
+AddOperator( '|' )
+AddOperator( '<' )
+AddOperator( '>' )
+AddOperator( '<=' )
+AddOperator( '>=' )
+AddOperator( '!=' )
 
 RegisterPrinter( HLSLGenerator, "hlsl", "fx" )

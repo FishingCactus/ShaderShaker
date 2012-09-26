@@ -110,7 +110,7 @@ statement
     ;
   
 assignment_statement
-    :  {ast_push();} lvalue_expression{ast_assign();} assignment_operator{ast_setname($assignment_operator.text);} expression{ast_assign();}  SEMI 
+    :  {ast_push();} lvalue_expression{ast_assign();} assignment_operator{ast_setname($assignment_operator.text + "_statement");} expression{ast_assign();}  SEMI 
     ;
     
 pre_modify_statement
