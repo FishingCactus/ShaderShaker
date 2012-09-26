@@ -12,7 +12,7 @@ VS_OUTPUT RenderSceneVS( float4 vPos : POSITION,
                          uniform bool bTexture,
                          uniform bool bAnimate )
 {
-    //VS_OUTPUT Output;
+    VS_OUTPUT Output;
 
-    //return Output;    
+    return Output;    
 }

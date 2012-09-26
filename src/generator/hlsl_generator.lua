@@ -25,6 +25,28 @@ HLSLGenerator = {
     
     end,
     
+    ["process_struct_definition"] = function( node )
+        output = 'struct ' .. node[ 1 ] .. '\n{\n'
+        
+        for _, field in ipairs( node ) do
+        
+            if _ ~= 1 then
+                
+                output = output .. field[1][1] .. ' ' .. field[2]
+                
+                if field[3] ~= nil then
+                    output = output .. ' : ' .. field[3][1]
+                end
+                
+                output = output .. ';\n'
+            end
+        
+        end
+        
+        output = output .. '}'
+        return output
+    
+    end,
     
     ["process_function"] = function( function_node )
     

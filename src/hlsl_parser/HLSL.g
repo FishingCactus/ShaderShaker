@@ -74,7 +74,7 @@ global_declaration
     : variable_declaration {ast_assign();}
 	| texture_declaration
 	| sampler_declaration
-	| struct_definition
+	| struct_definition {ast_assign();}
 	| function_declaration {ast_assign();}
 	;
 	
@@ -391,9 +391,10 @@ user_defined_type // :TODO: validates that it's a valid type
     ;
     
 struct_definition
-    : 'struct' Name=ID { TypeTable.insert( $Name.text ); } 
+    : STRUCT {ast_push("struct_definition");} Name=ID { TypeTable.insert( $Name.text ); ast_addvalue( $Name.text ); } 
     LCURLY
-        ( INTERPOLATION_MODIFIER? intrinsic_type MemberName=ID  ( COLON SEMANTIC )? SEMI )+ 
+        ( {ast_push("field");} INTERPOLATION_MODIFIER? type{ast_assign();} MemberName=ID{ast_addvalue($MemberName.text);}  
+            ( COLON SEMANTIC {ast_push("semantic"); ast_addvalue($SEMANTIC.text); ast_assign();})? SEMI {ast_assign();} )+ 
     RCURLY SEMI
     ;
 
@@ -486,6 +487,7 @@ BITWISE_SHIFTR:     '>>';
 VOID_TOKEN:         'void';
 TRUE:               'true';
 FALSE:              'false';
+STRUCT:             'struct';
 
 TEXTURE_TYPE
     : 
