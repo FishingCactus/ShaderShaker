@@ -190,7 +190,7 @@ logical_or_expression
     ;
 
 logical_and_expression
-    : not_expression ( AND {ast_push("&&"); ast_swap(); ast_assign();} logical_and_expression {ast_assign();} )*
+    : not_expression ( AND {ast_push("&&"); ast_swap(); ast_assign();} not_expression {ast_assign();} )*
     ;
     
 not_expression 
@@ -288,7 +288,7 @@ argument_expression_list
 
 function_declaration 
     : { ast_push("function"); } storage_class* ( PRECISE )? 
-        ( type { ast_assign(); }| VOID_TOKEN ) 
+        ( type { ast_assign(); }| VOID_TOKEN {ast_push("type");ast_addvalue("void");ast_assign();} ) 
         ID{ ast_push("ID"); ast_addvalue($ID.text); ast_assign();} 
         LPAREN ( {ast_push("argument_list");} argument_list {ast_assign();})? RPAREN ( COLON SEMANTIC )?
     LCURLY
@@ -370,7 +370,7 @@ annotations
 initial_value
     : 
     expression
-    | LCURLY expression ( COMMA expression )* RCURLY
+    | LCURLY {ast_push( "initial_value_table");}expression {ast_assign();} ( COMMA expression {ast_assign();} )* RCURLY
     ;
     
 type
@@ -402,7 +402,7 @@ constant_expression
     ;
     
 literal_value
-    :  value=( FLOAT | INT )  { ast_push("literal"); ast_addvalue($value.text); }
+    :  value=( FLOAT | INT | TRUE | FALSE )  { ast_push("literal"); ast_addvalue($value.text); }
     ;
 
 SEMANTIC
@@ -482,10 +482,13 @@ BITWISE_OR:         '|';
 BITWISE_XOR:        '^';
 BITWISE_SHIFTL:     '<<';
 BITWISE_SHIFTR:     '>>';
-VOID_TOKEN:               'void';
+VOID_TOKEN:         'void';
+TRUE:               'true';
+FALSE:              'false';
 
 TEXTURE_TYPE
-    : 'texture'
+    : 
+    'texture'
     | 'texture1D'
     | 'texture1DArray'
     | 'texture2D'

@@ -25,17 +25,7 @@ int HLSLConverter::ParseAst(
     }
     
     assert( lua_istable( lua_state, -1 ) );
-    
-    lua_getglobal( lua_state, "table" );
-    lua_getfield( lua_state, -1, "tostring_ast" );
-    lua_remove( lua_state, -2 );
-    
-    lua_pushvalue( lua_state, -2 );
-    
-    lua_pcall( lua_state, 1, 1, 0 );
-    printf( "%s\n", lua_tostring( lua_state, -1 ) );
-    
-    
+
     return 1;   
 }
 

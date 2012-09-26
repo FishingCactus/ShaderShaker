@@ -24,12 +24,14 @@ end
 
 function _shaker_shaker_load_shader_file( filename )
 
+    local ast
     local extension = string.match( filename, "%w+%.(%w+)" )
     
     if extension == "lua" or extension == "ssl" then
         ast = dofile( filename )
     elseif extension == "fx" then
-        local ast = ParseHLSL( filename )
+        
+        ast = ParseHLSL( filename )
         
         if ast == nil then
             return "Fail to load hlsl code from " .. filename;
@@ -40,6 +42,7 @@ function _shaker_shaker_load_shader_file( filename )
         return "Unsupported file extension while trying to load " .. filename
     end
     
+    GetSelectedPrinter().ProcessAst( ast )
     
         
     return 0

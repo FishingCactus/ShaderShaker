@@ -9,7 +9,11 @@ return {
     -- Printer
     
     "printer/printer_manager.lua", -- Must remain first of printer files
-    "printer/hlsl_printer.lua",
+    
+    -- Code Generator
+    
+    "generator/ast_generator.lua",
+    "generator/hlsl_generator.lua",
     
     -- Utilities
     
