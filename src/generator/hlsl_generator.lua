@@ -229,6 +229,38 @@ HLSLGenerator = {
         return output
     end,
     
+    [ "process_do_while" ] = function( node )
+        local previous_i = i
+        local prefix = string.rep([[    ]], i )
+        
+        i = i + 1
+        
+        local output = prefix .. 'do\n'
+            
+        output = output .. HLSLGenerator.ProcessNode( node[1] )
+        output = output .. 'while( ' .. HLSLGenerator.ProcessNode( node[2] ) .. ' );\n'
+            
+        i = previous_i
+        
+        return output
+        
+    end,
+    
+    [ "process_while" ] = function( node )
+        local previous_i = i
+        local prefix = string.rep([[    ]], i )
+        
+        i = i + 1
+        
+        output = prefix .. 'while( ' .. HLSLGenerator.ProcessNode( node[1] ) .. ' )\n'
+        output = output .. HLSLGenerator.ProcessNode( node[2] ) .. '\n'
+            
+        i = previous_i
+        
+        return output
+        
+    end,
+    
     [ "process_block" ] = function( node )
         local previous_i = i
         local prefix = string.rep([[    ]], i - 1 )
@@ -253,6 +285,26 @@ HLSLGenerator = {
         
         return prefix .. HLSLGenerator.ProcessNode( node[ 1 ] ) .. ' = ' .. HLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
     end,
+    [ "process_-=_statement" ] = function( node )
+        local prefix = string.rep([[    ]], i )
+        
+        return prefix .. HLSLGenerator.ProcessNode( node[ 1 ] ) .. ' -= ' .. HLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
+    end,
+    [ "process_*=_statement" ] = function( node )
+        local prefix = string.rep([[    ]], i )
+        
+        return prefix .. HLSLGenerator.ProcessNode( node[ 1 ] ) .. ' *= ' .. HLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
+    end,
+        [ "process_+=_statement" ] = function( node )
+        local prefix = string.rep([[    ]], i )
+        
+        return prefix .. HLSLGenerator.ProcessNode( node[ 1 ] ) .. ' += ' .. HLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
+    end,
+    [ "process_/=_statement" ] = function( node )
+        local prefix = string.rep([[    ]], i )
+        
+        return prefix .. HLSLGenerator.ProcessNode( node[ 1 ] ) .. ' /= ' .. HLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
+    end,
     
     [ "process_pre_modify" ] = function( node )
         return node[1] .. HLSLGenerator.ProcessNode( node[2] )
@@ -260,6 +312,18 @@ HLSLGenerator = {
     
     [ "process_post_modify" ] = function( node )
         return HLSLGenerator.ProcessNode( node[1] ) .. node[2]
+    end,
+    
+    [ "process_pre_modify_statement" ] = function( node )
+        local prefix = string.rep([[    ]], i )
+        
+        return prefix .. node[1] .. HLSLGenerator.ProcessNode( node[2] )
+    end,
+    
+    [ "process_post_modify_statement" ] = function( node )
+        local prefix = string.rep([[    ]], i )
+        
+        return prefix .. HLSLGenerator.ProcessNode( node[1] ) .. node[2]
     end
     
 }
