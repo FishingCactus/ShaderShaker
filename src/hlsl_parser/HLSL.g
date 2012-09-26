@@ -56,8 +56,10 @@ options {
     {
         return 
             swizzle.size() <= 4
-            && std::find_if( swizzle.begin(), swizzle.end(), is_not_rgba ) == swizzle.end()
-            && std::find_if( swizzle.begin(), swizzle.end(), is_not_xyzw ) == swizzle.end();     
+            && ( 
+                std::find_if( swizzle.begin(), swizzle.end(), is_not_rgba ) == swizzle.end()
+                || std::find_if( swizzle.begin(), swizzle.end(), is_not_xyzw ) == swizzle.end()
+                );
     }
     
     HLSLParserListener
@@ -72,8 +74,8 @@ translation_unit
 	
 global_declaration
     : variable_declaration {ast_assign();}
-	| texture_declaration
-	| sampler_declaration
+	| texture_declaration {ast_assign();}
+	| sampler_declaration {ast_assign();}
 	| struct_definition {ast_assign();}
 	| function_declaration {ast_assign();}
 	;
@@ -244,8 +246,8 @@ postfix_expression
     ;
   
 postfix_suffix
-    : ( DOT swizzle )
-    | ( DOT primary_expression )+ ;
+    : DOT swizzle { ast_push("swizzle");ast_swap();ast_assign();ast_addvalue($swizzle.text);}
+    | ( DOT { ast_push("postfix");ast_swap();ast_assign();} primary_expression {ast_assign();} )+ ;
   
 swizzle
     : ID { IsValidSwizzle( $ID.text ) }?
@@ -273,15 +275,15 @@ primary_expression
     ;
     
 constructor 
-    : type LPAREN argument_expression_list RPAREN
+    : {ast_push("constructor");}type{ast_assign();} LPAREN argument_expression_list{ast_assign();} RPAREN
     ;
   
 call_expression
-    : ID LPAREN argument_expression_list RPAREN
+    : {ast_push("call");}ID{ast_addvalue($ID.text);} LPAREN argument_expression_list{ast_assign();} RPAREN
     ;
 
 argument_expression_list
-    : ( expression ( COMMA expression )* )? 
+    : ( {ast_push("argument_expression_list");}expression{ast_assign();} ( COMMA expression {ast_assign();} )* )? 
     ;
   
 // Function
@@ -317,15 +319,17 @@ input_modifier
 // Texture & sampler
 
 texture_declaration
-    : TEXTURE_TYPE ID SEMI;
+    : t=TEXTURE_TYPE ID SEMI{ast_push("texture_declaration");ast_push("type");ast_addvalue($t.text);ast_assign();ast_addvalue($ID.text);}
+    ;
     
 sampler_declaration
-    : SAMPLER_TYPE Name=ID ( ASSIGN SAMPLER_TYPE )? LCURLY sampler_body* RCURLY SEMI
+    : {ast_push("texture_declaration");}t=SAMPLER_TYPE{ast_push("type");ast_addvalue($t.text);ast_assign();} 
+        Name=ID{ast_addvalue($Name.text);} ( ASSIGN SAMPLER_TYPE )? LCURLY (sampler_body{ast_assign();})* RCURLY SEMI
     ;
     
 sampler_body
-    : 'Texture' ASSIGN '<' ID '>' SEMI
-    | ID ASSIGN ID SEMI  
+    : 'Texture' ASSIGN '<' ID '>' SEMI { ast_push("texture");ast_addvalue($ID.text);}
+    | Name=ID ASSIGN Value=ID SEMI  { ast_push("parameter");ast_addvalue($Name.text);ast_addvalue($Value.text);}
     ;
     
 // Variables
@@ -380,7 +384,7 @@ initial_value
     ;
     
 type
-    : type = ( intrinsic_type | user_defined_type ) { ast_push("type"); ast_addvalue($type.text); }
+    : ( intrinsic_type | user_defined_type ) { ast_push("type"); ast_addvalue($type.text); }
     ;
    
 intrinsic_type  
