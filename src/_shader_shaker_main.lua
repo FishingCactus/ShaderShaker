@@ -27,7 +27,7 @@ function _shaker_shaker_load_shader_file( filename )
     local extension = string.match( filename, "%w+%.(%w+)" )
     
     if extension == "lua" or extension == "ssl" then
-        dofile( filename )
+        ast = dofile( filename )
     elseif extension == "fx" then
         local ast = ParseHLSL( filename )
         
@@ -39,6 +39,8 @@ function _shaker_shaker_load_shader_file( filename )
     else
         return "Unsupported file extension while trying to load " .. filename
     end
+    
+    
         
     return 0
 
