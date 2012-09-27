@@ -14,13 +14,13 @@ VS_OUTPUT RenderSceneVS( float4 vPos : POSITION,
 {
     VS_OUTPUT Output;
 
-    //const float d = 1.0;
-    //const float e = 2.0;
-    //const float f = 3.0;
+    const float d = 1.0;
+    const float e = 2.0;
+    const float f = 3.0;
 
     //Output.Position.x = ( d + e ) / f * 0.5;
 
-    //HelloWorld( d, e );
+    HelloWorld( d, e );
     //Blah();
 
     return Output;

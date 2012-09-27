@@ -46,7 +46,9 @@ HLSLGenerator = {
 
     ["process_pass"] = function( node )
 
-        output = 'pass ' .. node[ 1 ] .. '\r' .. '{' .. '\r'
+        local prefix = string.rep( [[    ]], 1 )
+
+        output = prefix .. 'pass ' .. node[ 1 ] .. '\r' .. prefix .. '{' .. '\r'
 
         -- add shader calls
         for _, field in ipairs( node ) do
@@ -58,13 +60,15 @@ HLSLGenerator = {
         
         end
 
-        return output .. '}'
+        return output .. '    }'
     
     end,
 
     ["process_shader_call"] = function( node )
 
-        output = node[ 1 ] .. ' = compile ' .. node[ 2 ] .. ' ' .. node[ 3 ] .. '('
+        local prefix = string.rep( [[    ]], 2 )
+        
+        output = prefix .. node[ 1 ] .. ' = compile ' .. node[ 2 ] .. ' ' .. node[ 3 ] .. '('
 
         if node[ 4 ] ~= nil then
             output = output .. ' '
@@ -73,6 +77,27 @@ HLSLGenerator = {
         end
         
         return output .. ');'
+    
+    end,
+
+    ["process_call"] = function( node )
+
+        local prefix = string.rep( [[    ]], i )
+        local output = prefix
+        local index
+        local previous_i = i
+        
+        output = '\r' .. prefix .. node[ 1 ] .. '('
+
+        if node[ 2 ] ~= nil then
+            output = output .. ' '
+            output = output .. HLSLGenerator.ProcessNode( node[ 2 ] )
+            output = output .. ' '
+        end
+
+        i = previous_i
+        
+        return output .. ');' .. '\r'
     
     end,
     
