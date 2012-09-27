@@ -92,14 +92,14 @@ shader_definition
     : {ast_push("shader_call");} TYPE=( VERTEX_SHADER|PIXEL_SHADER ) {ast_addvalue($TYPE.text);} 
     ASSIGN COMPILE SHADER_TYPE=ID {ast_addvalue($SHADER_TYPE.text);} 
     FUNCTION_NAME=ID {ast_addvalue($FUNCTION_NAME.text);} 
-    LPAREN shader_argument_list? RPAREN SEMI {ast_assign();}
-    //LPAREN argument_expression_list?{ast_assign();} RPAREN SEMI
+    LPAREN shader_argument_list RPAREN SEMI {ast_assign();}
     ;
     
 shader_argument_list
-    : constant_expression {ast_assign();}( COMMA constant_expression {ast_assign();} )*
+    : ( {ast_push("argument_expression_list");}constant_expression {ast_assign();}( COMMA constant_expression {ast_assign();} )* {ast_assign();} )?
     ;
-	
+
+
 // Statements
 
 statement
