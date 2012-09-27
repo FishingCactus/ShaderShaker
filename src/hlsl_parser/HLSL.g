@@ -49,7 +49,7 @@ options {
     
     static bool is_not_xyzw( const char value )
     {
-        return value < 'x' || value > 'w';
+        return value < 'w' || value > 'z';
     }
     
     static bool IsValidSwizzle( const std::string & swizzle )
@@ -89,9 +89,9 @@ pass
     ;
 
 shader_definition
-    : {ast_push("shader_call");} TYPE=( VERTEX_SHADER|PIXEL_SHADER ) {ast_addvalue($TYPE.text);} 
-    ASSIGN COMPILE SHADER_TYPE=ID {ast_addvalue($SHADER_TYPE.text);} 
-    FUNCTION_NAME=ID {ast_addvalue($FUNCTION_NAME.text);} 
+    : {ast_push("shader_call");} Type=( VERTEX_SHADER|PIXEL_SHADER ) {ast_addvalue($Type.text);} 
+    ASSIGN COMPILE ShaderType=ID {ast_addvalue($ShaderType.text);} 
+    FunctionName=ID {ast_addvalue($FunctionName.text);} 
     LPAREN shader_argument_list RPAREN SEMI {ast_assign();}
     ;
     
@@ -251,7 +251,8 @@ postfix_expression
   
 postfix_suffix
     : DOT swizzle { ast_push("swizzle");ast_swap();ast_assign();ast_addvalue($swizzle.text);}
-    | ( DOT { ast_push("postfix");ast_swap();ast_assign();} primary_expression {ast_assign();} )+ ;
+    | DOT { ast_push("postfix");ast_swap();ast_assign();} primary_expression {ast_assign();} ( postfix_suffix )?
+    ;
   
 swizzle
     : ID { IsValidSwizzle( $ID.text ) }?

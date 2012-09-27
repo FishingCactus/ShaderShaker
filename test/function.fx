@@ -18,10 +18,10 @@ VS_OUTPUT RenderSceneVS( float4 vPos : POSITION,
     const float e = 2.0;
     const float f = 3.0;
 
-    //Output.Position.x = ( d + e ) / f * 0.5;
+    output.Position.x = d + e;
 
     HelloWorld( d, e );
-    Blah();
+    Blah( d + e );
 
     return Output;
 }
