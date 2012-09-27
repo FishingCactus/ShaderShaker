@@ -25,3 +25,11 @@ src/hlsl_parser/HLSLLexer.*
 *.vcxproj
 *.filters
 *.tokens
+*.ipch
+output.ast
+output.fx
+premake4.exe
+*.opensdf
+*.sdf
+*.suo
+*.vcxproj.user

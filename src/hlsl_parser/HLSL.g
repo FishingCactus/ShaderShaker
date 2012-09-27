@@ -37,7 +37,7 @@ options {
     #include <iostream>
 	#include <string>
 	#include <set>
-
+	#include <algorithm>
 }
 
 @parser::members
@@ -81,15 +81,19 @@ global_declaration
 	;
 	
 technique
-    : TECHNIQUE Name=ID LCURLY pass* RCURLY
+    : {ast_push("technique");} TECHNIQUE Name=ID {ast_addvalue($Name.text);} LCURLY pass* RCURLY {ast_assign();}
     ;
     
 pass
-    : PASS Name=ID LCURLY shader_definition* RCURLY
+    : {ast_push("pass");} PASS Name=ID {ast_addvalue($Name.text);} LCURLY shader_definition* RCURLY {ast_assign();}
     ;
 
 shader_definition
-    : ( VERTEX_SHADER|PIXEL_SHADER ) ASSIGN COMPILE ID ID LPAREN shader_argument_list? RPAREN SEMI
+    : {ast_push("shader_call");} TYPE=( VERTEX_SHADER|PIXEL_SHADER ) {ast_addvalue($TYPE.text);} 
+    ASSIGN COMPILE SHADER_TYPE=ID {ast_addvalue($SHADER_TYPE.text);} 
+    FUNCTION_NAME=ID {ast_addvalue($FUNCTION_NAME.text);} 
+    LPAREN shader_argument_list? RPAREN SEMI {ast_assign();}
+    //LPAREN argument_expression_list?{ast_assign();} RPAREN SEMI
     ;
     
 shader_argument_list
@@ -166,9 +170,9 @@ modify_expression
     
 jump_statement
     : BREAK SEMI {ast_push("break");}
-    | CONTINUE SEMI
+    | CONTINUE SEMI  {ast_push("continue");}
     | RETURN {ast_push("return");} ( expression {ast_assign();} )? SEMI 
-    | DISCARD SEMI
+    | DISCARD SEMI  {ast_push("discard");}
     ;
    
 lvalue_expression
@@ -310,8 +314,8 @@ argument
     ;
     
 input_modifier
-    : IN
-    | OUT
+    : IN_TOKEN
+    | OUT_TOKEN
     | INOUT
     | UNIFORM
     ;
@@ -411,7 +415,7 @@ constant_expression
     ;
     
 literal_value
-    :  value=( FLOAT | INT | TRUE | FALSE )  { ast_push("literal"); ast_addvalue($value.text); }
+    :  value=( FLOAT | INT | TRUE_TOKEN | FALSE_TOKEN )  { ast_push("literal"); ast_addvalue($value.text); }
     ;
 
 SEMANTIC
@@ -434,8 +438,8 @@ GROUPSHARED:        'groupshared';
 STATIC:             'static';
 UNIFORM:            'uniform';
 VOLATILE:           'volatile';
-IN:                 'in';
-OUT:                'out';
+IN_TOKEN:           'in';
+OUT_TOKEN:          'out';
 INOUT:              'inout';
 BREAK:              'break';
 CONTINUE:           'continue';
@@ -492,8 +496,8 @@ BITWISE_XOR:        '^';
 BITWISE_SHIFTL:     '<<';
 BITWISE_SHIFTR:     '>>';
 VOID_TOKEN:         'void';
-TRUE:               'true';
-FALSE:              'false';
+TRUE_TOKEN:         'true';
+FALSE_TOKEN:        'false';
 STRUCT:             'struct';
 
 TEXTURE_TYPE
