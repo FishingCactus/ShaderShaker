@@ -283,11 +283,11 @@ constructor
     ;
   
 call_expression
-    : {ast_push("call");}ID{ast_addvalue($ID.text);} LPAREN argument_expression_list{ast_assign();} RPAREN
+    : {ast_push("call");}ID{ast_addvalue($ID.text);} LPAREN argument_expression_list RPAREN
     ;
 
 argument_expression_list
-    : ( {ast_push("argument_expression_list");}expression{ast_assign();} ( COMMA expression {ast_assign();} )* )? 
+    : ( {ast_push("argument_expression_list");}expression{ast_assign();} ( COMMA expression {ast_assign();} )* {ast_assign();} )? 
     ;
   
 // Function
