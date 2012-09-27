@@ -24,6 +24,51 @@ HLSLGenerator = {
         return HLSLGenerator[ "process_" .. node.name ]( node );
     
     end,
+
+    ["process_technique"] = function( node )
+                
+        output = 'technique ' .. node[ 1 ] .. '\r' .. '{' .. '\r'
+
+        -- add passes
+        
+        for _, field in ipairs( node ) do
+        
+            if _ ~= 1 then
+                
+                output = output .. HLSLGenerator.ProcessNode( field ) .. '\n'
+            end
+        
+        end
+
+        return output .. '}'
+    
+    end,
+
+    ["process_pass"] = function( node )
+
+        output = 'pass ' .. node[ 1 ] .. '\r' .. '{' .. '\r'
+
+        -- add shader calls
+        for _, field in ipairs( node ) do
+        
+            if _ ~= 1 then
+                
+                output = output .. HLSLGenerator.ProcessNode( field ) .. '\n'
+            end
+        
+        end
+
+        return output .. '}'
+    
+    end,
+
+    ["process_shader_call"] = function( node )
+                
+        output = node[ 1 ] .. ' = compile ' .. node[ 2 ] .. ' ' .. node[ 3 ] .. '();'
+
+        return output
+    
+    end,
     
     ["process_struct_definition"] = function( node )
         output = 'struct ' .. node[ 1 ] .. '\n{\n'

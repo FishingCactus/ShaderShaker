@@ -14,5 +14,30 @@ VS_OUTPUT RenderSceneVS( float4 vPos : POSITION,
 {
     VS_OUTPUT Output;
 
-    return Output;    
+    //const float d = 1.0;
+    //const float e = 2.0;
+    //const float f = 3.0;
+
+    //Output.Position.x = ( d + e ) / f * 0.5;
+
+    //HelloWorld( d, e );
+    //Blah();
+
+    return Output;
+}
+
+// ~~
+
+technique Default
+{
+    pass P0
+    {
+        VertexShader = compile vs_3_0 vs();
+        PixelShader = compile ps_3_0 ps( false, 123 );
+    }
+    pass P1
+    {
+        VertexShader = compile vs_3_0 vs1();
+        PixelShader = compile ps_3_0 ps1();
+    }
 }
