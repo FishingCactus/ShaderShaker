@@ -63,10 +63,16 @@ HLSLGenerator = {
     end,
 
     ["process_shader_call"] = function( node )
-                
-        output = node[ 1 ] .. ' = compile ' .. node[ 2 ] .. ' ' .. node[ 3 ] .. '();'
 
-        return output
+        output = node[ 1 ] .. ' = compile ' .. node[ 2 ] .. ' ' .. node[ 3 ] .. '('
+
+        if node[ 4 ] ~= nil then
+            output = output .. ' '
+            output = output .. HLSLGenerator.ProcessNode( node[ 4 ] )
+            output = output .. ' '
+        end
+        
+        return output .. ');'
     
     end,
     
@@ -125,6 +131,18 @@ HLSLGenerator = {
         
     end,
     
+    ["process_argument_expression_list"] = function( argument_list )
+
+        local result = {}
+        
+        for _,argument in ipairs( argument_list ) do
+            result[ _ ] = argument[ 1 ]
+        end
+        
+        return table.concat( result, ', ' );
+
+    end,
+
     ["process_argument_list"] = function( argument_list )
         local output
         local result = {}
