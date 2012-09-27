@@ -12,6 +12,7 @@ return {
     
     -- Code Generator
     
+    "generator/generator_utils.lua",
     "generator/ast_generator.lua",
     "generator/hlsl_generator.lua",
     

@@ -444,14 +444,48 @@ HLSLGenerator = {
         local prefix = string.rep([[    ]], i )
         
         return prefix .. HLSLGenerator.ProcessNode( node[1] ) .. node[2]
+    end,
+    
+    [ "process_!" ] = function( node )
+    
+        local node_1 = HLSLGenerator.ProcessNode( node[ 1 ] )
+        local output = '!'
+        
+        if GetOperatorPrecedence( '!' ) < GetOperatorPrecedence( node[ 1 ].name ) then
+            output = output .. '(' .. node_1 .. ')'
+        else
+            output = output .. node_1
+        end
+        
+        return output
     end
     
 }
 
 local function AddOperator( operator )
 
+    local operator_precedence = GetOperatorPrecedence( operator )
     HLSLGenerator[ "process_" .. operator ] = function( node )
-        return '(' .. HLSLGenerator.ProcessNode( node[ 1 ] ) .. ') ' .. operator .. ' (' .. HLSLGenerator.ProcessNode( node[ 2 ] ) .. ')'
+    
+        local node_1 = HLSLGenerator.ProcessNode( node[ 1 ] )
+        local node_2 = HLSLGenerator.ProcessNode( node[ 2 ] )
+        local output
+        
+        if operator_precedence < GetOperatorPrecedence( node[ 1 ].name ) then
+            output = '(' .. node_1 .. ')'
+        else
+            output = node_1
+        end
+        
+        output = output .. ' ' .. operator .. ' '
+        
+        if operator_precedence < GetOperatorPrecedence( node[ 2 ].name ) then
+            output = output .. '(' .. node_2 .. ')'
+        else
+            output = output .. node_2
+        end
+        
+        return output
     end
 end
 

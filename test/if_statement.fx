@@ -15,7 +15,7 @@ bool test(
     {
         return x + a <= 23.35f;
     }
-    else if( a - x < 5.0f )
+    else if( !(a - x < 5.0f) )
     {
         a = 1.0;
         return a >= x;

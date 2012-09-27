@@ -192,19 +192,15 @@ conditional_expression
     ;
 
 logical_or_expression
-    :  exclusive_or_expression ( {ast_push("||");ast_swap();ast_assign();} OR logical_or_expression {ast_assign();} )*
+    :  logical_and_expression ( {ast_push("||");ast_swap();ast_assign();} OR logical_and_expression {ast_assign();} )*
     ;
 
 logical_and_expression
-    : not_expression ( AND {ast_push("&&"); ast_swap(); ast_assign();} not_expression {ast_assign();} )*
+    : inclusive_or_expression ( AND {ast_push("&&"); ast_swap(); ast_assign();} inclusive_or_expression {ast_assign();} )*
     ;
-    
-not_expression 
-    : NOT {ast_push( "!" );} inclusive_or_expression {ast_assign();} 
-    | inclusive_or_expression;
 
 inclusive_or_expression
-    : exclusive_or_expression ( BITWISE_OR  {ast_push("|"); ast_swap(); ast_assign();} inclusive_or_expression{ast_assign();} )*
+    : exclusive_or_expression ( BITWISE_OR  {ast_push("|"); ast_swap(); ast_assign();} exclusive_or_expression{ast_assign();} )*
     ;
 
 exclusive_or_expression
@@ -241,7 +237,7 @@ cast_expression
     ;
 
 unary_expression
-    : (PLUS|MINUS) unary_expression
+    : op=(PLUS|MINUS|NOT|BITWISE_NOT){ast_push( "!" );} unary_expression {ast_assign();}
     | postfix_expression
     ;
 
@@ -486,6 +482,7 @@ NOT_EQUAL:          '!=';
 AND:                '&&';
 OR:                 '||';
 NOT:                '!';
+BITWISE_NOT:        '~';
 XOR:                '^^';
 LT_TOKEN:           '<';
 LTE:                '<=';
