@@ -27,7 +27,7 @@ HLSLGenerator = {
 
     ["process_technique"] = function( node )
                 
-        output = 'technique ' .. node[ 1 ] .. '\r' .. '{' .. '\r'
+        output = 'technique ' .. node[ 1 ] .. '\n' .. '{' .. '\r'
 
         -- add passes
         
@@ -48,7 +48,7 @@ HLSLGenerator = {
 
         local prefix = string.rep( [[    ]], 1 )
 
-        output = prefix .. 'pass ' .. node[ 1 ] .. '\r' .. prefix .. '{' .. '\r'
+        output = prefix .. 'pass ' .. node[ 1 ] .. '\n' .. prefix .. '{' .. '\n'
 
         -- add shader calls
         for _, field in ipairs( node ) do
@@ -97,16 +97,16 @@ HLSLGenerator = {
 
         i = previous_i
         
-        return output .. ');' .. '\r'
+        return output .. ');' .. '\n'
     
     end,
     
     ["process_struct_definition"] = function( node )
         output = 'struct ' .. node[ 1 ] .. '\n{\n'
         
-        for _, field in ipairs( node ) do
+        for index, field in ipairs( node ) do
         
-            if _ ~= 1 then
+            if index ~= 1 then
                 
                 output = output .. field[1][1] .. ' ' .. field[2]
                 
@@ -160,8 +160,8 @@ HLSLGenerator = {
 
         local result = {}
         
-        for _,argument in ipairs( argument_list ) do
-            result[ _ ] = argument[ 1 ]
+        for index,argument in ipairs( argument_list ) do
+            result[ index ] = argument[ 1 ]
         end
         
         return table.concat( result, ', ' );
@@ -173,8 +173,8 @@ HLSLGenerator = {
         local result = {}
         local prefix = string.rep( [[    ]], i )
         
-        for _,argument in ipairs( argument_list ) do
-            result[ _ ] = HLSLGenerator.process_argument( argument )
+        for index,argument in ipairs( argument_list ) do
+            result[ index ] = HLSLGenerator.process_argument( argument )
         end
         
         return prefix .. table.concat( result, ',\n' .. prefix );
