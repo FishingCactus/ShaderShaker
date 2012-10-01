@@ -97,7 +97,7 @@ HLSLGenerator = {
 
         i = previous_i
         
-        return output .. ');'
+        return output .. ')'
     
     end,
     
@@ -146,6 +146,12 @@ HLSLGenerator = {
         output = output .. '};'
 
         return output;
+    end,
+
+    ["process_constructor"] = function( node )
+
+        return node[ 1 ][ 1 ] .. '(' .. HLSLGenerator.ProcessNode( node[ 2 ] ) .. ')'
+    
     end,
     
     ["process_function"] = function( function_node )

@@ -276,7 +276,7 @@ primary_expression
     ;
     
 constructor 
-    : {ast_push("constructor");}type{ast_assign();} LPAREN argument_expression_list{ast_assign();} RPAREN
+    : {ast_push("constructor");}type{ast_assign();} LPAREN argument_expression_list RPAREN
     ;
   
 call_expression
@@ -517,10 +517,6 @@ TEXTURE2DARRAY:     T 'exture2DArray';
 TEXTURE3D:          T 'exture3D';
 TEXTURECUBE:        T 'extureCube';
 
-fragment 
-    T
-    : 't' | 'T'
-    ;
     
 SAMPLER_TYPE
     : 'sampler'
@@ -575,6 +571,11 @@ FLOAT_NUMBER
     :   ('-')?('0'..'9')+ '.' ('0'..'9')* EXPONENT? 
     |   ('-')?'.' ('0'..'9')+ EXPONENT?
     |   ('-')?('0'..'9')+ EXPONENT
+    ;
+
+fragment 
+    T
+    : 't' | 'T'
     ;
 
 COMMENT
