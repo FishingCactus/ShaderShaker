@@ -123,6 +123,30 @@ HLSLGenerator = {
         return output
     
     end,
+
+    ["process_texture_declaration"] = function( node )
+        return node[ 1 ][ 1 ] .. ' ' .. node[ 2 ] .. ';'
+    end,
+
+    ["process_sampler_declaration"] = function( node )
+        local prefix = string.rep( [[    ]], 1 )
+        
+        output = node[ 1 ][ 1 ] .. ' ' .. node[ 2 ] .. '\n{\n'
+
+        output = output .. prefix .. 'Texture = <' .. node[ 3 ][ 1 ] .. '>;\n'
+
+        for _, field in ipairs( node ) do
+        
+            if _ > 3 then
+                output = output .. prefix .. field[ 1 ] .. ' = ' .. field[ 2 ] .. ';\n'
+            end
+        
+        end
+
+        output = output .. '};'
+
+        return output;
+    end,
     
     ["process_function"] = function( function_node )
     

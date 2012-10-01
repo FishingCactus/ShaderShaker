@@ -319,17 +319,28 @@ input_modifier
 
 // Texture & sampler
 
+texture_type
+    : 
+    TEXTURE
+    | TEXTURE1D
+    | TEXTURE1DARRAY
+    | TEXTURE2D
+    | TEXTURE2DARRAY
+    | TEXTURE3D
+    | TEXTURECUBE
+    ;
+    
 texture_declaration
-    : t=TEXTURE_TYPE ID SEMI{ast_push("texture_declaration");ast_push("type");ast_addvalue($t.text);ast_assign();ast_addvalue($ID.text);}
+    : t=texture_type ID SEMI{ast_push("texture_declaration");ast_push("type");ast_addvalue($t.text);ast_assign();ast_addvalue($ID.text);}
     ;
     
 sampler_declaration
-    : {ast_push("texture_declaration");}t=SAMPLER_TYPE{ast_push("type");ast_addvalue($t.text);ast_assign();} 
+    : {ast_push("sampler_declaration");}t=SAMPLER_TYPE{ast_push("type");ast_addvalue($t.text);ast_assign();} 
         Name=ID{ast_addvalue($Name.text);} ( ASSIGN SAMPLER_TYPE )? LCURLY (sampler_body{ast_assign();})* RCURLY SEMI
     ;
     
 sampler_body
-    : 'Texture' ASSIGN '<' ID '>' SEMI { ast_push("texture");ast_addvalue($ID.text);}
+    : TEXTURE ASSIGN '<' ID '>' SEMI { ast_push("texture");ast_addvalue($ID.text);}
     | Name=ID ASSIGN Value=ID SEMI  { ast_push("parameter");ast_addvalue($Name.text);ast_addvalue($Value.text);}
     ;
     
@@ -498,15 +509,17 @@ TRUE_TOKEN:         'true';
 FALSE_TOKEN:        'false';
 STRUCT:             'struct';
 
-TEXTURE_TYPE
-    : 
-    'texture'
-    | 'texture1D'
-    | 'texture1DArray'
-    | 'texture2D'
-    | 'texture2DArray'
-    | 'texture3D'
-    | 'textureCube'
+TEXTURE:            T 'exture';
+TEXTURE1D:          T 'exture1D';
+TEXTURE1DARRAY:     T 'exture1DArray';
+TEXTURE2D:          T 'exture2D';
+TEXTURE2DARRAY:     T 'exture2DArray';
+TEXTURE3D:          T 'exture3D';
+TEXTURECUBE:        T 'extureCube';
+
+fragment 
+    T
+    : 't' | 'T'
     ;
     
 SAMPLER_TYPE
