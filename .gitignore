@@ -33,3 +33,4 @@ premake4.exe
 *.sdf
 *.suo
 *.vcxproj.user
+output.glfx
