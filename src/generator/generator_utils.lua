@@ -28,13 +28,12 @@ function GetOperatorPrecedence( operator )
 end
 
 local function _GetNodeOfType( node, type_name )
-    local yield = coroutine.yield
     
     for _, child_node in ipairs( node ) do
         
         if type( child_node ) == 'table' then        
             if child_node.name == type_name then
-                yield( child_node )
+                coroutine.yield( child_node )
             end
             
             _GetNodeOfType( child_node, type_name );
@@ -46,6 +45,11 @@ local function _GetNodeOfType( node, type_name )
 end
  
 function NodeOfType( node, type_name )
-    return coroutine.wrap(function() _GetNodeOfType( node, type_name ) end)
+    local co = coroutine.create(function () _GetNodeOfType( node, type_name ) end)
+      
+    return function ()   -- iterator
+        local code, res = coroutine.resume(co)
+        return res
+    end
 end
 
