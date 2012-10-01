@@ -27,7 +27,7 @@ HLSLGenerator = {
 
     ["process_technique"] = function( node )
                 
-        output = 'technique ' .. node[ 1 ] .. '\n' .. '{' .. '\r'
+        output = 'technique ' .. node[ 1 ] .. '\n' .. '{' .. '\n'
 
         -- add passes
         
