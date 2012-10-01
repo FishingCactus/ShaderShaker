@@ -234,6 +234,18 @@ HLSLGenerator = {
         
         return output .. ';'
     end,
+
+    ["process_postfix"] = function( node )
+        
+        return HLSLGenerator.ProcessNode( node[ 1 ] ) .. '.' .. HLSLGenerator.ProcessNode( node[ 2 ] )
+
+    end,
+
+    ["process_swizzle"] = function( node )
+        
+        return HLSLGenerator.ProcessNode( node[ 1 ] ) .. '.' .. node[ 2 ]
+
+    end,
     
     ["process_return"] = function( node )
         local prefix = string.rep( [[    ]], i )
