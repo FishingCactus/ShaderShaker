@@ -87,7 +87,7 @@ HLSLGenerator = {
         local index
         local previous_i = i
         
-        output = '\r' .. prefix .. node[ 1 ] .. '('
+        output = prefix .. node[ 1 ] .. '('
 
         if node[ 2 ] ~= nil then
             output = output .. ' '
@@ -97,7 +97,7 @@ HLSLGenerator = {
 
         i = previous_i
         
-        return output .. ');' .. '\n'
+        return output .. ');'
     
     end,
     
@@ -161,7 +161,7 @@ HLSLGenerator = {
         local result = {}
         
         for index,argument in ipairs( argument_list ) do
-            result[ index ] = argument[ 1 ]
+            result[ index ] = HLSLGenerator.ProcessNode( argument )
         end
         
         return table.concat( result, ', ' );

@@ -20,8 +20,8 @@ VS_OUTPUT RenderSceneVS( float4 vPos : POSITION,
 
     output.Position.x = d + e;
 
-    //HelloWorld( d, e );
-    //Blah( d + e );
+    HelloWorld( d, e );
+    Blah( d + e );
 
     return Output;
 }
