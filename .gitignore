@@ -34,3 +34,6 @@ premake4.exe
 *.suo
 *.vcxproj.user
 output.glfx
+src/host/lua-5.1.5/*
+ShaderShaker.deproj
+ShaderShaker.deuser
