@@ -22,7 +22,7 @@ return {
     "utilities/output.lua",
     "utilities/debug.lua",
     "utilities/reflection.lua",
-    "utilities/glsl_helper.lua"
+    "utilities/glsl_helper.lua",
 
     -- Process
     
