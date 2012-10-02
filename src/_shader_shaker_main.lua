@@ -18,33 +18,23 @@ function _shader_shaker_main(script_path, output_file, override_language)
     else
         InitializeOutputPrint()
     end
-
 end
 
 
-function _shaker_shaker_load_shader_file( filename )
+function _shaker_shaker_load_shader_file( file_name, replace_file_name )
+    local
+        ast,
+        replace_ast;
 
-    local ast
-    local extension = string.match( filename, "%w+%.(%w+)" )
+    ast = GenerateAstFromFileName( file_name );
     
-    if extension == "lua" or extension == "ssl" then
-        ast = dofile( filename )
-    elseif extension == "fx" then
-        
-        ast = ParseHLSL( filename )
-        
-        if ast == nil then
-            return "Fail to load hlsl code from " .. filename;
-        end
-    else
-        return "Unsupported file extension while trying to load " .. filename
+    if replace_file_name then
+        replace_ast = GenerateAstFromFileName( replace_file_name );
     end
-        
+    
     ProcessAst( ast, "ast" )
     
     GetSelectedPrinter().ProcessAst( ast )
     
-        
     return 0
-
 end
