@@ -6,6 +6,14 @@ function Function_GetNodeFromId( ast_node, function_id )
     end
 end
 
+function Function_GetName( function_node )
+    return function_node[ 2 ][ 1 ]
+end
+
+function Function_GetBody( function_node )
+    return function_node[ 4 ]
+end
+
 function Function_GetReturnType( function_node )
     return function_node[ 1 ][ 1 ]
 end
@@ -48,7 +56,7 @@ function Structure_GetMembers( ast_node, struct_name )
     return types
 end
 
-function Structure_GetName( struct_node, struct_name )
+function Structure_GetName( struct_node )
     return struct_node[ 1 ]
 end
 
@@ -78,4 +86,32 @@ function Argument_GetSemantic( argument_node )
     end
     
     return ""
+end
+
+function Variable_GetStorage( variable_node )
+    return variable_node[ 1 ][ 1 ]
+end
+
+function Variable_GetModifier( variable_node )
+    return variable_node[ 2 ][ 1 ]
+end
+
+function Variable_GetType( variable_node )
+    return variable_node[ 3 ][ 1 ]
+end
+
+function Variable_GetName( variable_node )
+    return variable_node[ 4 ][ 1 ]
+end
+
+function Technique_GetName( technique_node )
+    return technique_node[ 1 ]
+end
+
+function ShaderCall_GetName( node )
+    return node[ 3 ]
+end
+
+function ShaderCall_GetType( node )
+    return node[ 1 ]
 end
