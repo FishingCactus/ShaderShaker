@@ -36,11 +36,11 @@ function _shaker_shaker_load_shader_file( filename )
         if ast == nil then
             return "Fail to load hlsl code from " .. filename;
         end
-        
-        -- TODO Process ast
     else
         return "Unsupported file extension while trying to load " .. filename
     end
+        
+    ProcessAst( ast, "ast" )
     
     GetSelectedPrinter().ProcessAst( ast )
     

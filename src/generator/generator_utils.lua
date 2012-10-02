@@ -27,17 +27,89 @@ function GetOperatorPrecedence( operator )
 
 end
 
-local function _GetNodeOfType( node, type_name )
-    local yield = coroutine.yield
+function DataByName( node, name, recursive )
+    if node.name and node.name == name then
+        return node[ 1 ];
+    else
+        if type( node ) == "table" then
+            for _, child_node in ipairs( node ) do
+                if child_node.name and child_node.name == name then
+                    return child_node[ 1 ];
+                end
+                
+                if recursive then
+                    local
+                        result;
+                 
+                    result = get_data_by_name( child_node, name, recursive );
+                        
+                    if result then
+                        return result;
+                    end
+                end
+            end
+        end
+    end
     
-    for _, child_node in ipairs( node ) do
+    return nil;
+end
+
+function CountOfType( node, type_name, recursive )
+    local
+        count;
         
-        if type( child_node ) == 'table' then        
-            if child_node.name == type_name then
-                yield( child_node )
+    count = 0;
+    
+    if type( node ) == "table" then
+        for _, child_node in ipairs( node ) do
+            if child_node.name and child_node.name == type_name then
+                count = count + 1;
             end
             
-            _GetNodeOfType( child_node, type_name );
+            if recursive then
+                count = count + CountOfType( child_node, type_name, resursive );
+            end
+        end
+    end
+    
+    return count;
+end
+
+function BruteForceFindValue( node, value )
+    if type( node ) == "table" then
+        for k, child_node in ipairs( node ) do
+            if k == value or child_node == value then
+                return true;
+            else
+                if child_node then
+                    if BruteForceFindValue( child_node, value ) then
+                        return true;
+                    end
+                end
+            end
+        end
+    else
+        return node == value;
+    end
+    
+    return false;
+end
+
+local function _GetNodeOfType( node, type_name, recursive )
+    local yield = coroutine.yield
+    
+    for index=1, #node, 1 do
+        local
+            child_node = node[ index ]
+            
+        if type( child_node ) == 'table' then        
+            if child_node.name == type_name then
+                yield( child_node, index, node )
+            end
+            
+            if recursive then
+                _GetNodeOfType( child_node, type_name, recursive )
+            end
         end
         
     end
@@ -45,7 +117,41 @@ local function _GetNodeOfType( node, type_name )
     
 end
  
-function NodeOfType( node, type_name )
-    return coroutine.wrap(function() _GetNodeOfType( node, type_name ) end)
+function NodeOfType( node, type_name, recursive )
+    if recursive == nil then
+        recursive = true;
+    end
+    
+    return coroutine.wrap(function() _GetNodeOfType( node, type_name, recursive ) end)
+end
+
+local function _GetInverseNodeOfType( node, type_name, recursive )
+    local yield = coroutine.yield
+    
+    for index=#node, 1, -1 do
+        local
+            child_node = node[ index ]
+            
+        if type( child_node ) == 'table' then        
+            if child_node.name == type_name then
+                yield( child_node, index, node )
+            end
+            
+            if recursive then
+                _GetInverseNodeOfType( child_node, type_name, recursive )
+            end
+        end
+        
+    end
+    
+    
+end
+ 
+function InverseNodeOfType( node, type_name, recursive )
+    if recursive == nil then
+        recursive = true;
+    end
+    
+    return coroutine.wrap(function() _GetInverseNodeOfType( node, type_name, recursive ) end)
 end
 
