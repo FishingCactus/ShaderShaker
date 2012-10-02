@@ -24,6 +24,7 @@ extern const char* builtin_scripts[];
 
 static const char
     * LocalInputFile = 0,
+    * LocalReplaceFile = 0,
     * LocalOutputFile = 0,
     * LocalLanguage = 0;
 
@@ -74,7 +75,7 @@ static bool load_builtin_scripts(lua_State* L, const char * output_file, const c
                     ShaderShakerSetFlag( context, (*it).c_str(), true );
                 }
 
-                result = ShaderShakerLoadShaderFile( context, LocalInputFile );
+                result = ShaderShakerLoadShaderFile( context, LocalInputFile, LocalReplaceFile );
 
                 return_value = result ? 0 : 1;
             }
@@ -122,6 +123,30 @@ static bool load_builtin_scripts(lua_State* L, const char * output_file, const c
                         }
                     
                         LocalOutputFile = argument_table[ argument_index + 1 ];
+                        ++argument_index;
+                    }
+                    break;
+
+                    case 'r':
+                    {
+                        if( argument[ 2 ] != 0 )
+                        {
+                            return false;
+                        }
+                        else if( LocalReplaceFile != 0 )
+                        {
+                            std::cerr << "Two replace files given, aborting\n";
+                            return false;
+                        }
+                        else if( argument_index == ( argument_count - 1 ) 
+                            ||  argument_table[ argument_index + 1 ][ 0 ] == '-' 
+                            )
+                        {
+                            std::cerr << "No replace file given after '-r', aborting\n\n";
+                            return false;
+                        }
+
+                        LocalReplaceFile = argument_table[ argument_index + 1 ];
                         ++argument_index;
                     }
                     break;
@@ -241,12 +266,13 @@ void ShaderShakerSetFlag( ShaderShakerContext * context, const char * flag, bool
     lua_setglobal( context->L, flag );
 }
 
-bool ShaderShakerLoadShaderFile( ShaderShakerContext * context, const char * shader_file_name )
+bool ShaderShakerLoadShaderFile( ShaderShakerContext * context, const char * shader_file_name, const char * replace_shader_file_name )
 {
     lua_getglobal( context->L, "_shaker_shaker_load_shader_file");
     lua_pushstring( context->L, shader_file_name );
+    lua_pushstring( context->L, replace_shader_file_name );
     
-    if (lua_pcall( context->L, 1, 1, 0) != 0)
+    if (lua_pcall( context->L, 2, 1, 0) != 0)
     {
         std::cerr << lua_tostring( context->L, -1);
         return false;

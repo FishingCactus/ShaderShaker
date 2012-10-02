@@ -154,3 +154,24 @@ function InverseNodeOfType( node, type_name, recursive )
     return coroutine.wrap(function() _GetInverseNodeOfType( node, type_name, recursive ) end)
 end
 
+function GenerateAstFromFileName( file_name )
+    local
+        ast;
+    local
+        extension = string.match( file_name, "%w+%.(%w+)" )
+    
+    if extension == "lua" or extension == "ssl" then
+        ast = dofile( file_name )
+    elseif extension == "fx" then
+            
+        ast = ParseHLSL( file_name )
+        
+        if ast == nil then
+            error( "Fail to load hlsl code from " .. file_name );
+        end
+    else
+        error( "Unsupported file extension while trying to load " .. file_name );
+    end
+    
+    return ast;
+end
