@@ -412,7 +412,7 @@ user_defined_type // :TODO: validates that it's a valid type
 struct_definition
     : STRUCT {ast_push("struct_definition");} Name=ID { TypeTable.insert( $Name.text ); ast_addvalue( $Name.text ); } 
     LCURLY
-        ( {ast_push("field");} INTERPOLATION_MODIFIER? type{ast_assign();} MemberName=ID{ast_addvalue($MemberName.text);}  
+        ( {ast_push("field");} INTERPOLATION_MODIFIER? type{ast_assign();} MemberName=ID{ast_push("ID");ast_addvalue($MemberName.text);ast_assign();}  
             ( COLON SEMANTIC {ast_push("semantic"); ast_addvalue($SEMANTIC.text); ast_assign();})? SEMI {ast_assign();} )+ 
     RCURLY SEMI
     ;

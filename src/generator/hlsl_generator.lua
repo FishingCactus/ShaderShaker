@@ -108,7 +108,7 @@ HLSLGenerator = {
         
             if index ~= 1 then
                 
-                output = output .. field[1][1] .. ' ' .. field[2]
+                output = output .. field[1][1] .. ' ' .. field[2][1]
                 
                 if field[3] ~= nil then
                     output = output .. ' : ' .. field[3][1]
