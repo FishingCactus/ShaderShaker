@@ -2,6 +2,10 @@ local i
 local vertex_shaders = {}
 local pixel_shaders = {}
 
+_G.attribute_table = {}
+_G.varying_table = {}
+_G.uniform_table = {}
+
 GLSLGenerator = {
 
     ["ProcessNode"] = function( node )
@@ -60,11 +64,117 @@ GLSLGenerator = {
             
             output = output .. "<" .. node_name .. " name=\"" .. function_name  .. "\">\n"
             
+            output = output .. GLSLGenerator[ "Process" .. node_name ]( node, function_name )
+            
             output = output .. "<" .. node_name .. "/>\n"
         end
         
         return output
         
+    end,
+    
+    [ "ProcessVertexShader" ] = function ( ast, function_name )
+        local
+            output = "<![CDATA[\n\n"
+            
+        output = output .. GLSLGenerator[ "ProcessVertexShaderAttributesDeclaration" ]( ast, function_name ) .. "\n"
+        output = output .. GLSLGenerator[ "ProcessVertexShaderVaryingDeclaration" ]( ast, function_name ) .. "\n"
+            
+        output = output .. "void main()\n{\n"
+        output = output .. "\n}\n"            
+        output = output .. "\n\n]]>\n"
+        
+        return output
+    end,
+    
+    [ "ProcessVertexShaderAttributesDeclaration" ] = function ( ast, function_name )
+        local
+            output = ""
+        local
+            function_node = Function_GetNodeFromId( ast, function_name )
+        local
+            function_arguments = Function_GetArguments( function_node )
+            
+        for input_type_index, argument in ipairs( function_arguments ) do
+            local
+                argument_type = Argument_GetType( argument )
+        
+            if Type_IsAStructure( ast, argument_type ) then
+                local
+                    structure_members = Structure_GetMembers( ast, argument_type )
+                    
+                for index, member in ipairs( structure_members ) do
+                    local
+                        attribute = {
+                                [ "name" ] = Field_GetName( member ),
+                                [ "type" ] = Field_GetType( member ),
+                                [ "semantic" ] = Field_GetSemantic( member ),
+                            }
+                    table.insert( _G.attribute_table, attribute )
+                end
+            else
+                local
+                    attribute = {
+                            [ "name" ] = Argument_GetName( argument ),
+                            [ "type" ] = Argument_GetType( argument ),
+                            [ "semantic" ] = Argument_GetSemantic( argument ),
+                        }
+                table.insert( _G.attribute_table, attribute )
+            end
+        end
+        
+        for index, attribute in ipairs( _G.attribute_table ) do
+            output = output .. GLSL_Helper_GetAttribute( attribute )
+        end
+
+        return output
+    end,
+    
+     [ "ProcessVertexShaderVaryingDeclaration" ] = function ( ast, function_name )
+        
+        local output = ""
+        local function_node = Function_GetNodeFromId( ast, function_name )
+        local function_return_type = Function_GetReturnType( function_node )
+            
+        if Type_IsAStructure( ast, function_return_type ) then
+            local
+                structure_members = Structure_GetMembers( ast, function_return_type )
+                
+            for index, member in ipairs( structure_members ) do
+                local
+                    attribute = {
+                            [ "name" ] = Field_GetName( member ),
+                            [ "type" ] = Field_GetType( member ),
+                            [ "semantic" ] = Field_GetSemantic( member ),
+                        }
+                table.insert( _G.varying_table, attribute )
+            end
+        else
+            local
+                attribute = {
+                        [ "name" ] = "",
+                        [ "type" ] =function_return_type,
+                        [ "semantic" ] = "",
+                    }
+            table.insert( _G.varying_table, attribute )
+        end
+        
+        for index, varying in ipairs( _G.varying_table ) do
+            output = output .. GLSL_Helper_GetVarying( varying )
+        end
+
+        return output
+    end,
+    
+    [ "ProcessPixelShader" ] = function ( node )
+        local
+            output = "<![CDATA[\n\n"
+            
+        output = output .. "void main()\n{\n"
+        output = output .. "\n}\n"
+        output = output .. "\n\n]]>\n"
+        
+        return output
     end,
     
     ["process_techniques"] = function( node )    

@@ -24,7 +24,6 @@ local OperatorPrecedence = {
 function GetOperatorPrecedence( operator )
 
     return OperatorPrecedence[ operator ] or 0
-
 end
 
 function DataByName( node, name, recursive )
