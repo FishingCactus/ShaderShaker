@@ -170,9 +170,30 @@ GLSLGenerator = {
         local
             output = "<![CDATA[\n\n"
             
+        output = output .. GLSLGenerator[ "ProcessPixelShaderUniformsDeclaration" ]( ast, function_name ) .. "\n"
+        output = output .. GLSLGenerator[ "ProcessPixelShaderVaryingsDeclaration" ]( ast ) .. "\n"
+
         output = output .. "void main()\n{\n"
         output = output .. "\n}\n"
         output = output .. "\n\n]]>\n"
+        
+        return output
+    end,
+    
+    [ "ProcessPixelShaderVaryingsDeclaration" ] = function ( ast )
+        
+        local output = ""        
+        
+        for index, varying in ipairs( _G.varying_table ) do
+            output = output .. GLSL_Helper_GetVarying( varying )
+        end
+
+        return output
+    end,
+    
+    [ "ProcessPixelShaderUniformsDeclaration" ] = function ( ast )
+        
+        local output = ""
         
         return output
     end,
