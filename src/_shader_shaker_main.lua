@@ -32,7 +32,7 @@ function _shaker_shaker_load_shader_file( file_name, replace_file_name )
         replace_ast = GenerateAstFromFileName( replace_file_name );
     end
     
-    ProcessAst( ast )
+    ProcessAst( ast, replace_ast )
     
     GetSelectedPrinter().ProcessAst( ast )
     

@@ -1,5 +1,62 @@
-function ProcessAst( ast_node )  
-    CleanConstants( ast_node ) 
+function ProcessAst( ast_node, replace_node )  
+    CleanConstants( ast_node )
+    
+    if replace_node then
+        ReplaceFunctions( ast_node, replace_node )
+    end
+end
+
+function ReplaceFunctions( ast_node, replace_node )
+    for ast_function_node, ast_function_index in NodeOfType( ast_node, "function", false ) do
+        local
+            id,
+            type
+        local
+            arguments = {}
+        
+        id = GetDataByName( ast_function_node, "ID" )
+        type = GetDataByName( ast_function_node, "type" )
+        
+        for ast_function_argument_node in NodeOfType( ast_function_node, "argument", true ) do
+            table.insert( arguments, GetDataByName( ast_function_argument_node, "type" ) )
+            -- just add more info here like the const or uniform
+        end
+        
+        for replace_function_node in NodeOfType( replace_node, "function", false ) do
+            local
+                is_valid = true
+                                              
+            if id == GetDataByName( replace_function_node, "ID" ) and type == GetDataByName( replace_function_node, "type" ) then
+                local    
+                    replace_arguments = {} 
+                local                                                                                                                                                              
+                    valid_arguments = true                                    
+                    
+                for replace_function_argument_node in NodeOfType( replace_function_node, "argument", true ) do
+                    table.insert( replace_arguments, GetDataByName( replace_function_argument_node, "type" ) )
+                    -- just add more info here like the const or uniform
+                end
+                
+                if #replace_arguments == #arguments then
+                    for index = 1, #arguments, 1 do        
+                        if replace_arguments[ index ] ~= arguments[ index ] then
+                                 is_valid = false
+                            break;
+                        end
+                    end
+                else
+                    is_valid = false
+                end
+            else
+                is_valid = false
+            end
+            
+            if is_valid then
+                ast_node[ ast_function_index ] = replace_function_node
+                break;
+            end
+        end
+    end
 end
 
 function CleanConstants( ast_node ) 
