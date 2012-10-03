@@ -5,20 +5,20 @@ local technique_name = ""
 local vertex_shaders = {}
 local pixel_shaders = {}
 
-local struct_name_table = {}
-local attribute_table = {}
-local varying_table = {}
+structures_table = {}
+attributes_table = {}
+varying_table = {}
 local uniform_table = {}
 
 local current_function_name = ""
-local alias_by_function = {}
+variables_table = {}
 
 GLSLGenerator = {
 
     ["ProcessNode"] = function( node )
     
         if GLSLGenerator[ "process_" .. node.name ] == nil then
-            error( "No printer for ast node '" .. node.name .. "' in HLSL printer", 1 )
+            error( "No printer for ast node '" .. node.name .. "' in GLSL printer", 1 )
         end
 
         return GLSLGenerator[ "process_" .. node.name ]( node );
@@ -29,28 +29,56 @@ GLSLGenerator = {
         local 
             output = "<Shader>\n"
             
-        for node in NodeOfType( ast, "struct_definition" ) do
-            table.insert( struct_name_table, Structure_GetName( node ) )
-        end
-
-        GLSLGenerator[ "ProcessShadersDeclaration" ]( ast )
-        
-        output = output .. GLSLGenerator[ "ProcessShadersDefinition" ]( ast )
+        GLSLGenerator.ProcessStructureDefinitions( ast )
+        GLSLGenerator.ProcessShadersDeclaration( ast )        
+        output = output .. GLSLGenerator.ProcessShadersDefinition( ast )
         
         output = output .. "<Technique name=\"" .. technique_name .. "\">\n"
         
         table.foreach( vertex_shaders, function( k, v ) output = output .. "<VS name=\"" .. v .. "\" />\n" end )
         table.foreach( pixel_shaders, function( k, v ) output = output .. "<PS name=\"" .. v .. "\" />\n" end )
         
-        output = output .. "</Technique>\n"
-        
+        output = output .. "</Technique>\n"        
         output = output .. "</Shader>"
         
         ShaderPrint( output )
     end,
     
+    ["ProcessStructureDefinitions"] = function( ast_node )
+        
+        for node in NodeOfType( ast_node , "struct_definition" ) do
+            local structure_name = Structure_GetName( node )
+            local ends_with = function( name, end_string ) return string.sub( name, -string.len( end_string ) ) == end_string end
+            local is_input = ends_with( structure_name, "INPUT" )
+            local is_output = ends_with( structure_name, "OUTPUT" )
+            local shader_type = string.sub( structure_name, 1, 2 )
+            local structure_members = {}
+            
+            for index, member in ipairs( Structure_GetMembers( node, argument_type ) ) do
+                local
+                    member = {
+                            [ "name" ] = Field_GetName( member ),
+                            [ "type" ] = Field_GetType( member ),
+                            [ "semantic" ] = Field_GetSemantic( member ),
+                        }
+                table.insert( structure_members, member )
+            end
+            
+            local structure_item = {
+                [ "type" ] = structure_name,
+                [ "shader_type" ] = shader_type,
+                [ "is_input" ] = is_input,
+                [ "is_output" ] = is_output,
+                [ "members" ] = structure_members
+            }
+            
+            table.insert( structures_table, structure_item )
+        end
+        
+    end,
+
     ["ProcessShadersDeclaration"] = function( node )
-        GLSLGenerator[ "process_techniques" ]( node )
+        GLSLGenerator.process_techniques( node )
     end,
     
     ["ProcessShadersDefinition"] = function( node )
@@ -94,16 +122,19 @@ GLSLGenerator = {
     [ "ProcessVertexShader" ] = function ( ast, function_name )
         local output = "<![CDATA[\n\n"
         local function_node = Function_GetNodeFromId( ast, function_name )
+        local function_argument_list_node = Function_GetArgumentList( function_node )
         local function_body_node = Function_GetBody( function_node )
         
         current_function_name = Function_GetName( function_node )
             
-        output = output .. GLSLGenerator[ "ProcessVertexShaderAttributesDeclaration" ]( ast, function_name ) .. "\n"
-        output = output .. GLSLGenerator[ "ProcessVertexShaderVaryingDeclaration" ]( ast, function_name ) .. "\n"
+        output = output .. GLSLGenerator.ProcessVertexShaderAttributesDeclaration( ast, function_name ) .. "\n"
+        output = output .. GLSLGenerator.ProcessVertexShaderVaryingDeclaration( ast, function_name ) .. "\n"
             
         output = output .. "void main()\n{\n"
         
-        --output = output .. GLSLGenerator[ "process_function_body" ]( function_body_node )
+        GLSLGenerator.process_argument_list( function_argument_list_node )
+        
+        output = output .. GLSLGenerator.process_function_body( function_body_node )
         
         output = output .. "\n}\n"            
         output = output .. "\n\n]]>\n"
@@ -124,18 +155,15 @@ GLSLGenerator = {
                 argument_type = Argument_GetType( argument )
         
             if Type_IsAStructure( ast, argument_type ) then
-                local
-                    structure_members = Structure_GetMembers( ast, argument_type )
-                    
-                for index, member in ipairs( structure_members ) do
-                    local
-                        attribute = {
-                                [ "name" ] = Field_GetName( member ),
-                                [ "type" ] = Field_GetType( member ),
-                                [ "semantic" ] = Field_GetSemantic( member ),
-                            }
-                    table.insert( attribute_table, attribute )
+            
+                for i, structure in ipairs( structures_table ) do
+                    if structure.type == argument_type then
+                        for j, field in ipairs( structure.members ) do
+                            table.insert( attributes_table, field )
+                        end
+                    end
                 end
+                
             else
                 local
                     attribute = {
@@ -143,11 +171,11 @@ GLSLGenerator = {
                             [ "type" ] = Argument_GetType( argument ),
                             [ "semantic" ] = Argument_GetSemantic( argument ),
                         }
-                table.insert( attribute_table, attribute )
+                table.insert( attributes_table, attribute )
             end
         end
         
-        for index, attribute in ipairs( attribute_table ) do
+        for index, attribute in ipairs( attributes_table ) do
             output = output .. GLSL_Helper_GetAttribute( attribute )
         end
 
@@ -161,18 +189,15 @@ GLSLGenerator = {
         local function_return_type = Function_GetReturnType( function_node )
             
         if Type_IsAStructure( ast, function_return_type ) then
-            local
-                structure_members = Structure_GetMembers( ast, function_return_type )
-                
-            for index, member in ipairs( structure_members ) do
-                local
-                    attribute = {
-                            [ "name" ] = Field_GetName( member ),
-                            [ "type" ] = Field_GetType( member ),
-                            [ "semantic" ] = Field_GetSemantic( member ),
-                        }
-                table.insert( varying_table, attribute )
+            
+            for i, structure in ipairs( structures_table ) do
+                if structure.type == function_return_type then
+                    for j, field in ipairs( structure.members ) do
+                        table.insert( varying_table, field )
+                    end
+                end
             end
+            
         else
             local
                 attribute = {
@@ -194,8 +219,8 @@ GLSLGenerator = {
         local
             output = "<![CDATA[\n\n"
             
-        output = output .. GLSLGenerator[ "ProcessPixelShaderUniformsDeclaration" ]( ast, function_name ) .. "\n"
-        output = output .. GLSLGenerator[ "ProcessPixelShaderVaryingsDeclaration" ]( ast ) .. "\n"
+        output = output .. GLSLGenerator.ProcessPixelShaderUniformsDeclaration( ast, function_name ) .. "\n"
+        output = output .. GLSLGenerator.ProcessPixelShaderVaryingsDeclaration( ast ) .. "\n"
 
         output = output .. "void main()\n{\n"
         output = output .. "\n}\n"
@@ -227,7 +252,7 @@ GLSLGenerator = {
         local output = ""
 
         for child_node in NodeOfType( node, 'technique' ) do
-            output = output .. GLSLGenerator[ "process_technique" ]( child_node )
+            output = output .. GLSLGenerator.process_technique( child_node )
         end
         
         return output
@@ -240,7 +265,7 @@ GLSLGenerator = {
 
         for index, pass_node in ipairs( node ) do        
             if index > 1 then
-                GLSLGenerator[ "process_pass" ]( pass_node )
+                GLSLGenerator.process_pass( pass_node )
             end        
         end
         
@@ -251,7 +276,7 @@ GLSLGenerator = {
         
         for index, shader_call_node in ipairs( node ) do        
             if index > 1 then
-                GLSLGenerator[ "process_shader_call" ]( shader_call_node )
+                GLSLGenerator.process_shader_call( shader_call_node )
             end        
         end
         
@@ -267,6 +292,28 @@ GLSLGenerator = {
         
     end,
     
+    [ "process_argument_list" ] = function( node )
+        for i, argument in ipairs( node ) do
+            local type = Argument_GetType( argument )
+            local name = Argument_GetName( argument )
+            
+            for i, structure in ipairs( structures_table ) do
+                if structure.type == type then
+                
+                    local item = {
+                        [ "name" ] = name,
+                        [ "type" ] = type
+                    }
+                    
+                    table.insert( variables_table, item );
+                    
+                    return ""
+                end
+            end
+        
+        end
+    end,
+    
     [ "process_function_body" ] = function( node )
         local output = ""
         
@@ -280,19 +327,110 @@ GLSLGenerator = {
     [ "process_variable_declaration" ] = function( node )
         local output = ""
         local type = Variable_GetType( node )
+        local name = Variable_GetName( node )
         
-        for i, struct_name in ipairs( struct_name_table ) do
-            if struct_name == type then
-                --alias_by_function[ current_function_name ]
+        for i, structure in ipairs( structures_table ) do
+            if structure.type == type then
+            
+                local item = {
+                    [ "name" ] = name,
+                    [ "type" ] = type
+                }
+                
+                table.insert( variables_table, item );
+                
+                return ""
             end
         end
         
-        --if Type_IsAStructure( type, 
-        -- for i, attribute in ipairs( attribute_table ) do
-            -- if attribute[ "type" ] == type
-        -- then
+        -- TODO declare variable normally
         
         return output
+    end,
+    
+    [ "process_=_statement" ] = function( node )
+        local prefix = string.rep([[    ]], 1 )
+        
+        return prefix .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' = ' .. GLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
+    end,
+    
+    [ "process_constructor" ] = function( node )        
+        return GLSL_Helper_ConvertIntrinsic( node[ 1 ][ 1 ] ) .. '(' .. GLSLGenerator.ProcessNode( node[ 2 ] ) .. ')'
+    end,
+    
+    [ "process_return" ] = function( node )
+        
+        return ""
+    end,
+    
+    ["process_postfix"] = function( node )
+    
+        if node[ 1 ].name == "variable" and node[ 2 ].name == "variable" then
+        
+            local left = node[ 1 ][ 1 ]
+            local right = node[ 2 ][ 1 ]
+            
+            for i, variable in ipairs( variables_table ) do
+                if variable.name == left then
+                    for j, structure in ipairs( structures_table ) do
+                        if variable.type == structure.type then
+                            for k, field in ipairs( structure.members ) do
+                                if right == field.name then
+                                
+                                    if structure.is_output then
+                                        local replacement = GLSL_Helper_GetShaderOutputReplacement( structure.shader_type, field.semantic, field.name )
+                                        
+                                        if replacement == field.name then
+                                            if structure.is_output then
+                                                for l, varying in ipairs( varying_table ) do
+                                                    if varying.semantic == field.semantic then
+                                                        return GLSL_Helper_GetVaryingPrefix() .. varying.name
+                                                    end
+                                                end
+                                            end
+                                        end
+                                        
+                                        return replacement
+                                    elseif structure.is_input then
+                                    
+                                        for l, attribute in ipairs( attributes_table ) do
+                                            if attribute.semantic == field.semantic then
+                                                return attribute.name
+                                            end
+                                        end
+                                        
+                                        return field.name
+                                        
+                                    end
+                                    
+                                    return field.name
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        
+        end       
+        
+        return GLSLGenerator.ProcessNode( node[ 1 ] ) .. '.' .. GLSLGenerator.ProcessNode( node[ 2 ] )
+
+    end,
+    
+    ["process_argument_expression_list"] = function( argument_list )
+
+        local result = {}
+        
+        for index,argument in ipairs( argument_list ) do
+            result[ index ] = GLSLGenerator.ProcessNode( argument )
+        end
+        
+        return table.concat( result, ', ' );
+
+    end,
+    
+    ["process_literal"] = function( node )
+        return node[ 1 ]
     end,
 }
 

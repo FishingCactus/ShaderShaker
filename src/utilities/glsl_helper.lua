@@ -11,12 +11,26 @@ local
         [ "float4" ] = "vec4",
     }
     
+local
+    shader_output_replacement_table = {
+        [ "VS" ] = {
+            [ "POSITION" ] = "gl_Position"
+        },
+        [ "PS" ] = {
+            [ "COLOR0" ] = "gl_FragColor"
+        },
+    }
+    
 function GLSL_Helper_GetNameFromSemanticAttribute( semantic_name )
     return semantic_attribute_to_name[ semantic_name ] or semantic_name
 end
 
 function GLSL_Helper_ConvertIntrinsic( hlsl_intrinsic )
     return intrinsic_types_table[ hlsl_intrinsic ] or hlsl_intrinsic
+end
+
+function GLSL_Helper_GetShaderOutputReplacement( shader_type, semantic, default_value )
+    return shader_output_replacement_table[ shader_type ][ semantic ] or default_value
 end
 
 function GLSL_Helper_GetAttribute( attribute )
@@ -57,5 +71,9 @@ function GLSL_Helper_GetVarying( varying )
         output = output .. "vertex_shader_output"
     end
     
-    return output .. "vary_" .. name .. ";\n"
+    return output .. GLSL_Helper_GetVaryingPrefix() .. name .. ";\n"
+end
+
+function GLSL_Helper_GetVaryingPrefix( )
+    return "vary_"
 end
