@@ -14,6 +14,10 @@ function Function_GetBody( function_node )
     return function_node[ 4 ]
 end
 
+function Function_GetArgumentList( function_node )
+    return function_node[ 3 ]
+end
+
 function Function_GetReturnType( function_node )
     return function_node[ 1 ][ 1 ]
 end
@@ -39,18 +43,14 @@ function Type_IsAStructure( ast_node, type_name )
     return false
 end
 
-function Structure_GetMembers( ast_node, struct_name )
-    local
-        types = {}
-        
-    for child_node in NodeOfType( ast_node, 'struct_definition' ) do    
-        if Structure_GetName( child_node ) == struct_name then
-            for index, node in ipairs( child_node ) do
-                if index > 1 then
-                    table.insert( types, node )
-                end
-            end
-        end    
+function Structure_GetMembers( struct_node )
+    
+    local types = {}
+
+    for index, node in ipairs( struct_node ) do
+        if index > 1 then
+            table.insert( types, node )
+        end
     end
     
     return types
