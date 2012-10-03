@@ -26,7 +26,7 @@ function GetOperatorPrecedence( operator )
     return OperatorPrecedence[ operator ] or 0
 end
 
-function DataByName( node, name, recursive )
+function GetDataByName( node, name, recursive )
     if node.name and node.name == name then
         return node[ 1 ];
     else
@@ -40,7 +40,7 @@ function DataByName( node, name, recursive )
                     local
                         result;
                  
-                    result = get_data_by_name( child_node, name, recursive );
+                    result = GetDataByName( child_node, name, recursive );
                         
                     if result then
                         return result;
@@ -53,7 +53,7 @@ function DataByName( node, name, recursive )
     return nil;
 end
 
-function CountOfType( node, type_name, recursive )
+function GetCountOfType( node, type_name, recursive )
     local
         count;
         
@@ -66,7 +66,7 @@ function CountOfType( node, type_name, recursive )
             end
             
             if recursive then
-                count = count + CountOfType( child_node, type_name, resursive );
+                count = count + GetCountOfType( child_node, type_name, resursive );
             end
         end
     end
@@ -76,8 +76,8 @@ end
 
 function BruteForceFindValue( node, value )
     if type( node ) == "table" then
-        for k, child_node in ipairs( node ) do
-            if k == value or child_node == value then
+        for k, child_node in pairs( node ) do
+            if child_node == value then
                 return true;
             else
                 if child_node then
@@ -97,7 +97,7 @@ end
 local function _GetNodeOfType( node, type_name, recursive )
     local yield = coroutine.yield
     
-    for index=1, #node, 1 do
+    for index, child_node in ipairs( node ) do
         local
             child_node = node[ index ]
             
@@ -110,15 +110,12 @@ local function _GetNodeOfType( node, type_name, recursive )
                 _GetNodeOfType( child_node, type_name, recursive )
             end
         end
-        
     end
-    
-    
 end
  
 function NodeOfType( node, type_name, recursive )
     if recursive == nil then
-        recursive = true;
+        recursive = true
     end
     
     return coroutine.wrap(function() _GetNodeOfType( node, type_name, recursive ) end)

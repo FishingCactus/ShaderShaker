@@ -1,4 +1,8 @@
-function ProcessAst( ast_node )    
+function ProcessAst( ast_node )  
+    CleanConstants( ast_node ) 
+end
+
+function CleanConstants( ast_node ) 
     for variable_declaration_node, variable_declaration_node_index in InverseNodeOfType( ast_node, "variable_declaration", false ) do
         local
             declaration_is_empty = true;
@@ -36,7 +40,7 @@ function FindRedeclaredVariableInFunction( function_node, variable_node )
         function_body_node;
         
     for function_argument_node in NodeOfType( function_node, "argument", true ) do
-        if DataByName( function_argument_node, "ID" ) == variable_node[ 1 ] then
+        if GetDataByName( function_argument_node, "ID" ) == variable_node[ 1 ] then
             return true;
         end
     end
