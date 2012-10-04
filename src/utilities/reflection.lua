@@ -1,3 +1,7 @@
+local intrinsic_functions = {
+    "dot", "normalize", "tex2D", "saturate", "reflect", "sin", "cos", "tan", "mul", "length", "exp", 
+}
+
 function Function_GetNodeFromId( ast_node, function_id )
     for child_node in NodeOfType( ast_node, 'function' ) do    
         if child_node[ 2 ][ 1 ] == function_id then
@@ -54,6 +58,57 @@ function Function_GetProperties( function_node )
     result[ "semantic" ] = Function_GetSemantic( function_node )
     
     return result    
+end
+
+function Function_GetCalledFunctions( ast_node, function_name, include_intrinsics )
+
+    local called_functions = {}
+    local function_node = Function_GetNodeFromId( ast_node, function_name )
+
+    for node in NodeOfType( function_node, "call", true ) do
+        local called_function_name = node[ 1 ]
+        local is_intrinsic = false
+        local can_add = true
+        
+        for i, intrinsic in ipairs( intrinsic_functions ) do
+            if intrinsic == called_function_name then
+                is_intrinsic = true
+                break
+            end
+        end
+        
+        if is_intrinsic and not include_intrinsic then
+            can_add = false
+        end
+        
+        if can_add then
+            table.insert( called_functions, 1, called_function_name )
+            
+            if not is_intrinsic then
+                local other_called_functions = Function_GetCalledFunctions( ast_node, called_function_name, include_intrinsics )
+                
+                for i, f in ipairs( other_called_functions ) do
+                
+                    local can_add_other = true
+                    
+                    for j, v in ipairs( called_functions ) do
+                        if v == f then
+                            can_add_other = false
+                            break
+                        end
+                    end
+                    
+                    if can_add_other then
+                        table.insert( called_functions, 1,  f )
+                    end
+                end
+            end
+        end
+    
+    end
+    
+    return called_functions
+
 end
 
 function Type_IsAStructure( ast_node, type_name )
