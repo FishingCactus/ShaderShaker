@@ -115,3 +115,23 @@ end
 function ShaderCall_GetType( node )
     return node[ 1 ]
 end
+
+function Texture_GetType( node )
+    return node[ 1 ][ 1 ]
+end
+
+function Texture_GetName( node )
+    return node[ 2 ]
+end
+
+function Sampler_GetType( node )
+    return node[ 1 ][ 1 ]
+end
+
+function Sampler_GetName( node )
+    return node[ 2 ]
+end
+
+function Sampler_GetTexture( node )
+    return node[ 3 ][ 1 ]
+end
