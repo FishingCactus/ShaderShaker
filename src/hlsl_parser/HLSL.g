@@ -293,7 +293,8 @@ function_declaration
     : { ast_push("function"); } storage_class* ( PRECISE )? 
         ( type { ast_assign(); }| VOID_TOKEN {ast_push("type");ast_addvalue("void");ast_assign();} ) 
         ID{ ast_push("ID"); ast_addvalue($ID.text); ast_assign();} 
-        LPAREN ( {ast_push("argument_list");} argument_list {ast_assign();})? RPAREN ( COLON SEMANTIC )?
+        LPAREN ( {ast_push("argument_list");} argument_list {ast_assign();})? RPAREN 
+        ( COLON SEMANTIC {ast_push("semantic"); ast_addvalue($SEMANTIC.text); ast_assign();} )?
     LCURLY
         {ast_push("function_body");}( statement {ast_assign();} )*{ast_assign();}
     RCURLY
