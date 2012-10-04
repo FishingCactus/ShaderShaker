@@ -36,14 +36,14 @@ end
 function GLSL_Helper_GetAttribute( attribute )
     
     local output = ""
-    local attribute_semantic = attribute[ "semantic" ]
+    local attribute_semantic = attribute.semantic
 
-    output =  "attribute " .. GLSL_Helper_ConvertIntrinsic( attribute[ "type" ] ) .. " "
+    output =  "attribute " .. GLSL_Helper_ConvertIntrinsic( attribute.type ) .. " "
     
     if attribute_semantic ~= "" then
         output = output .. GLSL_Helper_GetNameFromSemanticAttribute( attribute_semantic )
     else
-        output = output .. attribute[ "name" ]
+        output = output .. attribute.name
     end
     
     return output .. ";\n"
@@ -52,8 +52,8 @@ end
 function GLSL_Helper_GetVarying( varying )
     
     local output = ""
-    local varying_semantic = varying[ "semantic" ]
-    local varying_name = varying[ "name" ]
+    local varying_semantic = varying.semantic
+    local varying_name = varying.name
     local name = ""
     local name_from_semantic = ""
 
@@ -61,7 +61,7 @@ function GLSL_Helper_GetVarying( varying )
         name_from_semantic = GLSL_Helper_GetNameFromSemanticAttribute( varying_semantic )
     end
     
-    output =  "varying " .. GLSL_Helper_ConvertIntrinsic( varying[ "type" ] ) .. " "
+    output =  "varying " .. GLSL_Helper_ConvertIntrinsic( varying.type ) .. " "
     
     if varying_semantic ~= "" and varying_semantic ~= name_from_semantic then
         name = name_from_semantic
@@ -76,4 +76,12 @@ end
 
 function GLSL_Helper_GetVaryingPrefix( )
     return "vary_"
+end
+
+function GLSL_Helper_GetUniformFromConstant( constant )    
+    return "uniform " .. GLSL_Helper_ConvertIntrinsic( constant.type ) .. " " .. constant.name .. ";\n"
+end
+
+function GLSL_Helper_GetUniformFromSampler( sampler_type, texture_name  )
+    return "uniform " .. sampler_type .. " " .. texture_name .. ";\n"
 end

@@ -8,10 +8,14 @@ local pixel_shaders = {}
 structures_table = {}
 attributes_table = {}
 varying_table = {}
-local uniform_table = {}
+uniform_table = {}
 
 local current_function_name = ""
 variables_table = {}
+constants_table = {}
+textures_table = {}
+samplers_table = {}
+sampler_to_texture = {}
 
 GLSLGenerator = {
 
@@ -30,6 +34,8 @@ GLSLGenerator = {
             output = "<Shader>\n"
             
         GLSLGenerator.ProcessStructureDefinitions( ast )
+        GLSLGenerator.ProcessConstants( ast )
+        
         GLSLGenerator.ProcessShadersDeclaration( ast )        
         output = output .. GLSLGenerator.ProcessShadersDefinition( ast )
         
@@ -44,6 +50,42 @@ GLSLGenerator = {
         ShaderPrint( output )
     end,
     
+    ["ProcessConstants"] = function( ast_node )    
+        GLSLGenerator.ProcessConstantVariableDeclarations( ast_node )
+        GLSLGenerator.ProcessConstantTextures( ast_node )
+        GLSLGenerator.ProcessConstantTextureSamplers( ast_node )
+    end,
+    
+    ["ProcessConstantVariableDeclarations"] = function( ast_node )
+    
+        for node in NodeOfType( ast_node, "variable_declaration", false ) do
+            local type = Variable_GetType( node )
+            
+            for variable_node in NodeOfType( node, "variable", false ) do
+                table.insert( constants_table, { name = variable_node[ 1 ], type = type } )
+            end
+        end
+    
+    end,
+    
+    ["ProcessConstantTextures"] = function( ast_node )
+    
+        for node in NodeOfType( ast_node, "texture_declaration", false ) do
+            table.insert( textures_table, { name = Texture_GetName( node ), type = Texture_GetType( node ) } )
+        end
+    
+    end,
+    
+    ["ProcessConstantTextureSamplers"] = function( ast_node )
+    
+        for node in NodeOfType( ast_node, "sampler_declaration", false ) do
+            local name = Sampler_GetName( node )
+            table.insert( samplers_table, { name = name, type = Sampler_GetType( node ) } )
+            sampler_to_texture[ name ] = Sampler_GetTexture( node )
+        end
+    
+    end,
+    
     ["ProcessStructureDefinitions"] = function( ast_node )
         
         for node in NodeOfType( ast_node , "struct_definition" ) do
@@ -55,24 +97,23 @@ GLSLGenerator = {
             local structure_members = {}
             
             for index, member in ipairs( Structure_GetMembers( node, argument_type ) ) do
-                local
-                    member = {
-                            name = Field_GetName( member ),
-                            type = Field_GetType( member ),
-                            semantic = Field_GetSemantic( member ),
-                        }
-                table.insert( structure_members, member )
+            
+                table.insert( structure_members, 
+                                {
+                                    name = Field_GetName( member ),
+                                    type = Field_GetType( member ),
+                                    semantic = Field_GetSemantic( member ),
+                                } )
             end
             
-            local structure_item = {
-                type = structure_name,
-                shader_type = shader_type,
-                is_input = is_input,
-                is_output = is_output,
-                members = structure_members
-            }
-            
-            table.insert( structures_table, structure_item )
+            table.insert( structures_table, 
+                            {
+                                type = structure_name,
+                                shader_type = shader_type,
+                                is_input = is_input,
+                                is_output = is_output,
+                                members = structure_members
+                            } )
         end
         
     end,
@@ -127,6 +168,7 @@ GLSLGenerator = {
         
         current_function_name = Function_GetName( function_node )
             
+        output = output .. GLSLGenerator.ProcessShaderUniformsDeclaration( ast, function_name ) .. "\n"
         output = output .. GLSLGenerator.ProcessVertexShaderAttributesDeclaration( ast, function_name ) .. "\n"
         output = output .. GLSLGenerator.ProcessVertexShaderVaryingDeclaration( ast, function_name ) .. "\n"
             
@@ -199,13 +241,13 @@ GLSLGenerator = {
             end
             
         else
-            local
-                attribute = {
-                        name = "",
-                        type =function_return_type,
-                        semantic = "",
-                    }
-            table.insert( varying_table, attribute )
+        
+            table.insert( varying_table, 
+                            {
+                                name = "",
+                                type =function_return_type,
+                                semantic = "",
+                            } )
         end
         
         for index, varying in ipairs( varying_table ) do
@@ -219,7 +261,7 @@ GLSLGenerator = {
         local
             output = "<![CDATA[\n\n"
             
-        output = output .. GLSLGenerator.ProcessPixelShaderUniformsDeclaration( ast, function_name ) .. "\n"
+        output = output .. GLSLGenerator.ProcessShaderUniformsDeclaration( ast, function_name ) .. "\n"
         output = output .. GLSLGenerator.ProcessPixelShaderVaryingsDeclaration( ast ) .. "\n"
 
         output = output .. "void main()\n{\n"
@@ -240,9 +282,17 @@ GLSLGenerator = {
         return output
     end,
     
-    [ "ProcessPixelShaderUniformsDeclaration" ] = function ( ast )
+    [ "ProcessShaderUniformsDeclaration" ] = function ( ast )
         
         local output = ""
+        
+        for i, constant in ipairs( constants_table ) do
+            output = output .. GLSL_Helper_GetUniformFromConstant( constant )
+        end
+        
+        for i, sampler in ipairs( samplers_table ) do
+            output = output .. GLSL_Helper_GetUniformFromSampler( sampler.type, sampler_to_texture[ sampler.name ] )
+        end
         
         return output
     end,
@@ -299,13 +349,12 @@ GLSLGenerator = {
             
             for i, structure in ipairs( structures_table ) do
                 if structure.type == type then
-                
-                    local item = {
-                        name = name,
-                        type = type
-                    }
-                    
-                    table.insert( variables_table, item );
+                                    
+                    table.insert( variables_table,
+                                    {
+                                        name = name,
+                                        type = type
+                                    } )
                     
                     return ""
                 end
@@ -332,13 +381,11 @@ GLSLGenerator = {
         for i, structure in ipairs( structures_table ) do
             if structure.type == type then
             
-                local item = {
-                    name = name,
-                    type = type
-                }
-                
-                table.insert( variables_table, item );
-                
+                table.insert( variables_table, 
+                                {
+                                    name = name,
+                                    type = type
+                                } )                
                 return ""
             end
         end
