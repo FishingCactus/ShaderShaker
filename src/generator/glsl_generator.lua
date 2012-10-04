@@ -150,17 +150,19 @@ GLSLGenerator = {
                 end
             end
             
-            output = output .. "<" .. node_name .. " name=\"" .. function_name  .. "\">\n"
-            
-            current_function = Function_GetProperties( child_node )
-            current_function[ "shader_type" ] = shader_type
-            current_function[ "is_shader" ] = true
-            
-            output = output .. GLSLGenerator[ "Process" .. node_name ]( node, function_name )
-            
-            current_function = {}
-            
-            output = output .. "<" .. node_name .. "/>\n"
+            if node_name ~= "" then            
+                output = output .. "<" .. node_name .. " name=\"" .. function_name  .. "\">\n"
+                
+                current_function = Function_GetProperties( child_node )
+                current_function[ "shader_type" ] = shader_type
+                current_function[ "is_shader" ] = true
+                
+                output = output .. GLSLGenerator[ "Process" .. node_name ]( node, function_name )
+                
+                current_function = {}
+                
+                output = output .. "<" .. node_name .. "/>\n"
+            end
         end
         
         return output
@@ -348,10 +350,24 @@ GLSLGenerator = {
     
     ["process_shader_call"] = function( node )
     
+        local name = ShaderCall_GetName( node )
+
         if ShaderCall_GetType( node ) == "VertexShader" then
-            table.insert( vertex_shaders, ShaderCall_GetName( node ) )
+            for i, v in ipairs( vertex_shaders ) do
+                if v == name then
+                    return
+                end
+            end
+            
+            table.insert( vertex_shaders, name )
         else
-            table.insert( pixel_shaders, ShaderCall_GetName( node ) )
+            for i, v in ipairs( pixel_shaders ) do
+                if v == name then
+                    return
+                end
+            end
+
+            table.insert( pixel_shaders, name )
         end
         
     end,
@@ -550,6 +566,159 @@ GLSLGenerator = {
         
         return output .. ')'
     end,
+    
+    [ "process_/=_statement" ] = function( node )
+        return GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' /= ' .. GLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
+    end,
+    
+    [ "process_+=_statement" ] = function( node )
+        return GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' += ' .. GLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
+    end,
+    
+    ["process_swizzle"] = function( node )        
+        return GLSLGenerator.ProcessNode( node[ 1 ] ) .. '.' .. node[ 2 ]
+    end,
+    
+    [ "process_*=_statement" ] = function( node )
+        return GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' *= ' .. GLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
+    end,
+    
+    [ "process_-=_statement" ] = function( node )
+        return GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' -= ' .. GLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
+    end,
+    
+    [ "process_!" ] = function( node )
+    
+        local node_1 = GLSLGenerator.ProcessNode( node[ 1 ] )
+        local output = '!'
+        
+        if GetOperatorPrecedence( '!' ) < GetOperatorPrecedence( node[ 1 ].name ) then
+            output = output .. '(' .. node_1 .. ')'
+        else
+            output = output .. node_1
+        end
+        
+        return output
+    end,
+    
+     ["process_if"] = function( node )
+    
+        local output = ''
+    
+        for _, block in ipairs( node ) do
+            output = output .. GLSLGenerator.ProcessNode( block )
+        end
+        
+        return output
+    end,
+    
+    [ "process_if_block"] = function( node )
+        local output = 'if (' .. GLSLGenerator.ProcessNode( node[1] ) .. ')\n'
+        
+        output = output .. GLSLGenerator.ProcessNode( node[ 2 ] )
+        
+        return output .. '\n'
+    end,
+    
+    ["process_else_if_block"] = function( node )
+        local output = 'else if (' .. GLSLGenerator.ProcessNode( node[1] ) .. ')\n'
+        
+        output = output .. GLSLGenerator.ProcessNode( node[ 2 ] )
+        
+        return output .. '\n'
+    end,
+    
+     ["process_else_block"] = function( node )
+        
+        local output = 'else\n'
+        
+        output = output .. GLSLGenerator.ProcessNode( node[ 1 ] )
+        
+        return output .. '\n'
+    end,
+    
+    [ "process_for" ] = function( node )
+        local output = 
+            'for( ' .. GLSLGenerator.ProcessNode( node[1] ) 
+            .. GLSLGenerator.ProcessNode( node[2] ) .. ';' 
+            .. GLSLGenerator.ProcessNode( node[3] ) .. ')\n'
+            
+        output = output .. GLSLGenerator.ProcessNode( node[4] )
+        
+        return output
+    end,
+    
+    [ "process_do_while" ] = function( node )
+        local output = 'do\n'
+            
+        output = output .. GLSLGenerator.ProcessNode( node[1] )
+        output = output .. 'while( ' .. GLSLGenerator.ProcessNode( node[2] ) .. ' );\n'
+        
+        return output
+        
+    end,
+    
+    [ "process_while" ] = function( node )
+        output = 'while( ' .. GLSLGenerator.ProcessNode( node[1] ) .. ' )\n'
+        output = output .. GLSLGenerator.ProcessNode( node[2] ) .. '\n'
+            
+        return output
+        
+    end,
+    
+    [ "process_block" ] = function( node )
+        local output = "{\n"
+        
+        for _, statement in ipairs( node ) do
+            output = output .. GLSLGenerator.ProcessNode( statement ) .. '\n'
+        end
+        
+        output = output .. '}'
+        
+        return output
+    end,
 }
+
+local function AddOperator( operator )
+
+    local operator_precedence = GetOperatorPrecedence( operator )
+    GLSLGenerator[ "process_" .. operator ] = function( node )
+    
+        local node_1 = GLSLGenerator.ProcessNode( node[ 1 ] )
+        local node_2 = GLSLGenerator.ProcessNode( node[ 2 ] )
+        local output
+        
+        if operator_precedence < GetOperatorPrecedence( node[ 1 ].name ) then
+            output = '(' .. node_1 .. ')'
+        else
+            output = node_1
+        end
+        
+        output = output .. ' ' .. operator .. ' '
+        
+        if operator_precedence < GetOperatorPrecedence( node[ 2 ].name ) then
+            output = output .. '(' .. node_2 .. ')'
+        else
+            output = output .. node_2
+        end
+        
+        return output
+    end
+end
+
+AddOperator( '+' )
+AddOperator( '-' )
+AddOperator( '*' )
+AddOperator( '/' )
+AddOperator( '==' )
+AddOperator( '||' )
+AddOperator( '&&' )
+AddOperator( '&' )
+AddOperator( '|' )
+AddOperator( '<' )
+AddOperator( '>' )
+AddOperator( '<=' )
+AddOperator( '>=' )
+AddOperator( '!=' )
 
 RegisterPrinter( GLSLGenerator, "glsl", "glfx" )
