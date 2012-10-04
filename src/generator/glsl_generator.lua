@@ -16,6 +16,7 @@ constants_table = {}
 textures_table = {}
 samplers_table = {}
 sampler_to_texture = {}
+argument_to_varying = {}
 
 GLSLGenerator = {
 
@@ -174,7 +175,7 @@ GLSLGenerator = {
             
         output = output .. "void main()\n{\n"
         
-        GLSLGenerator.process_argument_list( function_argument_list_node )
+        GLSLGenerator.ProcessVertexShaderArgumentList( function_argument_list_node )
         
         output = output .. GLSLGenerator.process_function_body( function_body_node )
         
@@ -257,14 +258,25 @@ GLSLGenerator = {
         return output
     end,
     
-    [ "ProcessPixelShader" ] = function ( node )
+    [ "ProcessPixelShader" ] = function ( ast, function_name )
         local
             output = "<![CDATA[\n\n"
+        
+        local function_node = Function_GetNodeFromId( ast, function_name )
+        local function_argument_list_node = Function_GetArgumentList( function_node )
+        local function_body_node = Function_GetBody( function_node )
+        
+        current_function_name = Function_GetName( function_node )
             
         output = output .. GLSLGenerator.ProcessShaderUniformsDeclaration( ast, function_name ) .. "\n"
         output = output .. GLSLGenerator.ProcessPixelShaderVaryingsDeclaration( ast ) .. "\n"
 
         output = output .. "void main()\n{\n"
+        
+        GLSLGenerator.ProcessPixelShaderArgumentList( function_argument_list_node )
+        output = output .. GLSLGenerator.process_function_body( function_body_node )
+        
+        
         output = output .. "\n}\n"
         output = output .. "\n\n]]>\n"
         
@@ -342,7 +354,7 @@ GLSLGenerator = {
         
     end,
     
-    [ "process_argument_list" ] = function( node )
+    [ "ProcessVertexShaderArgumentList" ] = function( node )
         for i, argument in ipairs( node ) do
             local type = Argument_GetType( argument )
             local name = Argument_GetName( argument )
@@ -361,6 +373,27 @@ GLSLGenerator = {
             end
         
         end
+    end,
+    
+    [ "ProcessPixelShaderArgumentList" ] = function( node )
+        
+        for argument_node in NodeOfType( node, "argument", false ) do
+            local name = Argument_GetName( argument_node )
+            local type = Argument_GetType( argument_node )
+            local semantic = Argument_GetSemantic( argument_node )
+            
+            for i, varying in ipairs( varying_table ) do
+                if semantic == varying.semantic and type == varying.type then
+                    argument_to_varying[ name ] = GLSL_Helper_GetVaryingPrefix() .. varying.name
+                end
+            end
+        end
+        
+        return ""
+    end,
+    
+    [ "process_argument_list" ] = function( node )
+        return ""
     end,
     
     [ "process_function_body" ] = function( node )
@@ -406,8 +439,18 @@ GLSLGenerator = {
     end,
     
     [ "process_return" ] = function( node )
-        
-        return ""
+        if #node == 0 then
+            return 'return;'
+        else
+            -- this check is to avoid the classic "return output;" of HLSL (with "output" being an instance of a structure definition)
+            for i, variable in ipairs( variables_table ) do
+                if variable.name == node[ 1 ][ 1 ] then
+                    return ''
+                end
+            end
+            
+            return 'return ' .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ';'
+        end
     end,
     
     ["process_postfix"] = function( node )
@@ -478,6 +521,24 @@ GLSLGenerator = {
     
     ["process_literal"] = function( node )
         return node[ 1 ]
+    end,
+    
+    ["process_variable"] = function( node )
+        return sampler_to_texture[ node[ 1 ] ]
+            or argument_to_varying[ node[ 1 ] ]
+            or node[ 1 ]
+    end,
+    
+    ["process_call"] = function( node )
+        local output = GLSL_Helper_ConvertIntrinsic( node[ 1 ] ) .. '('
+
+        if node[ 2 ] ~= nil then
+            output = output .. ' '
+            output = output .. GLSLGenerator.ProcessNode( node[ 2 ] )
+            output = output .. ' '
+        end
+        
+        return output .. ')'
     end,
 }
 
