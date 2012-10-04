@@ -9,6 +9,7 @@ local
         float2 = "vec2", 
         float3 = "vec3", 
         float4 = "vec4",
+        tex2D = "texture2D"
     }
     
 local
