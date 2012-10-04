@@ -2,15 +2,15 @@ local i
 
 local technique_name = ""
 
-local vertex_shaders = {}
-local pixel_shaders = {}
+vertex_shaders = {}
+pixel_shaders = {}
 
 structures_table = {}
 attributes_table = {}
 varying_table = {}
 uniform_table = {}
 
-local current_function_name = ""
+current_function = {}
 variables_table = {}
 constants_table = {}
 textures_table = {}
@@ -125,19 +125,18 @@ GLSLGenerator = {
     
     ["ProcessShadersDefinition"] = function( node )
     
-        local
-            output = ""
+        local output = ""
         
         for child_node in NodeOfType( node, 'function' ) do
         
-            local
-                node_name = ""
-            local
-                function_name = child_node[ 2 ][ 1 ]
+            local node_name = ""
+            local function_name = child_node[ 2 ][ 1 ]
+            local shader_type = ""
         
             for index, value in pairs( vertex_shaders ) do
                 if value == function_name then
                         node_name = "VertexShader"
+                        shader_type = "VS"
                     break
                 end
             end
@@ -145,6 +144,7 @@ GLSLGenerator = {
                 for index, value in pairs( pixel_shaders ) do
                     if value == function_name then
                             node_name = "PixelShader"
+                            shader_type = "PS"
                         break
                     end
                 end
@@ -152,7 +152,13 @@ GLSLGenerator = {
             
             output = output .. "<" .. node_name .. " name=\"" .. function_name  .. "\">\n"
             
+            current_function = Function_GetProperties( child_node )
+            current_function[ "shader_type" ] = shader_type
+            current_function[ "is_shader" ] = true
+            
             output = output .. GLSLGenerator[ "Process" .. node_name ]( node, function_name )
+            
+            current_function = {}
             
             output = output .. "<" .. node_name .. "/>\n"
         end
@@ -167,8 +173,6 @@ GLSLGenerator = {
         local function_argument_list_node = Function_GetArgumentList( function_node )
         local function_body_node = Function_GetBody( function_node )
         
-        current_function_name = Function_GetName( function_node )
-            
         output = output .. GLSLGenerator.ProcessShaderUniformsDeclaration( ast, function_name ) .. "\n"
         output = output .. GLSLGenerator.ProcessVertexShaderAttributesDeclaration( ast, function_name ) .. "\n"
         output = output .. GLSLGenerator.ProcessVertexShaderVaryingDeclaration( ast, function_name ) .. "\n"
@@ -265,8 +269,6 @@ GLSLGenerator = {
         local function_node = Function_GetNodeFromId( ast, function_name )
         local function_argument_list_node = Function_GetArgumentList( function_node )
         local function_body_node = Function_GetBody( function_node )
-        
-        current_function_name = Function_GetName( function_node )
             
         output = output .. GLSLGenerator.ProcessShaderUniformsDeclaration( ast, function_name ) .. "\n"
         output = output .. GLSLGenerator.ProcessPixelShaderVaryingsDeclaration( ast ) .. "\n"
@@ -384,7 +386,7 @@ GLSLGenerator = {
             
             for i, varying in ipairs( varying_table ) do
                 if semantic == varying.semantic and type == varying.type then
-                    argument_to_varying[ name ] = GLSL_Helper_GetVaryingPrefix() .. varying.name
+                    argument_to_varying.name  = GLSL_Helper_GetVaryingPrefix() .. varying.name
                 end
             end
         end
@@ -441,7 +443,7 @@ GLSLGenerator = {
     [ "process_return" ] = function( node )
         if #node == 0 then
             return 'return;'
-        else
+        elseif current_function.is_shader then
             -- this check is to avoid the classic "return output;" of HLSL (with "output" being an instance of a structure definition)
             for i, variable in ipairs( variables_table ) do
                 if variable.name == node[ 1 ][ 1 ] then
@@ -449,6 +451,14 @@ GLSLGenerator = {
                 end
             end
             
+            local assignment = GLSL_Helper_GetShaderOutputReplacement( current_function.shader_type, current_function.semantic, "" )
+            
+            if assignment ~= "" then
+                return assignment .. " = " .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ';'
+            end
+            
+            return 'return ' .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ';'
+        else
             return 'return ' .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ';'
         end
     end,

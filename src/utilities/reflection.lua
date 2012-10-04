@@ -11,7 +11,11 @@ function Function_GetName( function_node )
 end
 
 function Function_GetBody( function_node )
-    return function_node[ 4 ]
+    if function_node[ 4 ].name == "function_body" then
+        return function_node[ 4 ]
+    end
+    
+    return function_node[ 5 ]
 end
 
 function Function_GetArgumentList( function_node )
@@ -20,6 +24,14 @@ end
 
 function Function_GetReturnType( function_node )
     return function_node[ 1 ][ 1 ]
+end
+
+function Function_GetSemantic( function_node )
+    if function_node[ 4 ] ~= nil and function_node[ 4 ].name == "semantic" then
+        return function_node[ 4 ][ 1 ] or ""
+    end
+    
+    return ""
 end
 
 function Function_GetArguments( function_node )
@@ -31,6 +43,17 @@ function Function_GetArguments( function_node )
     end
     
     return input_types
+end
+
+function Function_GetProperties( function_node )    
+    local result = {}
+    
+    result[ "name" ] = Function_GetName( function_node )
+    result[ "return_type" ] = Function_GetReturnType( function_node )
+    result[ "arguments" ] = Function_GetArguments( function_node )
+    result[ "semantic" ] = Function_GetSemantic( function_node )
+    
+    return result    
 end
 
 function Type_IsAStructure( ast_node, type_name )
@@ -65,7 +88,7 @@ function Field_GetSemantic( field_node )
 end
 
 function Field_GetName( field_node )
-    return field_node[ 2 ]
+    return field_node[ 2 ][ 1 ]
 end
 
 function Field_GetType( field_node )
