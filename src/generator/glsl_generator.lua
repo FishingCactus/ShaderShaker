@@ -57,19 +57,19 @@ GLSLGenerator = {
             for index, member in ipairs( Structure_GetMembers( node, argument_type ) ) do
                 local
                     member = {
-                            [ "name" ] = Field_GetName( member ),
-                            [ "type" ] = Field_GetType( member ),
-                            [ "semantic" ] = Field_GetSemantic( member ),
+                            name = Field_GetName( member ),
+                            type = Field_GetType( member ),
+                            semantic = Field_GetSemantic( member ),
                         }
                 table.insert( structure_members, member )
             end
             
             local structure_item = {
-                [ "type" ] = structure_name,
-                [ "shader_type" ] = shader_type,
-                [ "is_input" ] = is_input,
-                [ "is_output" ] = is_output,
-                [ "members" ] = structure_members
+                type = structure_name,
+                shader_type = shader_type,
+                is_input = is_input,
+                is_output = is_output,
+                members = structure_members
             }
             
             table.insert( structures_table, structure_item )
@@ -167,9 +167,9 @@ GLSLGenerator = {
             else
                 local
                     attribute = {
-                            [ "name" ] = Argument_GetName( argument ),
-                            [ "type" ] = Argument_GetType( argument ),
-                            [ "semantic" ] = Argument_GetSemantic( argument ),
+                            name = Argument_GetName( argument ),
+                            type = Argument_GetType( argument ),
+                            semantic = Argument_GetSemantic( argument ),
                         }
                 table.insert( attributes_table, attribute )
             end
@@ -201,9 +201,9 @@ GLSLGenerator = {
         else
             local
                 attribute = {
-                        [ "name" ] = "",
-                        [ "type" ] =function_return_type,
-                        [ "semantic" ] = "",
+                        name = "",
+                        type =function_return_type,
+                        semantic = "",
                     }
             table.insert( varying_table, attribute )
         end
@@ -301,8 +301,8 @@ GLSLGenerator = {
                 if structure.type == type then
                 
                     local item = {
-                        [ "name" ] = name,
-                        [ "type" ] = type
+                        name = name,
+                        type = type
                     }
                     
                     table.insert( variables_table, item );
@@ -333,8 +333,8 @@ GLSLGenerator = {
             if structure.type == type then
             
                 local item = {
-                    [ "name" ] = name,
-                    [ "type" ] = type
+                    name = name,
+                    type = type
                 }
                 
                 table.insert( variables_table, item );

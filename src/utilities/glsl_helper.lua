@@ -1,23 +1,23 @@
 local
     semantic_attribute_to_name = {
-        [ "POSITION" ] = "Position",
-        [ "TEXCOORD0" ] = "TextureCoordinate",
+        POSITION = "Position",
+        TEXCOORD0 = "TextureCoordinate",
     }
 
 local
     intrinsic_types_table = { 
-        [ "float2" ] = "vec2", 
-        [ "float3" ] = "vec3", 
-        [ "float4" ] = "vec4",
+        float2 = "vec2", 
+        float3 = "vec3", 
+        float4 = "vec4",
     }
     
 local
     shader_output_replacement_table = {
-        [ "VS" ] = {
-            [ "POSITION" ] = "gl_Position"
+        VS = {
+            POSITION = "gl_Position"
         },
-        [ "PS" ] = {
-            [ "COLOR0" ] = "gl_FragColor"
+        PS = {
+            COLOR0 = "gl_FragColor"
         },
     }
     
