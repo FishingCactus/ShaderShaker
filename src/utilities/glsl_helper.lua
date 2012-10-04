@@ -9,7 +9,8 @@ local
         float2 = "vec2", 
         float3 = "vec3", 
         float4 = "vec4",
-        tex2D = "texture2D"
+        tex2D = "texture2D",
+        saturate = function( str ) return "clamp( " .. str .. ", 0.0, 1.0)" end
     }
     
 local

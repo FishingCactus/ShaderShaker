@@ -456,7 +456,7 @@ GLSLGenerator = {
         if #argument > 2 then
             for i=3, #argument do
                 if argument[i].name == "semantic" then
-                    output = output .. ':' .. argument[i][1]
+                    --output = output .. ':' .. argument[i][1]
                 end
             end
         end
@@ -639,15 +639,19 @@ GLSLGenerator = {
     end,
     
     ["process_call"] = function( node )
-        local output = GLSL_Helper_ConvertIntrinsic( node[ 1 ] ) .. '('
+        local intrinsic = GLSL_Helper_ConvertIntrinsic( node[ 1 ] )
+        local output = ""
+        local output2 = ""
 
         if node[ 2 ] ~= nil then
-            output = output .. ' '
-            output = output .. GLSLGenerator.ProcessNode( node[ 2 ] )
-            output = output .. ' '
+            output2 = ' ' .. GLSLGenerator.ProcessNode( node[ 2 ] ) .. ' '
         end
         
-        return output .. ')'
+        if type( intrinsic ) == "function" then
+            return intrinsic( output2 )
+        else
+            return intrinsic .. '( ' .. output2 .. ')'
+        end
     end,
     
     [ "process_/=_statement" ] = function( node )
