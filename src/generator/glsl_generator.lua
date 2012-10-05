@@ -1,4 +1,4 @@
-i = 0
+local prefix_index
 
 technique_name = ""
 wanted_technique = ""
@@ -21,6 +21,10 @@ argument_to_varying = {}
 
 shader_argument_list_constants = {}
 
+function prefix()
+    return string.rep( [[    ]], prefix_index )
+end
+
 GLSLGenerator = {
 
     ["ProcessNode"] = function( node )
@@ -36,6 +40,8 @@ GLSLGenerator = {
     ["ProcessAst"] = function( ast, technique )
         local output = "<Shader>\n"
         local technique_count = 0
+                
+        prefix_index = 1
         
         for technique_node in NodeOfType( ast, "technique", false ) do
             technique_count = technique_count + 1
@@ -55,12 +61,16 @@ GLSLGenerator = {
         GLSLGenerator.ProcessShadersDeclaration( ast )        
         output = output .. GLSLGenerator.ProcessShadersDefinition( ast )
         
-        output = output .. "<Technique name=\"" .. technique_name .. "\">\n"
+        output = output .. prefix() .. "<Technique name=\"" .. technique_name .. "\">\n"
         
-        table.foreach( vertex_shaders, function( k, v ) output = output .. "<VS name=\"" .. v .. "\" />\n" end )
-        table.foreach( pixel_shaders, function( k, v ) output = output .. "<PS name=\"" .. v .. "\" />\n" end )
+        prefix_index = prefix_index + 1
         
-        output = output .. "</Technique>\n"        
+        table.foreach( vertex_shaders, function( k, v ) output = output .. prefix() .. "<VS name=\"" .. v .. "\" />\n" end )
+        table.foreach( pixel_shaders, function( k, v ) output = output .. prefix() .. "<PS name=\"" .. v .. "\" />\n" end )
+        
+        prefix_index = prefix_index - 1
+        
+        output = output .. prefix() .. "</Technique>\n"        
         output = output .. "</Shader>"
         
         ShaderPrint( output )
@@ -165,18 +175,22 @@ GLSLGenerator = {
                 end
             end
             
-            if node_name ~= "" then            
-                output = output .. "<" .. node_name .. " name=\"" .. function_name  .. "\">\n"
+            if node_name ~= "" then
+                output = output .. prefix() .. "<" .. node_name .. " name=\"" .. function_name  .. "\">\n"
                 
                 current_function = Function_GetProperties( child_node )
                 current_function.shader_type = shader_type
                 current_function.is_shader = true
                 
+                prefix_index = prefix_index + 1
+                
                 output = output .. GLSLGenerator[ "Process" .. node_name ]( node, function_name )
+                
+                prefix_index = prefix_index - 1
                 
                 current_function = {}
                 
-                output = output .. "<" .. node_name .. "/>\n"
+                output = output .. prefix() .. "<" .. node_name .. "/>\n"
             end
         end
         
@@ -185,7 +199,7 @@ GLSLGenerator = {
     end,
     
     [ "ProcessVertexShader" ] = function ( ast, function_name )
-        local output = "<![CDATA[\n\n"
+        local output = prefix() .. "<![CDATA[\n"
         local function_node = Function_GetNodeFromId( ast, function_name )
         local function_argument_list_node = Function_GetArgumentList( function_node )
         local function_body_node = Function_GetBody( function_node )
@@ -193,16 +207,21 @@ GLSLGenerator = {
         output = output .. GLSLGenerator.ProcessShaderUniformsDeclaration( ast, function_name ) .. "\n"
         output = output .. GLSLGenerator.ProcessVertexShaderAttributesDeclaration( ast, function_name ) .. "\n"
         output = output .. GLSLGenerator.ProcessVertexShaderVaryingDeclaration( ast, function_name ) .. "\n"
-        output = output .. GLSLGenerator.ProcessShaderCalledFunctions( ast, function_name ) .. "\n"
+        output = output .. GLSLGenerator.ProcessShaderCalledFunctions( ast, function_name )
             
-        output = output .. "void main()\n{\n"
+        output = output .. prefix() .. "void main()\n" .. prefix() .. "{"
+        
+        prefix_index = prefix_index + 1
         
         GLSLGenerator.ProcessVertexShaderArgumentList( function_name, function_argument_list_node )
         
         output = output .. GLSLGenerator.process_function_body( function_body_node )
         
-        output = output .. "\n}\n"            
-        output = output .. "\n\n]]>\n"
+        prefix_index = prefix_index - 2
+        
+        output = output .. prefix() .. "}\n"
+        
+        output = output .. prefix() .. "]]>\n"
         
         return output
     end,
@@ -241,7 +260,7 @@ GLSLGenerator = {
         end
         
         for index, attribute in ipairs( attributes_table ) do
-            output = output .. GLSL_Helper_GetAttribute( attribute )
+            output = output .. prefix() .. GLSL_Helper_GetAttribute( attribute )
         end
 
         return output
@@ -274,7 +293,7 @@ GLSLGenerator = {
         end
         
         for index, varying in ipairs( varying_table ) do
-            output = output .. GLSL_Helper_GetVarying( varying )
+            output = output .. prefix() .. GLSL_Helper_GetVarying( varying )
         end
 
         return output
@@ -282,7 +301,7 @@ GLSLGenerator = {
     
     [ "ProcessPixelShader" ] = function ( ast, function_name )
         local
-            output = "<![CDATA[\n\n"
+            output = "<![CDATA[\n"
         
         local function_node = Function_GetNodeFromId( ast, function_name )
         local function_argument_list_node = Function_GetArgumentList( function_node )
@@ -292,14 +311,14 @@ GLSLGenerator = {
         output = output .. GLSLGenerator.ProcessPixelShaderVaryingsDeclaration( ast ) .. "\n"
         output = output .. GLSLGenerator.ProcessShaderCalledFunctions( ast, function_name ) .. "\n"
 
-        output = output .. "void main()\n{\n"
+        output = output .. prefix() .. "void main()\n{\n"
         
         GLSLGenerator.ProcessPixelShaderArgumentList( function_name, function_argument_list_node )
         output = output .. GLSLGenerator.process_function_body( function_body_node )
         
         
-        output = output .. "\n}\n"
-        output = output .. "\n\n]]>\n"
+        output = output .. prefix() .. "}\n"
+        output = output .. prefix() .. "\n]]>\n"
         
         return output
     end,
@@ -309,7 +328,7 @@ GLSLGenerator = {
         local output = ""        
         
         for index, varying in ipairs( varying_table ) do
-            output = output .. GLSL_Helper_GetVarying( varying )
+            output = output .. prefix() .. GLSL_Helper_GetVarying( varying )
         end
 
         return output
@@ -320,11 +339,11 @@ GLSLGenerator = {
         local output = ""
         
         for i, constant in ipairs( constants_table ) do
-            output = output .. GLSL_Helper_GetUniformFromConstant( constant )
+            output = output .. prefix() .. GLSL_Helper_GetUniformFromConstant( constant )
         end
         
         for i, sampler in ipairs( samplers_table ) do
-            output = output .. GLSL_Helper_GetUniformFromSampler( sampler.type, sampler_to_texture[ sampler.name ] )
+            output = output .. prefix() .. GLSL_Helper_GetUniformFromSampler( sampler.type, sampler_to_texture[ sampler.name ] )
         end
         
         return output
@@ -336,7 +355,7 @@ GLSLGenerator = {
         local called_functions = Function_GetCalledFunctions( ast, function_name )
         
         for i, called_function_name in ipairs( called_functions ) do
-            output = output .. GLSLGenerator.ProcessFunction( ast, called_function_name )
+            output = output .. prefix() .. GLSLGenerator.ProcessFunction( ast, called_function_name )
         end
     
         return output
@@ -494,13 +513,18 @@ GLSLGenerator = {
     [ "process_argument_list" ] = function( argument_list )
         local output
         local result = {}
-        local prefix = string.rep( [[    ]], i )
         
         for index,argument in ipairs( argument_list ) do
             result[ index ] = GLSLGenerator.process_argument( argument )
         end
         
-        return prefix .. table.concat( result, ',\n' .. prefix );
+        prefix_index = prefix_index + 1
+        
+        output = prefix() .. table.concat( result, ',\n' .. prefix() );
+        
+        prefix_index = prefix_index - 1
+        
+        return output
     end,
     
     ["process_argument"] = function( argument )
@@ -545,10 +569,8 @@ GLSLGenerator = {
             end
         end
         
-        local prefix = string.rep( [[    ]], i )
-        local output = prefix
+        local output = ""
         local index
-        local previous_i = i
         
         if #node[1] ~= 0 then
             output = output .. table.concat( node[1], ' ' ) .. ' ';
@@ -559,34 +581,29 @@ GLSLGenerator = {
         end
         
         output = output .. GLSL_Helper_ConvertIntrinsic( node[3][1] ) .. '\n'
-        i = i +1
+        
         index = 4
         while node[index] ~= nil do
         
-            local prefix = string.rep( [[    ]], i )
-            
             if index ~= 4 then
                 output = output .. ',\n'
             end
             
-            output = output .. prefix .. node[ index ][ 1 ]
+            output = output .. node[ index ][ 1 ]
             
             --if node[ index ][2] ~= nil then
                 --output = output .. '=' .. GLSLGenerator.ProcessNode( node[ index ][ 2 ] )
             --end
             
             index = index + 1
+            
         end
-        
-        i = previous_i
         
         return output .. ';'
     end,
     
     [ "process_=_statement" ] = function( node )
-        local prefix = string.rep([[    ]], 1 )
-        
-        return prefix .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' = ' .. GLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
+        return GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' = ' .. GLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
     end,
     
     [ "process_constructor" ] = function( node )        
@@ -594,8 +611,12 @@ GLSLGenerator = {
     end,
     
     [ "process_return" ] = function( node )
+        local output = ""
+        
+        prefix_index = prefix_index + 1;
+        
         if #node == 0 then
-            return 'return;'
+            output = 'return;'
         elseif current_function.is_shader then
             -- this check is to avoid the classic "return output;" of HLSL (with "output" being an instance of a structure definition)
             for i, variable in ipairs( variables_table ) do
@@ -607,13 +628,19 @@ GLSLGenerator = {
             local assignment = GLSL_Helper_GetShaderOutputReplacement( current_function.shader_type, current_function.semantic, "" )
             
             if assignment ~= "" then
-                return assignment .. " = " .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ';'
+                output = assignment .. " = " .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ';'
+            else
+                output = 'return ' .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ';'
             end
-            
-            return 'return ' .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ';'
         else
-            return 'return ' .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ';'
+            output = 'return ' .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ';'
         end
+        
+        output = prefix() .. output
+    
+        prefix_index = prefix_index - 1
+        
+        return output
     end,
     
     ["process_postfix"] = function( node )
@@ -637,13 +664,13 @@ GLSLGenerator = {
                                             if structure.is_output then
                                                 for l, varying in ipairs( varying_table ) do
                                                     if varying.semantic == field.semantic then
-                                                        return GLSL_Helper_GetVaryingPrefix() .. varying.name
+                                                        return prefix() .. GLSL_Helper_GetVaryingPrefix() .. varying.name
                                                     end
                                                 end
                                             end
                                         end
                                         
-                                        return replacement
+                                        return prefix() .. replacement
                                     elseif structure.is_input then
                                     
                                         for l, attribute in ipairs( attributes_table ) do
@@ -697,9 +724,11 @@ GLSLGenerator = {
             end
         end
         
-        return sampler_to_texture[ node[ 1 ] ]
+        local output = sampler_to_texture[ node[ 1 ] ]
                 or argument_to_varying[ node[ 1 ] ]
                 or node[ 1 ]
+                
+        return output
     end,
     
     ["process_call"] = function( node )
@@ -764,9 +793,9 @@ GLSLGenerator = {
     end,
     
     [ "process_if_block"] = function( node )
-        local output = 'if (' .. GLSLGenerator.ProcessNode( node[1] ) .. ')\n'
+        local output = prefix() .. 'if ( ' .. GLSLGenerator.ProcessNode( node[1] ) .. ' )\n'
         
-        output = output .. GLSLGenerator.ProcessNode( node[ 2 ] )
+        output = output .. prefix() .. GLSLGenerator.ProcessNode( node[ 2 ] )
         
         return output .. '\n'
     end,
@@ -820,11 +849,15 @@ GLSLGenerator = {
     [ "process_block" ] = function( node )
         local output = "{\n"
         
+        prefix_index = prefix_index + 1
+        
         for _, statement in ipairs( node ) do
             output = output .. GLSLGenerator.ProcessNode( statement ) .. '\n'
         end
         
-        output = output .. '}'
+        prefix_index = prefix_index - 1
+        
+        output = output .. prefix() .. '}'
         
         return output
     end,
@@ -847,7 +880,7 @@ GLSLGenerator = {
             function_body_index = 3
         end
         
-        output = output .. ')\n' .. '{\n'
+        output = output .. prefix() .. ')\n' .. prefix() .. '{\n'
         
         for _, statement in ipairs( function_node[ function_body_index ] ) do
         
@@ -856,7 +889,7 @@ GLSLGenerator = {
         
         current_function = previous_function
         
-        return output .. '}\n\n'
+        return output .. prefix() .. '}\n\n'
         
     end,
     
@@ -867,9 +900,7 @@ GLSLGenerator = {
     end,
     
     [ "process_post_modify_statement" ] = function( node )
-        local prefix = string.rep([[    ]], i )
-        
-        return prefix .. GLSLGenerator.ProcessNode( node[1] ) .. node[2]
+        return GLSLGenerator.ProcessNode( node[1] ) .. node[2]
     end,
 }
 
