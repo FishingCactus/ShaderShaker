@@ -167,8 +167,8 @@ GLSLGenerator = {
                 output = output .. "<" .. node_name .. " name=\"" .. function_name  .. "\">\n"
                 
                 current_function = Function_GetProperties( child_node )
-                current_function[ "shader_type" ] = shader_type
-                current_function[ "is_shader" ] = true
+                current_function.shader_type = shader_type
+                current_function.is_shader = true
                 
                 output = output .. GLSLGenerator[ "Process" .. node_name ]( node, function_name )
                 
@@ -425,7 +425,7 @@ GLSLGenerator = {
                                         type = type
                                     } )
                     
-                    return ""
+                    break
                 end
             end
         
@@ -441,12 +441,10 @@ GLSLGenerator = {
             
             for i, varying in ipairs( varying_table ) do
                 if semantic == varying.semantic and type == varying.type then
-                    argument_to_varying.name  = GLSL_Helper_GetVaryingPrefix() .. varying.name
+                    argument_to_varying[ name ] = GLSL_Helper_GetVaryingPrefix() .. varying.name
                 end
             end
         end
-        
-        return ""
     end,
     
     [ "process_argument_list" ] = function( argument_list )
@@ -781,6 +779,7 @@ GLSLGenerator = {
     
         local output
         local function_body_index
+        local previous_function = current_function
         
         current_function = Function_GetProperties( function_node )
         
@@ -800,6 +799,8 @@ GLSLGenerator = {
         
             output = output .. GLSLGenerator.ProcessNode( statement ) .. '\n'
         end
+        
+        current_function = previous_function
         
         return output .. '}\n\n'
         
