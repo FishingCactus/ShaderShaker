@@ -190,6 +190,10 @@ function ShaderCall_GetName( node )
     return node[ 3 ]
 end
 
+function ShaderCall_GetArgumentExpressionList( node )
+    return node[ 4 ]
+end
+
 function ShaderCall_GetType( node )
     return node[ 1 ]
 end

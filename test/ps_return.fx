@@ -10,8 +10,16 @@ struct VS_TEXTURED_OUTPUT
     float2 TextureCoordinate : TEXCOORD0;
 };
 
+float2 HelloWorld(
+    uniform float2 toto
+    )
+{
+    return toto * 1.5f;
+}
+
 VS_TEXTURED_OUTPUT vs(
     VS_TEXTURED_INPUT input,
+    uniform bool hello,
     uniform float2 toto
     )
 {
@@ -20,6 +28,11 @@ VS_TEXTURED_OUTPUT vs(
         
     output.Position = float4( input.Position, 0, 1 );
     output.TextureCoordinate = input.TextureCoordinate * toto;
+
+    if ( hello )
+    {
+        output.TextureCoordinate *= HelloWorld( toto );
+    }
     
     return output;
 }
@@ -59,35 +72,11 @@ float4 ps_with_water(
     return color_multiplier * pixel_shader_common( texture_coordinate, it_use_shadow_mask );
 }
 
-// ~~
-
-technique Default
-{
-    pass P0
-    {
-        VertexShader = compile vs_3_0 vs();
-        PixelShader = compile ps_3_0 ps( false );
-    }
-}
-
-// ~~
-
-technique DefaultWithShadowMap
-{
-    pass P0
-    {
-        VertexShader = compile vs_3_0 vs();
-        PixelShader = compile ps_3_0 ps( true );
-    }
-}
-
-// ~~
-
 technique DefaultWithShadowMapAndWater
 {
     pass P0
     {
-        VertexShader = compile vs_3_0 vs( float2( 0.5f, 1.5 * 2.0f ) );
+        VertexShader = compile vs_3_0 vs( false, float2( 0.5f, 1.5 * 2.0f ) );
         PixelShader = compile ps_3_0 ps_with_water( true );
     }
 }

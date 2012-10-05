@@ -19,6 +19,8 @@ samplers_table = {}
 sampler_to_texture = {}
 argument_to_varying = {}
 
+shader_argument_list_constants = {}
+
 GLSLGenerator = {
 
     ["ProcessNode"] = function( node )
@@ -195,7 +197,7 @@ GLSLGenerator = {
             
         output = output .. "void main()\n{\n"
         
-        GLSLGenerator.ProcessVertexShaderArgumentList( function_argument_list_node )
+        GLSLGenerator.ProcessVertexShaderArgumentList( function_name, function_argument_list_node )
         
         output = output .. GLSLGenerator.process_function_body( function_body_node )
         
@@ -292,7 +294,7 @@ GLSLGenerator = {
 
         output = output .. "void main()\n{\n"
         
-        GLSLGenerator.ProcessPixelShaderArgumentList( function_argument_list_node )
+        GLSLGenerator.ProcessPixelShaderArgumentList( function_name, function_argument_list_node )
         output = output .. GLSLGenerator.process_function_body( function_body_node )
         
         
@@ -409,14 +411,36 @@ GLSLGenerator = {
             table.insert( pixel_shaders, name )
         end
         
+        GLSLGenerator.ProcessShaderCallArgumentExpressionList( node )
+        
     end,
     
-    [ "ProcessVertexShaderArgumentList" ] = function( node )
+    [ "ProcessShaderCallArgumentExpressionList" ] = function( node )
+    
+        local name = ShaderCall_GetName( node )
+        local argument_expression_list = ShaderCall_GetArgumentExpressionList( node )
+        local constants = {}        
+        
+        if argument_expression_list then
+            for i, argument in ipairs( argument_expression_list ) do
+                constants[ i ] = GLSLGenerator.ProcessNode( argument )                
+            end        
+        end
+    
+        shader_argument_list_constants[ name ] = constants
+        
+    end,
+    
+    [ "ProcessVertexShaderArgumentList" ] = function( function_name, node )
+    
+        local index_constant_argument = 1
+        
         for i, argument in ipairs( node ) do
             local type = Argument_GetType( argument )
             local name = Argument_GetName( argument )
+            local found = false
             
-            for i, structure in ipairs( structures_table ) do
+            for j, structure in ipairs( structures_table ) do
                 if structure.type == type then
                                     
                     table.insert( variables_table,
@@ -424,24 +448,44 @@ GLSLGenerator = {
                                         name = name,
                                         type = type
                                     } )
+                                    
+                    found = true
                     
                     break
+                end
+            end
+            
+            if not found then
+                if shader_argument_list_constants[ function_name ][ index_constant_argument ] then
+                    shader_argument_list_constants[ function_name ][ name ] = shader_argument_list_constants[ function_name ][ index_constant_argument ]
+                    index_constant_argument = index_constant_argument + 1
                 end
             end
         
         end
     end,
     
-    [ "ProcessPixelShaderArgumentList" ] = function( node )
+    [ "ProcessPixelShaderArgumentList" ] = function( function_name, node )
         
-        for argument_node in NodeOfType( node, "argument", false ) do
-            local name = Argument_GetName( argument_node )
-            local type = Argument_GetType( argument_node )
-            local semantic = Argument_GetSemantic( argument_node )
+        local index_constant_argument = 1
+        
+        for i, argument in ipairs( node ) do
+            local name = Argument_GetName( argument )
+            local type = Argument_GetType( argument )
+            local semantic = Argument_GetSemantic( argument )
+            local found = false
             
-            for i, varying in ipairs( varying_table ) do
+            for j, varying in ipairs( varying_table ) do
                 if semantic == varying.semantic and type == varying.type then
                     argument_to_varying[ name ] = GLSL_Helper_GetVaryingPrefix() .. varying.name
+                    found = true
+                end
+            end
+            
+            if not found and ( not semantic or semantic == "" )then
+                if shader_argument_list_constants[ function_name ][ index_constant_argument ] then
+                    shader_argument_list_constants[ function_name ][ name ] = shader_argument_list_constants[ function_name ][ index_constant_argument ]
+                    index_constant_argument = index_constant_argument + 1
                 end
             end
         end
@@ -643,9 +687,19 @@ GLSLGenerator = {
     end,
     
     ["process_variable"] = function( node )
+        local set = false
+        local value = ""
+        
+        if shader_argument_list_constants[ current_function.name ] then
+            value = shader_argument_list_constants[ current_function.name ][ node[ 1 ] ]
+            if value then
+                return value
+            end
+        end
+        
         return sampler_to_texture[ node[ 1 ] ]
-            or argument_to_varying[ node[ 1 ] ]
-            or node[ 1 ]
+                or argument_to_varying[ node[ 1 ] ]
+                or node[ 1 ]
     end,
     
     ["process_call"] = function( node )

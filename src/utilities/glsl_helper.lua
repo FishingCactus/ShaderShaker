@@ -2,6 +2,7 @@ local
     semantic_attribute_to_name = {
         POSITION = "Position",
         TEXCOORD0 = "TextureCoordinate",
+        VPOS = "ScreenCoordinates",
     }
 
 local
@@ -19,7 +20,8 @@ local
             POSITION = "gl_Position"
         },
         PS = {
-            COLOR0 = "gl_FragColor"
+            COLOR0 = "gl_FragColor",
+            VPOS = "gl_FragCoord"
         },
     }
     
