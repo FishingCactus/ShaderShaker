@@ -237,7 +237,7 @@ cast_expression
     ;
 
 unary_expression
-    : op=(PLUS|MINUS|NOT|BITWISE_NOT){ast_push( "!" );} unary_expression {ast_assign();}
+    : op=(PLUS|MINUS|NOT|BITWISE_NOT){ast_push( "unary_" + $op.text);} unary_expression {ast_assign();}
     | postfix_expression
     ;
 

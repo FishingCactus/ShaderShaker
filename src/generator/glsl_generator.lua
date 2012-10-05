@@ -848,4 +848,15 @@ AddOperator( '<=' )
 AddOperator( '>=' )
 AddOperator( '!=' )
 
+local function AddUnaryOperator( operator )
+    GLSLGenerator[ "process_unary_" .. operator ] = function( node )
+        return operator .. GLSLGenerator.ProcessNode( node[ 1 ] )
+    end
+end
+
+AddUnaryOperator( '+' )
+AddUnaryOperator( '-' )
+AddUnaryOperator( '!' )
+AddUnaryOperator( '~' )
+
 RegisterPrinter( GLSLGenerator, "glsl", "glfx" )
