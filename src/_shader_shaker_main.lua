@@ -45,7 +45,7 @@ function _shaker_shaker_process_files()
                 InitializeOutputPrint()
             end         
             
-            GetSelectedPrinter().ProcessAst( ast_copy )
+            GetSelectedPrinter().ProcessAst( ast_copy, options.technique )
             
         end
     

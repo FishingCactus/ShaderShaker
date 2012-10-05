@@ -1,6 +1,7 @@
 i = 0
 
-local technique_name = ""
+technique_name = ""
+wanted_technique = ""
 
 vertex_shaders = {}
 pixel_shaders = {}
@@ -30,10 +31,22 @@ GLSLGenerator = {
     
     end,
 
-    ["ProcessAst"] = function( ast )
-        local 
-            output = "<Shader>\n"
+    ["ProcessAst"] = function( ast, technique )
+        local output = "<Shader>\n"
+        local technique_count = 0
+        
+        for technique_node in NodeOfType( ast, "technique", false ) do
+            technique_count = technique_count + 1
+        end
+        
+        if technique_count == 0 then
+            error( "No techniques were found in the shader", 1 )
+        elseif technique_count > 1 and ( technique == nil or string.len( technique ) == 0 ) then
+            error( "Multiple techniques were found in the shader, but you didn't specify which one to process. You can use the -t argument", 1 )
+        end        
             
+        wanted_technique = technique
+
         GLSLGenerator.ProcessStructureDefinitions( ast )
         GLSLGenerator.ProcessConstants( ast )
         
@@ -340,21 +353,21 @@ GLSLGenerator = {
     
     end,
     
-    ["process_techniques"] = function( node )    
-        
-        local output = ""
-
+    ["process_techniques"] = function( node )        
         for child_node in NodeOfType( node, 'technique' ) do
-            output = output .. GLSLGenerator.process_technique( child_node )
-        end
-        
-        return output
-    
+            GLSLGenerator.process_technique( child_node )
+        end    
     end,
     
     ["process_technique"] = function( node )
+    
+        local name = Technique_GetName( node )
         
-        technique_name = Technique_GetName( node )
+        if name ~= wanted_technique then
+            return
+        end
+        
+        technique_name = name
 
         for index, pass_node in ipairs( node ) do        
             if index > 1 then
@@ -362,7 +375,6 @@ GLSLGenerator = {
             end        
         end
         
-        return ""
     end,
     
     ["process_pass"] = function( node )
