@@ -96,7 +96,12 @@ shader_definition
     ;
     
 shader_argument_list
-    : ( {ast_push("argument_expression_list");}constant_expression {ast_assign();}( COMMA constant_expression {ast_assign();} )* {ast_assign();} )?
+    : ( {ast_push("argument_expression_list");}shader_argument {ast_assign();}( COMMA shader_argument {ast_assign();} )* {ast_assign();} )?
+    ;
+
+shader_argument
+    : constant_expression
+    | constructor
     ;
 
 
