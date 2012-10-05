@@ -24,17 +24,19 @@ function _shaker_shaker_process_files()
     
         local
             ast,
-            replace_ast;
+            replace_ast
 
-        ast = GenerateAstFromFileName( options.input_file );
+        ast = GenerateAstFromFileName( options.input_file )
         
         if options.replacement_file then
-            replace_ast = GenerateAstFromFileName( options.replacement_file );
+            replace_ast = GenerateAstFromFileName( options.replacement_file )
         end
         
         ProcessAst( ast, replace_ast )
     
         for i, output_file in ipairs( options.output_files ) do
+            local ast_copy = DeepCopy( ast )
+        
             SelectPrinter( output_file, options.force_language )
         
             if output_file ~= nil then
@@ -43,7 +45,7 @@ function _shaker_shaker_process_files()
                 InitializeOutputPrint()
             end         
             
-            GetSelectedPrinter().ProcessAst( ast )
+            GetSelectedPrinter().ProcessAst( ast_copy )
             
         end
     

@@ -19,6 +19,7 @@ return {
     
     -- Utilities
     
+    "utilities/copy.lua",
     "utilities/arguments.lua",
     "utilities/output.lua",
     "utilities/debug.lua",
