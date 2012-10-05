@@ -7,11 +7,9 @@
 
     struct ShaderShakerContext;
 
-    ShaderShakerContext * ShaderShakerCreateContext( const char * output_file );
-    ShaderShakerContext * ShaderShakerCreateContextWithLanguage( const char * language );
+    ShaderShakerContext * ShaderShakerCreateContext( int argc, const char** argv );
     void ShaderShakerDestroyContext( ShaderShakerContext * );
-    void ShaderShakerSetFlag( ShaderShakerContext * context, const char * flag, bool value );
-    bool ShaderShakerLoadShaderFile( ShaderShakerContext * context, const char * filename, const char * replace_shader_file_name );
+    bool ShaderShakerLoadShaderFile( ShaderShakerContext * context );
 
     #ifdef __cplusplus
         };

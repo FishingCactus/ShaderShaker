@@ -19,6 +19,7 @@ return {
     
     -- Utilities
     
+    "utilities/arguments.lua",
     "utilities/output.lua",
     "utilities/debug.lua",
     "utilities/reflection.lua",

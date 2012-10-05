@@ -1,4 +1,7 @@
-function _shader_shaker_main(script_path, output_file, override_language)
+local
+    files_to_process = {}
+    
+function _shader_shaker_main( script_path, argument_table )
 
     -- if running off the disk (in debug mode), load everything 
     -- listed in _manifest.lua; the list divisions make sure
@@ -7,34 +10,44 @@ function _shader_shaker_main(script_path, output_file, override_language)
     if script_path then
         local scripts  = dofile(script_path .. "/_manifest.lua")
         for _,v in ipairs(scripts) do
-            dofile(script_path .. "/" .. v)
+            dofile( script_path .. "/" .. v )
         end
     end
     
-    SelectPrinter( output_file, override_language )
-    
-    if output_file ~= nil then
-        InitializeOutputFile( output_file )
-    else
-        InitializeOutputPrint()
-    end
+    files_to_process = ParseArgumentTable( argument_table )
 end
 
 
-function _shaker_shaker_load_shader_file( file_name, replace_file_name )
-    local
-        ast,
-        replace_ast;
+function _shaker_shaker_process_files()
 
-    ast = GenerateAstFromFileName( file_name );
+    for i, options in ipairs( files_to_process ) do
     
-    if replace_file_name then
-        replace_ast = GenerateAstFromFileName( replace_file_name );
+        local
+            ast,
+            replace_ast;
+
+        ast = GenerateAstFromFileName( options.input_file );
+        
+        if options.replacement_file then
+            replace_ast = GenerateAstFromFileName( options.replacement_file );
+        end
+        
+        ProcessAst( ast, replace_ast )
+    
+        for i, output_file in ipairs( options.output_files ) do
+            SelectPrinter( output_file, options.force_language )
+        
+            if output_file ~= nil then
+                InitializeOutputFile( output_file )
+            else
+                InitializeOutputPrint()
+            end         
+            
+            GetSelectedPrinter().ProcessAst( ast )
+            
+        end
+    
     end
-    
-    ProcessAst( ast, replace_ast )
-    
-    GetSelectedPrinter().ProcessAst( ast )
     
     return 0
 end

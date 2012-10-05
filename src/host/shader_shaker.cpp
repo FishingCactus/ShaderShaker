@@ -28,12 +28,9 @@ static const char
     * LocalOutputFile = 0,
     * LocalLanguage = 0;
 
-static bool load_builtin_scripts(lua_State* L, const char * output_file, const char * language);
+static bool load_builtin_scripts(lua_State* L, int argc, const char** argv );
 
 #ifndef SHADERSHAKER_IN_DLL
-
-    static bool process_command_line( int argc, const char ** argv, std::vector<std::string> & flag_table );
-    static void usage();
 
     int main(int argc, const char** argv)
     {
@@ -41,173 +38,33 @@ static bool load_builtin_scripts(lua_State* L, const char * output_file, const c
             * context;
         int
             return_value;
-        std::vector<std::string>
-            flag_table;
+        
+        bool
+            result;
 
-        if( argc < 2 || !process_command_line( argc, argv, flag_table ) )
+        context = ShaderShakerCreateContext( argc, argv );
+
+        if( !context )
         {
-            usage();
+            std::cerr << "Unable to load scripts\n";
             return_value = -1;
         }
         else
         {
-            bool
-                result;
+            result = ShaderShakerLoadShaderFile( context );
 
-            if( LocalOutputFile ) 
-            {
-                context = ShaderShakerCreateContext( LocalOutputFile );
-            }
-            else
-            {
-                context = ShaderShakerCreateContextWithLanguage( LocalLanguage );
-            }
-
-            if( !context )
-            {
-                std::cerr << "Unable to load scripts\n";
-                return_value = -1;
-            }
-            else
-            {
-                for( std::vector<std::string>::const_iterator it = flag_table.begin(), end = flag_table.end(); it != end; ++it )
-                {
-                    ShaderShakerSetFlag( context, (*it).c_str(), true );
-                }
-
-                result = ShaderShakerLoadShaderFile( context, LocalInputFile, LocalReplaceFile );
-
-                return_value = result ? 0 : 1;
-            }
-
-            ShaderShakerDestroyContext( context );
+            return_value = result ? 0 : 1;
         }
-    
+
+        ShaderShakerDestroyContext( context );
 
         return return_value;
 
     }
 
-    static bool process_command_line( int argument_count, const char ** argument_table, std::vector<std::string> & flag_table )
-    {
-        for(int argument_index = 1; argument_index < argument_count; ++argument_index )
-        {
-            const char
-                * argument;
-            
-            argument = argument_table[ argument_index ];
-        
-            if( argument[ 0 ] == '-' )
-            {
-                //Process options
-            
-                switch ( argument[ 1 ] )
-                {
-                    case 'o':
-                    {
-                        if( argument[ 2 ] != 0 )
-                        {
-                            return false;
-                        }
-                        else if( LocalOutputFile != 0 )
-                        {
-                            std::cerr << "Two output file given, aborting\n";
-                            return false;
-                        }
-                        else if( argument_index == ( argument_count - 1 ) 
-                            ||  argument_table[ argument_index + 1 ][ 0 ] == '-' 
-                            )
-                        {
-                            std::cerr << "No output file given after '-o', aborting\n\n";
-                            return false;
-                        }
-                    
-                        LocalOutputFile = argument_table[ argument_index + 1 ];
-                        ++argument_index;
-                    }
-                    break;
-
-                    case 'r':
-                    {
-                        if( argument[ 2 ] != 0 )
-                        {
-                            return false;
-                        }
-                        else if( LocalReplaceFile != 0 )
-                        {
-                            std::cerr << "Two replace files given, aborting\n";
-                            return false;
-                        }
-                        else if( argument_index == ( argument_count - 1 ) 
-                            ||  argument_table[ argument_index + 1 ][ 0 ] == '-' 
-                            )
-                        {
-                            std::cerr << "No replace file given after '-r', aborting\n\n";
-                            return false;
-                        }
-
-                        LocalReplaceFile = argument_table[ argument_index + 1 ];
-                        ++argument_index;
-                    }
-                    break;
-                
-                    case 'x':
-                    {
-                        if( argument[ 2 ] != 0 )
-                        {
-                            return false;
-                        }
-                        else if( LocalLanguage != 0 )
-                        {
-                            std::cerr << "Two languages given, aborting\n";
-                            return false;
-                        }
-                        else if( argument_index == ( argument_count - 1 ) 
-                            ||  argument_table[ argument_index + 1 ][ 0 ] == '-' 
-                            )
-                        {
-                            std::cerr << "No language given after '-x', aborting\n\n";
-                            return false;
-                        }
-                    
-                        LocalLanguage = argument_table[ argument_index + 1 ];
-                        ++argument_index;
-                    }
-                    break;
-                
-                    case '-':
-                    {
-                        flag_table.push_back( argument + 1 );
-                    }
-                    break;
-
-                    default:
-                        break;
-                }
-            }
-            else
-            {
-                if( LocalInputFile )
-                {
-                    std::cerr << "Two input files given, aborting\n\n";
-                    return false;
-                }
-            
-                LocalInputFile = argument_table[ argument_index ];
-            }
-        }
-
-        return true;
-    }
-
-    void usage()
-    {
-        std::cout << "shader_shaker [options] shader_file_name" << std::endl;
-    }
-
 #endif
 
-ShaderShakerContext * ShaderShakerCreateContext( const char * output_file )
+ShaderShakerContext * ShaderShakerCreateContext( int argc, const char** argv )
 {
     ShaderShakerContext
         * context;
@@ -219,7 +76,7 @@ ShaderShakerContext * ShaderShakerCreateContext( const char * output_file )
     lua_pushcfunction( context->L, &HLSLConverter::ParseAst );
     lua_setglobal( context->L, "ParseHLSL" );
 
-    if( load_builtin_scripts( context->L, output_file, 0 ) )
+    if( load_builtin_scripts( context->L, argc, argv ) )
     {
         return context;
     }
@@ -228,31 +85,6 @@ ShaderShakerContext * ShaderShakerCreateContext( const char * output_file )
         delete context;
         return 0;
     }
-
-}
-
-ShaderShakerContext * ShaderShakerCreateContextWithLanguage( const char * language )
-{
-    ShaderShakerContext
-        * context;
-
-    context = new ShaderShakerContext;
-
-    context->L = luaL_newstate();
-    luaL_openlibs( context->L );
-    lua_pushcfunction( context->L, &HLSLConverter::ParseAst );
-    lua_setglobal( context->L, "ParseHLSL" );
-
-    if( load_builtin_scripts( context->L, 0, language ) )
-    {
-        return context;
-    }
-    else
-    {
-        delete context;
-        return 0;
-    }
-
 }
 
 void ShaderShakerDestroyContext( ShaderShakerContext * context )
@@ -260,21 +92,13 @@ void ShaderShakerDestroyContext( ShaderShakerContext * context )
     lua_close( context->L );
 }
 
-void ShaderShakerSetFlag( ShaderShakerContext * context, const char * flag, bool value )
+bool ShaderShakerLoadShaderFile( ShaderShakerContext * context )
 {
-    lua_pushboolean( context->L, value );
-    lua_setglobal( context->L, flag );
-}
+    lua_getglobal( context->L, "_shaker_shaker_process_files");
 
-bool ShaderShakerLoadShaderFile( ShaderShakerContext * context, const char * shader_file_name, const char * replace_shader_file_name )
-{
-    lua_getglobal( context->L, "_shaker_shaker_load_shader_file");
-    lua_pushstring( context->L, shader_file_name );
-    lua_pushstring( context->L, replace_shader_file_name );
-    
-    if (lua_pcall( context->L, 2, 1, 0) != 0)
+    if ( lua_pcall( context->L, 0, 1, 0 ) != 0 )
     {
-        std::cerr << lua_tostring( context->L, -1);
+        std::cerr << lua_tostring( context->L, -1 );
         return false;
     }
     else
@@ -284,7 +108,7 @@ bool ShaderShakerLoadShaderFile( ShaderShakerContext * context, const char * sha
             std::cerr << lua_tostring( context->L, -1 ) << std::endl;
             return false;
         }
-        
+
         return true;
     }
 }
@@ -293,7 +117,7 @@ bool ShaderShakerLoadShaderFile( ShaderShakerContext * context, const char * sha
 /**
  * When running in debug mode, the scripts are loaded from the disk. 
  */
-bool load_builtin_scripts(lua_State* L, const char * output_file, const char * local_language )
+bool load_builtin_scripts(lua_State* L, int argc, const char** argv )
 {
     const char
         * filename;
@@ -301,41 +125,37 @@ bool load_builtin_scripts(lua_State* L, const char * output_file, const char * l
     //:TODO: option to change scripts directory
     filename = "src/_shader_shaker_main.lua";
 
-    if (luaL_dofile(L, filename))
+    if ( luaL_dofile( L, filename ) )
     {
-        std::cerr << lua_tostring(L, -1);
+        std::cerr << lua_tostring( L, -1 );
         return false;
     }
 
-    lua_getglobal(L, "_shader_shaker_main");
-    lua_pushstring(L, "src" );
-    
-    if( output_file )
+    lua_getglobal( L, "_shader_shaker_main" );
+
+    lua_pushstring( L, "src" );
+
+    lua_newtable( L );
+
+    for ( int i = 1; i < argc; i++ )
     {
-        lua_pushstring( L, output_file );
+        const char
+            * argument;
+
+        argument = argv[ i ];
+
+        lua_pushstring( L, argument );
+        lua_rawseti( L, -2, i );
     }
-    else
+
+    if ( lua_pcall( L, 2, 1, 0 ) != 0 )
     {
-        lua_pushnil( L );
-    }
-    
-    if( local_language )
-    {
-        lua_pushstring( L, local_language );
-    }
-    else
-    {
-        lua_pushnil( L );
-    }
-    
-    if (lua_pcall(L, 3, 1, 0) != 0)
-    {
-        std::cerr << lua_tostring(L, -1);
+        std::cerr << lua_tostring( L, -1 );
         return false;
     }
     else
     {
-        return lua_tonumber(L, -1) == 0;
+        return lua_tonumber( L, -1 ) == 0;
     }
 }
 #endif
@@ -360,28 +180,6 @@ bool load_builtin_scripts(lua_State* L)
         }
     }
 
-    /* hand off control to the scripts */
-    lua_getglobal(L, "_shader_shaker_main");
-    lua_pushnil( L );
-    
-    if( LocalOutputFile )
-    {
-        lua_pushstring( L, LocalOutputFile );
-    }
-    else
-    {
-        lua_pushnil( L );
-    }
-    
-    if( LocalLanguage )
-    {
-        lua_pushstring( L, LocalLanguage );
-    }
-    else
-    {
-        lua_pushnil( L );
-    }
-    
     if (lua_pcall(L, 3, 1, 0) != 0)
     {
         std::cerr << lua_tostring(L, -1);
