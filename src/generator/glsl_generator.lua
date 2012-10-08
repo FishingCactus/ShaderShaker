@@ -40,11 +40,13 @@ GLSLGenerator = {
     ["ProcessAst"] = function( ast, technique )
         local output = "<Shader>\n"
         local technique_count = 0
+        local technique_name = ""
                 
         prefix_index = 1
         
         for technique_node in NodeOfType( ast, "technique", false ) do
             technique_count = technique_count + 1
+            technique_name = Technique_GetName( technique_node )
         end
         
         if technique_count == 0 then
@@ -53,7 +55,15 @@ GLSLGenerator = {
             error( "Multiple techniques were found in the shader, but you didn't specify which one to process. You can use the -t argument", 1 )
         end        
             
-        wanted_technique = technique
+        if technique == nil then        
+            wanted_technique = technique_name
+        else
+            wanted_technique = technique
+        end
+        
+        if wanted_technique == nil or wanted_technique == "" then
+            error( "There is an error while processing techniques", 1 )
+        end
 
         GLSLGenerator.ProcessStructureDefinitions( ast )
         GLSLGenerator.ProcessConstants( ast )
@@ -592,9 +602,9 @@ GLSLGenerator = {
             
             output = output .. node[ index ][ 1 ]
             
-            --if node[ index ][2] ~= nil then
-                --output = output .. '=' .. GLSLGenerator.ProcessNode( node[ index ][ 2 ] )
-            --end
+            if node[ index ][2] ~= nil then
+                output = output .. '=' .. GLSLGenerator.ProcessNode( node[ index ][ 2 ] )
+            end
             
             index = index + 1
             
@@ -606,7 +616,7 @@ GLSLGenerator = {
     end,
     
     [ "process_=_statement" ] = function( node )
-        return GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' = ' .. GLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
+        return prefix() .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' = ' .. GLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
     end,
     
     [ "process_constructor" ] = function( node )        
