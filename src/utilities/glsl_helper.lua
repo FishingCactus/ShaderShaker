@@ -11,6 +11,7 @@ local
         float3 = "vec3", 
         float4 = "vec4",
         tex2D = "texture2D",
+        texCUBE = "textureCube",
         saturate = function( str ) return "clamp( " .. str .. ", 0.0, 1.0)" end
     }
     
