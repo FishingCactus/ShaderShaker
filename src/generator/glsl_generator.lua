@@ -300,8 +300,7 @@ GLSLGenerator = {
     end,
     
     [ "ProcessPixelShader" ] = function ( ast, function_name )
-        local
-            output = "<![CDATA[\n"
+        local output = prefix() .. "<![CDATA[\n"
         
         local function_node = Function_GetNodeFromId( ast, function_name )
         local function_argument_list_node = Function_GetArgumentList( function_node )
@@ -311,14 +310,17 @@ GLSLGenerator = {
         output = output .. GLSLGenerator.ProcessPixelShaderVaryingsDeclaration( ast ) .. "\n"
         output = output .. GLSLGenerator.ProcessShaderCalledFunctions( ast, function_name ) .. "\n"
 
-        output = output .. prefix() .. "void main()\n{\n"
+        output = output .. prefix() .. "void main()\n" .. prefix() .. "{\n"
+        
+        --prefix_index = prefix_index + 1
         
         GLSLGenerator.ProcessPixelShaderArgumentList( function_name, function_argument_list_node )
         output = output .. GLSLGenerator.process_function_body( function_body_node )
         
+        --prefix_index = prefix_index - 1
         
         output = output .. prefix() .. "}\n"
-        output = output .. prefix() .. "\n]]>\n"
+        output = output .. prefix() .. "]]>\n"
         
         return output
     end,
@@ -364,13 +366,9 @@ GLSLGenerator = {
     
     [ "ProcessFunction" ] = function( ast, function_name )
     
-        local output = ""
-
         local function_node = Function_GetNodeFromId( ast, function_name )
         
-        output = output .. GLSLGenerator.ProcessNode( function_node )
-    
-        return output
+        return GLSLGenerator.ProcessNode( function_node )
     
     end,
     
@@ -553,7 +551,9 @@ GLSLGenerator = {
     end,
     
     [ "process_variable_declaration" ] = function( node )
-        local output = ""
+        prefix_index = prefix_index + 1
+        
+        local output = prefix()
         local type = Variable_GetType( node )
         local name = Variable_GetName( node )
         
@@ -565,11 +565,12 @@ GLSLGenerator = {
                                     name = name,
                                     type = type
                                 } )                
+                prefix_index = prefix_index - 1
+                
                 return ""
             end
         end
         
-        local output = ""
         local index
         
         if #node[1] ~= 0 then
@@ -580,7 +581,7 @@ GLSLGenerator = {
             output = output .. table.concat( node[2], ' ' ) .. ' ';
         end
         
-        output = output .. GLSL_Helper_ConvertIntrinsic( node[3][1] ) .. '\n'
+        output = output .. GLSL_Helper_ConvertIntrinsic( node[3][1] ) .. ' '
         
         index = 4
         while node[index] ~= nil do
@@ -598,6 +599,8 @@ GLSLGenerator = {
             index = index + 1
             
         end
+        
+        prefix_index = prefix_index - 1
         
         return output .. ';'
     end,
