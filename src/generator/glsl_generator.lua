@@ -37,6 +37,12 @@ GLSLGenerator = {
     
     end,
 
+    ["PreprocessAst"] = function( ast )
+    
+        GLSL_Helper_ConvertIntrinsicFunctions( ast )
+    
+    end,
+    
     ["ProcessAst"] = function( ast, technique )
         local output = "<Shader>\n"
         local technique_count = 0

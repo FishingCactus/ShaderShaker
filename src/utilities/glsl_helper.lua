@@ -90,3 +90,42 @@ end
 function GLSL_Helper_GetUniformFromSampler( sampler_type, texture_name  )
     return "uniform " .. sampler_type .. " " .. texture_name .. ";\n"
 end
+
+function GLSL_Helper_ConvertIntrinsicFunctions( ast_node )
+
+    for i, node in ipairs( ast_node ) do
+        
+        if node.name then        
+            if node.name == "call" then
+            
+                local function_name = Call_GetName( node )
+        
+                if function_name == "mul" then
+            
+                    local args = {}
+                    local mul_arg_list = node[ 2 ]
+                    local new_node = { name = "*" }
+                    
+                    for k, variable_node in ipairs( mul_arg_list ) do
+                        if k == 3 then
+                            error( "mul can only accept 2 arguments", 1 )
+                        end
+                        
+                        GLSL_Helper_ConvertIntrinsicFunctions( node )
+                        
+                        table.insert( new_node, variable_node )
+                    end
+                    
+                    ast_node[ i ] = new_node
+            
+                end
+            
+            end
+        
+            GLSL_Helper_ConvertIntrinsicFunctions( node )
+            
+        end
+        
+    end
+
+end

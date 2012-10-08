@@ -217,3 +217,7 @@ end
 function Sampler_GetTexture( node )
     return node[ 3 ][ 1 ]
 end
+
+function Call_GetName( node )
+    return node[ 1 ]
+end

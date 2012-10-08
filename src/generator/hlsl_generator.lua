@@ -1,6 +1,10 @@
 local i
 HLSLGenerator = {
 
+    ["PreprocessAst"] = function( ast )
+    
+    end,
+
     ["ProcessAst"] = function( ast )
         for _, value in ipairs( ast ) do
             
