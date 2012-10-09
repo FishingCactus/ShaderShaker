@@ -50,6 +50,8 @@ GLSLGenerator = {
                 
         prefix_index = 1
         
+        GLSLGenerator.PreprocessAst( ast )
+        
         for technique_node in NodeOfType( ast, "technique", false ) do
             technique_count = technique_count + 1
             technique_name = Technique_GetName( technique_node )
