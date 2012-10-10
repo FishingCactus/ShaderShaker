@@ -983,6 +983,12 @@ GLSLGenerator = {
         return output
     end,
     
+    [ "process_()" ] = function( node )
+    
+        return "( " .. GLSLGenerator.ProcessNode( node[1] ) .. ' )'
+        
+    end,
+    
     ["process_function"] = function( function_node )
     
         local output

@@ -118,6 +118,8 @@ function GLSL_Helper_ConvertIntrinsicFunctions( ast_node )
                         table.insert( new_node, variable_node )
                     end
                     
+                    new_node = { name = "()", new_node }
+                    
                     ast_node[ i ] = new_node
             
                 end
