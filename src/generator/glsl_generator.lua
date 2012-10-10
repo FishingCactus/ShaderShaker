@@ -11,9 +11,6 @@ pixel_shaders = {}
 helper_functions = {}
 
 structures_table = {}
-attributes_table = {}
-varying_table = {}
-uniform_table = {}
 
 current_function = {}
 variables_table = {}
@@ -261,36 +258,37 @@ GLSLGenerator = {
         local function_node = Function_GetNodeFromId( ast, function_name )
         local function_argument_list_node = Function_GetArgumentList( function_node )
         local function_body_node = Function_GetBody( function_node )
+        local called_functions_output = ""
+        local function_body_output = ""
         
-        output = output .. GLSLGenerator.ProcessShaderUniformsDeclaration( ast, function_name ) .. "\n"
-        output = output .. GLSLGenerator.ProcessVertexShaderAttributesDeclaration( ast, function_name ) .. "\n"
-        output = output .. GLSLGenerator.ProcessVertexShaderVaryingDeclaration( ast, function_name ) .. "\n"
-        output = output .. GLSLGenerator.ProcessShaderCalledFunctions( ast, function_name )
-            
-        output = output .. prefix() .. "void main()\n" .. prefix() .. "{"
+        GLSLGenerator.FillVertexShaderAttributesTable( ast, function_name )
+        GLSLGenerator.FillVertexShaderVaryingMembersTable( ast, function_name )
+        
+        called_functions_output = GLSLGenerator.ProcessShaderCalledFunctions( ast, function_name )
         
         prefix_index = prefix_index + 1
         
         GLSLGenerator.ProcessVertexShaderArgumentList( function_name, function_argument_list_node )
         
-        output = output .. GLSLGenerator.process_function_body( function_body_node )
+        function_body_output = GLSLGenerator.process_function_body( function_body_node )
         
         prefix_index = prefix_index - 2
         
-        output = output .. prefix() .. "}\n"
-        
+        output = output .. GLSLGenerator.OutputShaderUniformsDeclaration( function_name ) .. "\n"
+        output = output .. GLSLGenerator.OutputVertexShaderAttributesDeclaration( function_name ) .. "\n"
+        output = output .. GLSLGenerator.OutputVaryingMembersDeclaration( function_name ) .. "\n"
+        output = output .. called_functions_output .. "\n"
+        output = output .. prefix() .. "void main()\n" .. prefix() .. "{"
+        output = output .. function_body_output        
+        output = output .. prefix() .. "}\n"        
         output = output .. prefix() .. "]]>\n"
         
         return output
     end,
     
-    [ "ProcessVertexShaderAttributesDeclaration" ] = function ( ast, function_name )
-        local
-            output = ""
-        local
-            function_node = Function_GetNodeFromId( ast, function_name )
-        local
-            function_arguments = Function_GetArguments( function_node )
+    [ "FillVertexShaderAttributesTable" ] = function ( ast, function_name )
+        local function_node = Function_GetNodeFromId( ast, function_name )
+        local function_arguments = Function_GetArguments( function_node )
             
         for input_type_index, argument in ipairs( function_arguments ) do
             local
@@ -301,7 +299,7 @@ GLSLGenerator = {
                 for i, structure in ipairs( structures_table ) do
                     if structure.type == argument_type then
                         for j, field in ipairs( structure.members ) do
-                            table.insert( attributes_table, field )
+                            table.insert( techniques[ current_technique ].VertexShader.attributes, field )
                         end
                     end
                 end
@@ -313,20 +311,25 @@ GLSLGenerator = {
                             type = Argument_GetType( argument ),
                             semantic = Argument_GetSemantic( argument ),
                         }
-                table.insert( attributes_table, attribute )
+                table.insert( techniques[ current_technique ].VertexShader.attributes, attribute )
             end
         end
         
-        for index, attribute in ipairs( attributes_table ) do
+        
+    end,
+    
+    [ "OutputVertexShaderAttributesDeclaration" ] = function( function_name )
+        local output = ""
+        
+        for attribute_name, attribute in pairs( techniques[ current_technique ].VertexShader.used_attributes ) do
             output = output .. prefix() .. GLSL_Helper_GetAttribute( attribute )
         end
 
         return output
     end,
     
-     [ "ProcessVertexShaderVaryingDeclaration" ] = function ( ast, function_name )
+     [ "FillVertexShaderVaryingMembersTable" ] = function ( ast, function_name )
         
-        local output = ""
         local function_node = Function_GetNodeFromId( ast, function_name )
         local function_return_type = Function_GetReturnType( function_node )
             
@@ -334,27 +337,33 @@ GLSLGenerator = {
             
             for i, structure in ipairs( structures_table ) do
                 if structure.type == function_return_type then
-                    for j, field in ipairs( structure.members ) do
-                        table.insert( varying_table, field )
+                    for j, field in ipairs( structure.members ) do                        
+                        table.insert( techniques[ current_technique ].VaryingMembersTable, field )
                     end
                 end
             end
             
         else
         
-            table.insert( varying_table, 
+            table.insert( techniques[ current_technique ].VaryingMembersTable, 
                             {
                                 name = "",
-                                type =function_return_type,
+                                type = function_return_type,
                                 semantic = "",
                             } )
         end
         
-        for index, varying in ipairs( varying_table ) do
-            output = output .. prefix() .. GLSL_Helper_GetVarying( varying )
+    end,
+    
+    [ "OutputVaryingMembersDeclaration" ] = function( function_name )
+        local output = ""
+        
+        for varying_member_name, varying_member in pairs( techniques[ current_technique ].UsedVaryingMembersTable ) do
+            output = output .. prefix() .. GLSL_Helper_GetVarying( varying_member )
         end
-
+        
         return output
+        
     end,
     
     [ "ProcessPixelShader" ] = function ( ast, function_name )
@@ -364,8 +373,8 @@ GLSLGenerator = {
         local function_argument_list_node = Function_GetArgumentList( function_node )
         local function_body_node = Function_GetBody( function_node )
             
-        output = output .. GLSLGenerator.ProcessShaderUniformsDeclaration( ast, function_name ) .. "\n"
-        output = output .. GLSLGenerator.ProcessPixelShaderVaryingsDeclaration( ast ) .. "\n"
+        output = output .. GLSLGenerator.OutputShaderUniformsDeclaration( function_name ) .. "\n"
+        output = output .. GLSLGenerator.OutputVaryingMembersDeclaration( function_name ) .. "\n"
         output = output .. GLSLGenerator.ProcessShaderCalledFunctions( ast, function_name ) .. "\n"
 
         output = output .. prefix() .. "void main()\n" .. prefix() .. "{\n"
@@ -383,27 +392,24 @@ GLSLGenerator = {
         return output
     end,
     
-    [ "ProcessPixelShaderVaryingsDeclaration" ] = function ( ast )
-        
-        local output = ""        
-        
-        for index, varying in ipairs( varying_table ) do
-            output = output .. prefix() .. GLSL_Helper_GetVarying( varying )
-        end
-
-        return output
-    end,
-    
-    [ "ProcessShaderUniformsDeclaration" ] = function ( ast )
+    [ "OutputShaderUniformsDeclaration" ] = function ( function_name )
         
         local output = ""
         
         for i, constant in ipairs( constants_table ) do
-            output = output .. prefix() .. GLSL_Helper_GetUniformFromConstant( constant )
+            for j, uniform in ipairs( techniques[ current_technique ][ current_function.shader_type ].uniforms ) do
+                if uniform == constant.name then
+                    output = output .. prefix() .. GLSL_Helper_GetUniformFromConstant( constant )
+                end
+            end
         end
         
         for i, sampler in ipairs( samplers_table ) do
-            output = output .. prefix() .. GLSL_Helper_GetUniformFromSampler( sampler.type, sampler_to_texture[ sampler.name ] )
+            for j, uniform in ipairs( techniques[ current_technique ][ current_function.shader_type ].uniforms ) do
+                if uniform == sampler.name then
+                    output = output .. prefix() .. GLSL_Helper_GetUniformFromSampler( sampler.type, sampler_to_texture[ sampler.name ] )
+                end
+            end
         end
         
         return output
@@ -446,7 +452,28 @@ GLSLGenerator = {
             end
         end
         
-        techniques[ technique_name  ] = { VertexShader = { name = "", new_name = "", constants = {} }, PixelShader = { name = "", constants = {} } }
+        techniques[ technique_name  ] = 
+            { 
+                VertexShader = 
+                { 
+                    name = "", 
+                    new_name = "", 
+                    attributes = {},
+                    used_attributes = {},
+                    constants = {},
+                    uniforms = {}
+                }, 
+                PixelShader = 
+                { 
+                    name = "", 
+                    new_name = "",
+                    attributes = {},
+                    constants = {},
+                    uniforms = {}
+                },
+                VaryingMembersTable = {},
+                UsedVaryingMembersTable = {}
+            }
 
         for index, pass_node in ipairs( node ) do        
             if index > 1 then
@@ -560,9 +587,10 @@ GLSLGenerator = {
             local semantic = Argument_GetSemantic( argument )
             local found = false
             
-            for j, varying in ipairs( varying_table ) do
-                if semantic == varying.semantic and type == varying.type then
-                    argument_to_varying[ name ] = GLSL_Helper_GetVaryingPrefix() .. varying.name
+            for j, varying_member in ipairs( techniques[ current_technique ].VaryingMembersTable ) do
+                if semantic == varying_member.semantic and type == varying_member.type then
+                    techniques[ current_technique ].UsedVaryingMembersTable[ varying_member.name ] = varying_member
+                    argument_to_varying[ name ] = GLSL_Helper_GetVaryingPrefix() .. varying_member.name
                     found = true
                 end
             end
@@ -734,9 +762,10 @@ GLSLGenerator = {
                                         
                                         if replacement == field.name then
                                             if structure.is_output then
-                                                for l, varying in ipairs( varying_table ) do
-                                                    if varying.semantic == field.semantic then
-                                                        return prefix() .. GLSL_Helper_GetVaryingPrefix() .. varying.name
+                                                for l, varying_member in ipairs( techniques[ current_technique ].VaryingMembersTable ) do
+                                                    if varying_member.semantic == field.semantic then
+                                                        techniques[ current_technique ].UsedVaryingMembersTable[ varying_member.name ] = varying_member
+                                                        return prefix() .. GLSL_Helper_GetVaryingPrefix() .. varying_member.name
                                                     end
                                                 end
                                             end
@@ -745,8 +774,9 @@ GLSLGenerator = {
                                         return prefix() .. replacement
                                     elseif structure.is_input then
                                     
-                                        for l, attribute in ipairs( attributes_table ) do
+                                        for l, attribute in ipairs( techniques[ current_technique ].VertexShader.attributes ) do
                                             if attribute.semantic == field.semantic then
+                                                techniques[ current_technique ].VertexShader.used_attributes[ attribute.name ] = attribute
                                                 return attribute.name
                                             end
                                         end
@@ -799,6 +829,22 @@ GLSLGenerator = {
         local output = sampler_to_texture[ node[ 1 ] ]
                 or argument_to_varying[ node[ 1 ] ]
                 or node[ 1 ]
+                
+        if current_function.shader_type ~= "" then
+            for i, constant_value in ipairs( constants_table ) do
+                if constant_value.name == output then
+                    table.insert( techniques[ current_technique ][ current_function.shader_type ].uniforms, output )
+                    return output
+                end
+            end
+            
+            for i, texture_value in ipairs( textures_table ) do
+                if texture_value.name == output then
+                    table.insert( techniques[ current_technique ][ current_function.shader_type ].uniforms, output )
+                    return output
+                end
+            end
+        end
                 
         return output
     end,
