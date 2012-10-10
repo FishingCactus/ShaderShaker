@@ -18,7 +18,10 @@ variables_table = {}
 constants_table = {}
 textures_table = {}
 samplers_table = {}
+
 sampler_to_texture = {}
+texture_to_sampler = {}
+
 argument_to_varying = {}
 
 function prefix()
@@ -162,8 +165,12 @@ GLSLGenerator = {
     
         for node in NodeOfType( ast_node, "sampler_declaration", false ) do
             local name = Sampler_GetName( node )
-            table.insert( samplers_table, { name = name, type = Sampler_GetType( node ) } )
-            sampler_to_texture[ name ] = Sampler_GetTexture( node )
+            local texture = Sampler_GetTexture( node )
+            
+            samplers_table[ name ] = Sampler_GetType( node )
+            
+            sampler_to_texture[ name ] = texture
+            texture_to_sampler[ texture ] = name
         end
     
     end,
@@ -371,21 +378,24 @@ GLSLGenerator = {
     
     [ "ProcessPixelShader" ] = function ( ast, function_name )
         local output = prefix() .. "<![CDATA[\n"
+        local output2 = ""
         
         local function_node = Function_GetNodeFromId( ast, function_name )
         local function_argument_list_node = Function_GetArgumentList( function_node )
         local function_body_node = Function_GetBody( function_node )
-            
-        output = output .. GLSLGenerator.OutputShaderUniformsDeclaration( function_name ) .. "\n"
+        
         output = output .. GLSLGenerator.OutputVaryingMembersDeclaration( function_name ) .. "\n"
         output = output .. GLSLGenerator.ProcessShaderCalledFunctions( ast, function_name ) .. "\n"
 
-        output = output .. prefix() .. "void main()\n" .. prefix() .. "{\n"
+        output2 = prefix() .. "void main()\n" .. prefix() .. "{\n"
         
         --prefix_index = prefix_index + 1
         
         GLSLGenerator.ProcessPixelShaderArgumentList( function_name, function_argument_list_node )
-        output = output .. GLSLGenerator.process_function_body( function_body_node )
+        output2 = output2 .. GLSLGenerator.process_function_body( function_body_node )
+        
+        output = output .. GLSLGenerator.OutputShaderUniformsDeclaration( function_name ) .. "\n"
+        output = output .. output2
         
         --prefix_index = prefix_index - 1
         
@@ -407,10 +417,10 @@ GLSLGenerator = {
             end
         end
         
-        for i, sampler in ipairs( samplers_table ) do
+        for i, texture in ipairs( textures_table ) do
             for j, uniform in ipairs( techniques[ current_technique ][ current_function.shader_type ].uniforms ) do
-                if uniform == sampler.name then
-                    output = output .. prefix() .. GLSL_Helper_GetUniformFromSampler( sampler.type, sampler_to_texture[ sampler.name ] )
+                if uniform == texture.name then
+                    output = output .. prefix() .. GLSL_Helper_GetUniformFromSampler( samplers_table[ texture_to_sampler[ texture.name ] ], texture.name )
                 end
             end
         end
