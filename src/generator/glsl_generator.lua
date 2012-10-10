@@ -9,6 +9,7 @@ techniques = {}
 vertex_shaders = {}
 pixel_shaders = {}
 helper_functions = {}
+processed_shaders = {}
 
 structures_table = {}
 
@@ -220,8 +221,6 @@ GLSLGenerator = {
             
             if function_name == shader_name then
             
-                --output = output .. 
-                
                 current_function = Function_GetProperties( child_node )
                 current_function.shader_type = shader_type
                 current_function.is_shader = true
@@ -234,8 +233,6 @@ GLSLGenerator = {
                 
                 current_function = {}
                 
-                --output = output .. 
-                
                 break
                 
             end
@@ -247,7 +244,13 @@ GLSLGenerator = {
         
         techniques[ current_technique ][ shader_type ].new_name = shader_new_name
         
-        output = prefix() .. "<" .. shader_type .. " name=\"" .. shader_new_name  .. "\">\n" .. output .. prefix() .. "<" .. shader_type .. "/>\n"
+        if processed_shaders[ shader_new_name ] then
+            return ""
+        end
+        
+        processed_shaders[ shader_new_name ] = true
+        
+        output = prefix() .. "<" .. shader_type .. " name=\"" .. shader_new_name  .. "\">\n" .. output .. prefix() .. "</" .. shader_type .. ">\n"
         
         return output
         
@@ -503,7 +506,7 @@ GLSLGenerator = {
             vs_or_ps = "VertexShader"
 
             for i, v in ipairs( vertex_shaders ) do
-                if v == name then
+                if v == shader_name then
                     return
                 end
             end
