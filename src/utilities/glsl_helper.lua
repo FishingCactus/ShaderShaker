@@ -3,6 +3,7 @@ local
         POSITION = "Position",
         TEXCOORD0 = "TextureCoordinate",
         VPOS = "ScreenCoordinates",
+        COLOR0 = "Color"
     }
 
 local
@@ -17,10 +18,10 @@ local
     
 local
     shader_output_replacement_table = {
-        VS = {
+        VertexShader = {
             POSITION = "gl_Position"
         },
-        PS = {
+        PixelShader = {
             COLOR0 = "gl_FragColor",
             VPOS = "gl_FragCoord"
         },

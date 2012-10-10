@@ -1,10 +1,14 @@
 local prefix_index
 
+current_technique = ""
 technique_name = ""
 wanted_technique = ""
 
+techniques = {}
+
 vertex_shaders = {}
 pixel_shaders = {}
+helper_functions = {}
 
 structures_table = {}
 attributes_table = {}
@@ -18,8 +22,6 @@ textures_table = {}
 samplers_table = {}
 sampler_to_texture = {}
 argument_to_varying = {}
-
-shader_argument_list_constants = {}
 
 function prefix()
     return string.rep( [[    ]], prefix_index )
@@ -52,6 +54,7 @@ GLSLGenerator = {
         
         GLSLGenerator.PreprocessAst( ast )
         
+        --[[
         for technique_node in NodeOfType( ast, "technique", false ) do
             technique_count = technique_count + 1
             technique_name = Technique_GetName( technique_node )
@@ -72,26 +75,63 @@ GLSLGenerator = {
         if wanted_technique == nil or wanted_technique == "" then
             error( "There is an error while processing techniques", 1 )
         end
-
+        ]]--
+        
         GLSLGenerator.ProcessStructureDefinitions( ast )
         GLSLGenerator.ProcessConstants( ast )
         
-        GLSLGenerator.ProcessShadersDeclaration( ast )        
-        output = output .. GLSLGenerator.ProcessShadersDefinition( ast )
+        GLSLGenerator.ProcessShadersDeclaration( ast )
+        GLSLGenerator.ProcessHelperFunctions( ast )
         
-        output = output .. prefix() .. "<Technique name=\"" .. technique_name .. "\">\n"
+        for technique, params in pairs( techniques ) do
         
-        prefix_index = prefix_index + 1
+            current_technique = technique
+            output = output .. GLSLGenerator.ProcessShaderDefinition( ast, "VertexShader", params.VertexShader.name ) 
+            output = output .. GLSLGenerator.ProcessShaderDefinition( ast, "PixelShader", params.PixelShader.name ) 
         
-        table.foreach( vertex_shaders, function( k, v ) output = output .. prefix() .. "<VS name=\"" .. v .. "\" />\n" end )
-        table.foreach( pixel_shaders, function( k, v ) output = output .. prefix() .. "<PS name=\"" .. v .. "\" />\n" end )
+        end
         
-        prefix_index = prefix_index - 1
+        for technique_name, shaders in pairs( techniques ) do
+            output = output .. "\n" .. prefix() .. "<Technique name=\"" .. technique_name .. "\">\n"
         
-        output = output .. prefix() .. "</Technique>\n"        
+            prefix_index = prefix_index + 1
+            
+            output = output .. prefix() .. "<VS name=\"" .. shaders.VertexShader.new_name .. "\" />\n"
+            output = output .. prefix() .. "<VS name=\"" .. shaders.PixelShader.new_name .. "\" />\n"
+            
+            prefix_index = prefix_index - 1
+            
+            output = output .. prefix() .. "</Technique>\n"        
+        end
+        
         output = output .. "</Shader>"
         
         ShaderPrint( output )
+    end,
+    
+    [ "ProcessHelperFunctions" ] = function( ast_node )
+        for child_node in NodeOfType( ast_node, 'function' ) do
+        
+            local node_name = ""
+            local function_name = child_node[ 2 ][ 1 ]
+            local shader_type = ""
+        
+            for index, value in pairs( vertex_shaders ) do
+                if value == function_name then
+                    return
+                end
+            end
+            for index, value in pairs( pixel_shaders ) do
+                if value == function_name then
+                    return
+                end
+            end
+            
+            error( "TODO", 1 )
+            
+            helper_functions[ function_name ] = GLSLGenerator.process_function( child_node )
+            local t = ""
+        end
     end,
     
     ["ProcessConstants"] = function( ast_node )    
@@ -140,6 +180,12 @@ GLSLGenerator = {
             local shader_type = string.sub( structure_name, 1, 2 )
             local structure_members = {}
             
+            if shader_type == "VS" then
+                shader_type = "VertexShader"
+            else
+                shader_type = "PixelShader"
+            end
+            
             for index, member in ipairs( Structure_GetMembers( node, argument_type ) ) do
             
                 table.insert( structure_members, 
@@ -166,35 +212,18 @@ GLSLGenerator = {
         GLSLGenerator.process_techniques( node )
     end,
     
-    ["ProcessShadersDefinition"] = function( node )
+    ["ProcessShaderDefinition"] = function( node, shader_type, shader_name )
     
         local output = ""
+        local shader_new_name = shader_name
         
         for child_node in NodeOfType( node, 'function' ) do
         
-            local node_name = ""
             local function_name = child_node[ 2 ][ 1 ]
-            local shader_type = ""
-        
-            for index, value in pairs( vertex_shaders ) do
-                if value == function_name then
-                        node_name = "VertexShader"
-                        shader_type = "VS"
-                    break
-                end
-            end
-            if node_name == "" then
-                for index, value in pairs( pixel_shaders ) do
-                    if value == function_name then
-                            node_name = "PixelShader"
-                            shader_type = "PS"
-                        break
-                    end
-                end
-            end
             
-            if node_name ~= "" then
-                output = output .. prefix() .. "<" .. node_name .. " name=\"" .. function_name  .. "\">\n"
+            if function_name == shader_name then
+            
+                --output = output .. 
                 
                 current_function = Function_GetProperties( child_node )
                 current_function.shader_type = shader_type
@@ -202,15 +231,26 @@ GLSLGenerator = {
                 
                 prefix_index = prefix_index + 1
                 
-                output = output .. GLSLGenerator[ "Process" .. node_name ]( node, function_name )
+                output = output .. GLSLGenerator[ "Process" .. shader_type ]( node, function_name )
                 
                 prefix_index = prefix_index - 1
                 
                 current_function = {}
                 
-                output = output .. prefix() .. "<" .. node_name .. "/>\n"
+                --output = output .. 
+                
+                break
+                
             end
         end
+        
+        for constant_name, constant_value in pairs( techniques[ current_technique ][ shader_type ].constants ) do
+            shader_new_name = shader_new_name .. "_" .. constant_name .. "_" .. constant_value
+        end
+        
+        techniques[ current_technique ][ shader_type ].new_name = shader_new_name
+        
+        output = prefix() .. "<" .. shader_type .. " name=\"" .. shader_new_name  .. "\">\n" .. output .. prefix() .. "<" .. shader_type .. "/>\n"
         
         return output
         
@@ -398,59 +438,68 @@ GLSLGenerator = {
     
     ["process_technique"] = function( node )
     
-        local name = Technique_GetName( node )
+        local technique_name = Technique_GetName( node )
         
-        if name ~= wanted_technique then
-            return
+        if wanted_technique and wanted_technique ~= "" then
+            if name ~= wanted_technique then
+                return
+            end
         end
         
-        technique_name = name
+        techniques[ technique_name  ] = { VertexShader = { name = "", new_name = "", constants = {} }, PixelShader = { name = "", constants = {} } }
 
         for index, pass_node in ipairs( node ) do        
             if index > 1 then
-                GLSLGenerator.process_pass( pass_node )
+                GLSLGenerator.process_pass( pass_node, technique_name )
             end        
         end
         
     end,
     
-    ["process_pass"] = function( node )
+    ["process_pass"] = function( node, technique_name )
         
         for index, shader_call_node in ipairs( node ) do        
             if index > 1 then
-                GLSLGenerator.process_shader_call( shader_call_node )
+                GLSLGenerator.process_shader_call( shader_call_node, technique_name )
             end        
         end
         
     end,
     
-    ["process_shader_call"] = function( node )
+    ["process_shader_call"] = function( node, technique_name )
     
-        local name = ShaderCall_GetName( node )
+        local shader_name = ShaderCall_GetName( node )
+        local vs_or_ps = ""
 
         if ShaderCall_GetType( node ) == "VertexShader" then
+            techniques[ technique_name ].VertexShader.name = shader_name
+            vs_or_ps = "VertexShader"
+
             for i, v in ipairs( vertex_shaders ) do
                 if v == name then
                     return
                 end
             end
             
-            table.insert( vertex_shaders, name )
+            table.insert( vertex_shaders, shader_name )
         else
+            techniques[ technique_name ].PixelShader.name = shader_name
+            vs_or_ps = "PixelShader"
+            
             for i, v in ipairs( pixel_shaders ) do
                 if v == name then
                     return
                 end
             end
 
-            table.insert( pixel_shaders, name )
+            table.insert( pixel_shaders, shader_name )
         end
         
-        GLSLGenerator.ProcessShaderCallArgumentExpressionList( node )
+        GLSLGenerator.ProcessShaderCallArgumentExpressionList( node, technique_name, vs_or_ps, shader_name )
         
     end,
     
-    [ "ProcessShaderCallArgumentExpressionList" ] = function( node )
+    [ "ProcessShaderCallArgumentExpressionList" ] = function( node, technique_name, vs_or_ps, shader_name )
     
         local name = ShaderCall_GetName( node )
         local argument_expression_list = ShaderCall_GetArgumentExpressionList( node )
@@ -462,7 +511,7 @@ GLSLGenerator = {
             end        
         end
     
-        shader_argument_list_constants[ name ] = constants
+        techniques[ technique_name ][ vs_or_ps ].constants = constants
         
     end,
     
@@ -491,8 +540,9 @@ GLSLGenerator = {
             end
             
             if not found then
-                if shader_argument_list_constants[ function_name ][ index_constant_argument ] then
-                    shader_argument_list_constants[ function_name ][ name ] = shader_argument_list_constants[ function_name ][ index_constant_argument ]
+                if techniques[ current_technique ].VertexShader.constants[ index_constant_argument ] then
+                    techniques[ current_technique ].VertexShader.constants[ name ] = techniques[ current_technique ].VertexShader.constants[ index_constant_argument ]
+                    techniques[ current_technique ].VertexShader.constants[ index_constant_argument ] = nil
                     index_constant_argument = index_constant_argument + 1
                 end
             end
@@ -518,8 +568,9 @@ GLSLGenerator = {
             end
             
             if not found and ( not semantic or semantic == "" )then
-                if shader_argument_list_constants[ function_name ][ index_constant_argument ] then
-                    shader_argument_list_constants[ function_name ][ name ] = shader_argument_list_constants[ function_name ][ index_constant_argument ]
+                if techniques[ current_technique ].PixelShader.constants[ index_constant_argument ] then
+                    techniques[ current_technique ].PixelShader.constants[ name ] = techniques[ current_technique ].PixelShader.constants[ index_constant_argument ]
+                    techniques[ current_technique ].PixelShader.constants[ index_constant_argument ] = nil
                     index_constant_argument = index_constant_argument + 1
                 end
             end
@@ -738,8 +789,8 @@ GLSLGenerator = {
         local set = false
         local value = ""
         
-        if shader_argument_list_constants[ current_function.name ] then
-            value = shader_argument_list_constants[ current_function.name ][ node[ 1 ] ]
+        if current_function.shader_type ~= "" then
+            value = techniques[ current_technique ][ current_function.shader_type ].constants[ node[ 1 ] ]
             if value then
                 return value
             end
