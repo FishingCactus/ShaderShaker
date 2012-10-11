@@ -98,7 +98,7 @@ GLSLGenerator = {
             prefix_index = prefix_index + 1
             
             output = output .. prefix() .. "<VS name=\"" .. shaders.VertexShader.new_name .. "\" />\n"
-            output = output .. prefix() .. "<VS name=\"" .. shaders.PixelShader.new_name .. "\" />\n"
+            output = output .. prefix() .. "<PS name=\"" .. shaders.PixelShader.new_name .. "\" />\n"
             
             prefix_index = prefix_index - 1
             
