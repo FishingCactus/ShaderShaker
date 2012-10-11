@@ -2,6 +2,7 @@ local
     semantic_attribute_to_name = {
         POSITION = "Position",
         TEXCOORD0 = "TextureCoordinate",
+        TEXCOORD1 = "TextureCoordinate",
         VPOS = "ScreenCoordinates",
         COLOR0 = "Color"
     }
@@ -47,11 +48,13 @@ function GLSL_Helper_GetAttribute( attribute )
 
     output =  "attribute " .. GLSL_Helper_ConvertIntrinsic( attribute.type ) .. " "
     
+    --[[
     if attribute_semantic ~= "" then
         output = output .. GLSL_Helper_GetNameFromSemanticAttribute( attribute_semantic )
     else
+    ]]--
         output = output .. attribute.name
-    end
+    --end
     
     return output .. ";\n"
 end
@@ -64,15 +67,17 @@ function GLSL_Helper_GetVarying( varying )
     local name = ""
     local name_from_semantic = ""
 
+    --[[
     if varying_semantic ~= "" then
         name_from_semantic = GLSL_Helper_GetNameFromSemanticAttribute( varying_semantic )
     end
-    
+    ]]--
     output =  "varying " .. GLSL_Helper_ConvertIntrinsic( varying.type ) .. " "
     
-    if varying_semantic ~= "" and varying_semantic ~= name_from_semantic then
-        name = name_from_semantic
-    elseif varying_name ~= "" then
+    --if varying_semantic ~= "" and varying_semantic ~= name_from_semantic then
+        --name = name_from_semantic
+    --else
+    if varying_name ~= "" then
         name = varying_name
     else
         output = output .. "vertex_shader_output"
