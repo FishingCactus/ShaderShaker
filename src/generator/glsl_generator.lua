@@ -1039,7 +1039,7 @@ GLSLGenerator = {
     end,
     
     [ "process_cast" ] = function( node )
-        return '(' .. GLSL_Helper_ConvertIntrinsic( node[1][1] ) .. ')' .. GLSLGenerator.ProcessNode( node[2] )
+        return GLSL_Helper_ConvertIntrinsic( node[1][1] ) .. '(' .. GLSLGenerator.ProcessNode( node[2] ) .. ')'
     end,
 }
 
