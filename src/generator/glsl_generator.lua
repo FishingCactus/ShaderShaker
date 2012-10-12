@@ -599,7 +599,7 @@ GLSLGenerator = {
     
     ["process_argument"] = function( argument )
 
-        local output = argument[ 1 ][ 1 ] .. ' ' .. argument[ 2 ][ 1 ]
+        local output = GLSL_Helper_ConvertIntrinsic( argument[ 1 ][ 1 ] ) .. ' ' .. argument[ 2 ][ 1 ]
         
         if #argument > 2 then
             for i=3, #argument do
@@ -948,17 +948,17 @@ GLSLGenerator = {
     end,
     
     [ "process_do_while" ] = function( node )
-        local output = 'do\n'
+        local output = prefix() .. 'do\n'
             
-        output = output .. GLSLGenerator.ProcessNode( node[1] )
-        output = output .. 'while( ' .. GLSLGenerator.ProcessNode( node[2] ) .. ' );\n'
+        output = output .. prefix() .. GLSLGenerator.ProcessNode( node[1] )
+        output = prefix() .. output .. 'while( ' .. GLSLGenerator.ProcessNode( node[2] ) .. ' );\n'
         
         return output
         
     end,
     
     [ "process_while" ] = function( node )
-        output = 'while( ' .. GLSLGenerator.ProcessNode( node[1] ) .. ' )\n'
+        output = prefix() .. 'while( ' .. GLSLGenerator.ProcessNode( node[1] ) .. ' )\n'
         output = output .. GLSLGenerator.ProcessNode( node[2] ) .. '\n'
             
         return output
@@ -966,7 +966,7 @@ GLSLGenerator = {
     end,
     
     [ "process_block" ] = function( node )
-        local output = "{\n"
+        local output = prefix() .. "{\n"
         
         prefix_index = prefix_index + 1
         
@@ -1001,7 +1001,7 @@ GLSLGenerator = {
             current_function.root_shader_type = previous_function.root_shader_type
         end
         
-        output = function_node[ 1 ][ 1 ] .. ' ' .. function_node[ 2 ][ 1 ]
+        output = GLSL_Helper_ConvertIntrinsic( function_node[ 1 ][ 1 ] ) .. ' ' .. function_node[ 2 ][ 1 ]
         
         if function_node[ 3 ].name == "argument_list" then
             function_body_index = 4
@@ -1031,7 +1031,11 @@ GLSLGenerator = {
     end,
     
     [ "process_post_modify_statement" ] = function( node )
-        return GLSLGenerator.ProcessNode( node[1] ) .. node[2]
+        return prefix() .. GLSLGenerator.ProcessNode( node[1] ) .. node[2] .. ';\n'
+    end,
+    
+    [ "process_pre_modify_statement" ] = function( node )
+        return prefix() .. node[1] .. GLSLGenerator.ProcessNode( node[2] ) .. ';\n'
     end,
     
     [ "process_cast" ] = function( node )
