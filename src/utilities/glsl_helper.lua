@@ -15,7 +15,7 @@ local
         float4x4 = "mat4",
         tex2D = "texture2D",
         texCUBE = "textureCube",
-        saturate = function( str ) return "clamp( " .. str .. ", 0.0, 1.0)" end
+        saturate = function( str ) return "clamp( " .. str .. ", 0.0f, 1.0f)" end
     }
     
 local
