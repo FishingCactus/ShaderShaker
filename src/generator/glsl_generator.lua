@@ -815,7 +815,7 @@ GLSLGenerator = {
         local set = false
         local value = ""
         
-        if current_function.shader_type ~= "" then
+        if current_function.shader_type ~= nil then
             value = techniques[ current_technique ][ current_function.shader_type ].constants[ node[ 1 ] ]
             if value then
                 return value
@@ -826,7 +826,7 @@ GLSLGenerator = {
                 or argument_to_varying[ node[ 1 ] ]
                 or node[ 1 ]
                 
-        if current_function.shader_type ~= "" then
+        if current_function.shader_type ~= nil then
             for i, constant_value in ipairs( constants_table ) do
                 if constant_value.name == output then
                     table.insert( techniques[ current_technique ][ current_function.shader_type ].uniforms, output )
@@ -904,7 +904,7 @@ GLSLGenerator = {
         local if_block_condition = if_block[ 1 ]
         local has_been_processed = false
         
-        if current_function.shader_type ~= "" then
+        if current_function.shader_type ~= nil then
             if if_block_condition.name == "variable" then
                 local replacement_value = techniques[ current_technique ][ current_function.shader_type ].constants[ if_block_condition[ 1 ] ]
                 
@@ -1042,6 +1042,10 @@ GLSLGenerator = {
     
     [ "process_post_modify_statement" ] = function( node )
         return GLSLGenerator.ProcessNode( node[1] ) .. node[2]
+    end,
+    
+    [ "process_cast" ] = function( node )
+        return '(' .. GLSL_Helper_ConvertIntrinsic( node[1][1] ) .. ')' .. GLSLGenerator.ProcessNode( node[2] )
     end,
 }
 
