@@ -360,7 +360,8 @@ GLSLGenerator = {
         local function_body_node = Function_GetBody( function_node )
         
         output = output .. GLSLGenerator.OutputVaryingMembersDeclaration( function_name ) .. "\n"
-        output = output .. GLSLGenerator.ProcessShaderCalledFunctions( ast, function_name ) .. "\n"
+        
+        local called_functions_output = GLSLGenerator.ProcessShaderCalledFunctions( ast, function_name ) .. "\n"
 
         output2 = prefix() .. "void main()\n" .. prefix() .. "{\n"
         
@@ -370,7 +371,7 @@ GLSLGenerator = {
         output2 = output2 .. GLSLGenerator.process_function_body( function_body_node )
         
         output = output .. GLSLGenerator.OutputShaderUniformsDeclaration( function_name ) .. "\n"
-        output = output .. output2
+        output = output .. called_functions_output .. output2
         
         --prefix_index = prefix_index - 1
         
