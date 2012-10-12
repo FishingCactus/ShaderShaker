@@ -385,18 +385,14 @@ GLSLGenerator = {
         local output = ""
         
         for i, constant in ipairs( constants_table ) do
-            for j, uniform in ipairs( techniques[ current_technique ][ current_function.shader_type ].uniforms ) do
-                if uniform == constant.name then
-                    output = output .. prefix() .. GLSL_Helper_GetUniformFromConstant( constant )
-                end
+            if techniques[ current_technique ][ current_function.shader_type ].uniforms[ constant.name ] then
+                output = output .. prefix() .. GLSL_Helper_GetUniformFromConstant( constant )
             end
         end
         
         for i, texture in ipairs( textures_table ) do
-            for j, uniform in ipairs( techniques[ current_technique ][ current_function.shader_type ].uniforms ) do
-                if uniform == texture.name then
-                    output = output .. prefix() .. GLSL_Helper_GetUniformFromSampler( samplers_table[ texture_to_sampler[ texture.name ] ], texture.name )
-                end
+            if techniques[ current_technique ][ current_function.shader_type ].uniforms[ texture.name ] then
+                output = output .. prefix() .. GLSL_Helper_GetUniformFromSampler( samplers_table[ texture_to_sampler[ texture.name ] ], texture.name )
             end
         end
         
@@ -810,17 +806,20 @@ GLSLGenerator = {
                 or argument_to_varying[ node[ 1 ] ]
                 or node[ 1 ]
                 
-        if current_function.shader_type ~= nil then
+        local shader_type = current_function.shader_type
+                or current_function.root_shader_type
+                
+        if shader_type ~= nil then
             for i, constant_value in ipairs( constants_table ) do
                 if constant_value.name == output then
-                    table.insert( techniques[ current_technique ][ current_function.shader_type ].uniforms, output )
+                    techniques[ current_technique ][ shader_type ].uniforms[ output ] = true
                     return output
                 end
             end
             
             for i, texture_value in ipairs( textures_table ) do
                 if texture_value.name == output then
-                    table.insert( techniques[ current_technique ][ current_function.shader_type ].uniforms, output )
+                    techniques[ current_technique ][ shader_type ].uniforms[ output ] = true
                     return output
                 end
             end
@@ -994,6 +993,12 @@ GLSLGenerator = {
         local previous_function = current_function
         
         current_function = Function_GetProperties( function_node )
+        
+        if previous_function.shader_type then
+            current_function.root_shader_type = previous_function.shader_type
+        elseif previous_function.root_shader_type then
+            current_function.root_shader_type = previous_function.root_shader_type
+        end
         
         output = function_node[ 1 ][ 1 ] .. ' ' .. function_node[ 2 ][ 1 ]
         
