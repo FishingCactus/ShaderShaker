@@ -454,7 +454,8 @@ GLSLGenerator = {
                     new_name = "",
                     attributes = {},
                     constants = {},
-                    uniforms = {}
+                    uniforms = {},
+                    input_replacements = {}
                 },
                 VaryingMembersTable = {},
                 UsedVaryingMembersTable = {}
@@ -575,6 +576,15 @@ GLSLGenerator = {
                     techniques[ current_technique ].PixelShader.constants[ name ] = techniques[ current_technique ].PixelShader.constants[ index_constant_argument ]
                     techniques[ current_technique ].PixelShader.constants[ index_constant_argument ] = nil
                     index_constant_argument = index_constant_argument + 1
+                    found = true
+                end
+            end
+            
+            if not found and semantic ~= "" then
+                local replacement = GLSL_Helper_GetShaderInputReplacement( "PixelShader", semantic, name )
+                
+                if replacement ~= name then
+                    techniques[ current_technique ].PixelShader.input_replacements[ name ] = replacement
                 end
             end
         end
@@ -800,6 +810,13 @@ GLSLGenerator = {
             value = techniques[ current_technique ][ current_function.shader_type ].constants[ node[ 1 ] ]
             if value then
                 return value
+            end
+            
+            if current_function.shader_type == "PixelShader" then
+                value = techniques[ current_technique ][ current_function.shader_type ].input_replacements[ node[ 1 ] ]
+                if value then
+                    return value
+                end
             end
         end
         
