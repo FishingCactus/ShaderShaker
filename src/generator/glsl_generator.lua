@@ -43,6 +43,7 @@ GLSLGenerator = {
     ["PreprocessAst"] = function( ast )
     
         GLSL_Helper_ConvertIntrinsicFunctions( ast )
+        GLSL_Helper_ConvertInitialValueTables( ast )
     
     end,
     
@@ -82,7 +83,6 @@ GLSLGenerator = {
         GLSLGenerator.ProcessConstants( ast )
         
         GLSLGenerator.ProcessShadersDeclaration( ast )
-        GLSLGenerator.ProcessHelperFunctions( ast )
         
         for technique, params in pairs( techniques ) do
         
@@ -108,24 +108,6 @@ GLSLGenerator = {
         output = output .. "</Shader>"
         
         ShaderPrint( output )
-    end,
-    
-    [ "ProcessHelperFunctions" ] = function( ast_node )
-        for child_node in NodeOfType( ast_node, 'function' ) do
-        
-            local node_name = ""
-            local function_name = child_node[ 2 ][ 1 ]
-            local shader_type = ""
-            
-            if shader_name_table[ function_name ] then
-                return
-            end
-        
-            error( "TODO", 1 )
-            
-            helper_functions[ function_name ] = GLSLGenerator.process_function( child_node )
-            local t = ""
-        end
     end,
     
     ["ProcessConstants"] = function( ast_node )    
@@ -677,10 +659,12 @@ GLSLGenerator = {
         output = output .. GLSL_Helper_ConvertIntrinsic( node[3][1] ) .. ' '
         
         index = 4
+        prefix_index = prefix_index + 1
+        
         while node[index] ~= nil do
         
             if index ~= 4 then
-                output = output .. ',\n'
+                output = output .. ',\n' .. prefix()
             end
             
             output = output .. node[ index ][ 1 ]
@@ -693,7 +677,7 @@ GLSLGenerator = {
             
         end
         
-        prefix_index = prefix_index - 1
+        prefix_index = prefix_index - 2
         
         return output .. ';'
     end,
@@ -862,11 +846,11 @@ GLSLGenerator = {
     end,
     
     [ "process_/=_statement" ] = function( node )
-        return GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' /= ' .. GLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
+        return prefix() .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' /= ' .. GLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
     end,
     
     [ "process_+=_statement" ] = function( node )
-        return GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' += ' .. GLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
+        return prefix() .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' += ' .. GLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
     end,
     
     ["process_swizzle"] = function( node )        
@@ -874,11 +858,11 @@ GLSLGenerator = {
     end,
     
     [ "process_*=_statement" ] = function( node )
-        return GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' *= ' .. GLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
+        return prefix() .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' *= ' .. GLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
     end,
     
     [ "process_-=_statement" ] = function( node )
-        return GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' -= ' .. GLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
+        return prefix() .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' -= ' .. GLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
     end,
     
     [ "process_!" ] = function( node )
@@ -936,18 +920,18 @@ GLSLGenerator = {
     end,
     
     ["process_else_if_block"] = function( node )
-        local output = 'else if (' .. GLSLGenerator.ProcessNode( node[1] ) .. ')\n'
+        local output = prefix() .. 'else if (' .. GLSLGenerator.ProcessNode( node[1] ) .. ')\n'
         
-        output = output .. GLSLGenerator.ProcessNode( node[ 2 ] )
+        output = output .. prefix() .. GLSLGenerator.ProcessNode( node[ 2 ] )
         
         return output .. '\n'
     end,
     
      ["process_else_block"] = function( node )
         
-        local output = 'else\n'
+        local output = prefix() .. 'else\n'
         
-        output = output .. GLSLGenerator.ProcessNode( node[ 1 ] )
+        output = output .. prefix() .. GLSLGenerator.ProcessNode( node[ 1 ] )
         
         return output .. '\n'
     end,

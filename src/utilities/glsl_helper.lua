@@ -138,3 +138,45 @@ function GLSL_Helper_ConvertIntrinsicFunctions( ast_node )
     end
 
 end
+
+function GLSL_Helper_ConvertInitialValueTables( root_node )
+
+    for i, node in ipairs( root_node ) do
+        
+        if node.name then        
+            if node.name == "variable_declaration" then
+            
+                local variable_type = Variable_GetType( node )
+                
+                for j, variable_node in ipairs( node ) do
+                
+                    local initial_value_table_node = variable_node[ 2 ]
+                
+                    if initial_value_table_node ~= nil and initial_value_table_node.name == "initial_value_table" then
+                    
+                        local new_node = { name = "constructor", { name = "type", variable_type } }
+                        local argument_expression_list = { name = "argument_expression_list" }
+                        
+                        for k, initial_value_node in ipairs( initial_value_table_node ) do
+                            table.insert( argument_expression_list, initial_value_node )
+                        end
+                        
+                        table.insert( new_node, argument_expression_list )
+                        
+                        variable_node[ 2 ] = new_node
+                        
+                        local t = ""
+                    
+                    end
+                
+                end
+            
+            end
+        
+            GLSL_Helper_ConvertInitialValueTables( node )
+            
+        end
+        
+    end
+
+end
