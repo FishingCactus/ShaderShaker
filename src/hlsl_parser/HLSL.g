@@ -352,7 +352,7 @@ sampler_declaration
     ;
     
 sampler_body
-    : TEXTURE ASSIGN '<' ID '>' SEMI { ast_push("texture");ast_addvalue($ID.text);}
+    : TEXTURE ASSIGN LT ID GT SEMI { ast_push("texture");ast_addvalue($ID.text);}
     | Name=ID ASSIGN Value=ID SEMI  { ast_push("parameter");ast_addvalue($Name.text);ast_addvalue($Value.text);}
     ;
     
@@ -399,7 +399,7 @@ register_rule
     :;
 
 annotations
-    : '<' annotation_entry* '>'
+    : LT annotation_entry* GT
     ;
 
 annotation_entry
