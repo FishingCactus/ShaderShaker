@@ -1,3 +1,5 @@
+//
+
 grammar HLSL;
 
 options {
@@ -237,7 +239,7 @@ multiplicative_expression
     ;
 
 cast_expression
-    : {ast_push("cast");}LPAREN type {ast_assign();} RPAREN cast_expression{ast_assign();}
+    : {ast_push("cast");}LPAREN type ( LBRACKET INT{ast_push("size"); ast_addvalue($INT.text); ast_assign(); }RBRACKET )? {ast_assign();} RPAREN cast_expression{ast_assign();}
     | unary_expression
     ;
 
@@ -299,7 +301,7 @@ function_declaration
         ( type { ast_assign(); }| VOID_TOKEN {ast_push("type");ast_addvalue("void");ast_assign();} ) 
         ID{ ast_push("ID"); ast_addvalue($ID.text); ast_assign();} 
         LPAREN ( {ast_push("argument_list");} argument_list {ast_assign();})? RPAREN 
-        ( COLON SEMANTIC {ast_push("semantic"); ast_addvalue($SEMANTIC.text); ast_assign();} )?
+        ( COLON semantic {ast_assign();} )?
     LCURLY
         {ast_push("function_body");}( statement {ast_assign();} )*{ast_assign();}
     RCURLY
@@ -312,7 +314,7 @@ argument_list
 argument
     : {ast_push("argument");} type_modifier? input_modifier? type{ast_assign();} 
         Name=ID{ast_push("ID");ast_addvalue($ID.text);ast_assign();} 
-        ( COLON SEMANTIC {ast_push("semantic");ast_addvalue($SEMANTIC.text);ast_assign();} )? 
+        ( COLON semantic {ast_assign();} )? 
         ( INTERPOLATION_MODIFIER )? ( ASSIGN initial_value {ast_assign();} )?
     ;
     
@@ -337,7 +339,11 @@ texture_type
     ;
     
 texture_declaration
-    : t=texture_type ID SEMI{ast_push("texture_declaration");ast_push("type");ast_addvalue($t.text);ast_assign();ast_addvalue($ID.text);}
+    : t=texture_type ID 
+    {ast_push("texture_declaration");ast_push("type");ast_addvalue($t.text);ast_assign();ast_addvalue($ID.text);}
+    ( COLON semantic ) ?
+    ( { ast_push( "annotations" ); } annotations {ast_assign();} ) ?
+    SEMI
     ;
     
 sampler_declaration
@@ -361,11 +367,11 @@ variable_declaration
 	;
 	
 variable_declaration_body
-    : {ast_push("variable");}ID{ast_addvalue($ID.text);}( LBRACKET INT{ast_set("size", $INT.text);} RBRACKET )?
-        ( COLON SEMANTIC {ast_set("semantic", $INT.text);} ) ?
+    : {ast_push("variable");}ID{ast_addvalue($ID.text);}( LBRACKET INT{ast_push("size"); ast_addvalue($INT.text); ast_assign(); } RBRACKET )?
+        ( COLON semantic ) ?
         ( COLON packoffset )?
         ( COLON register_rule ) ?
-        annotations ?
+        ( { ast_push( "annotations" ); } annotations {ast_assign();} ) ?
         ( ASSIGN initial_value {ast_assign();} ) ?
     ;
 	 
@@ -393,8 +399,15 @@ register_rule
     :;
 
 annotations
-    :;
-        
+    : '<' annotation_entry* '>'
+    ;
+
+annotation_entry
+    :
+    Type=( STRING_TYPE | SCALAR_TYPE ) ID {ast_push("entry");ast_addvalue($Type.text); ast_addvalue($ID.text); } 
+    ASSIGN ( STRING { ast_addvalue($STRING.text); } | literal_value {ast_assign();} ) SEMI {ast_assign();}
+    ;
+
 initial_value
     : 
     expression
@@ -418,8 +431,8 @@ user_defined_type // :TODO: validates that it's a valid type
 struct_definition
     : STRUCT {ast_push("struct_definition");} Name=ID { TypeTable.insert( $Name.text ); ast_addvalue( $Name.text ); } 
     LCURLY
-        ( {ast_push("field");} INTERPOLATION_MODIFIER? type{ast_assign();} MemberName=ID{ast_push("ID");ast_addvalue($MemberName.text);ast_assign();}  
-            ( COLON SEMANTIC {ast_push("semantic"); ast_addvalue($SEMANTIC.text); ast_assign();})? SEMI {ast_assign();} )+ 
+        ( {ast_push("field");} INTERPOLATION_MODIFIER? type{ast_assign();} MemberName=ID{ast_push("ID");ast_addvalue($MemberName.text);ast_assign();} 
+            ( COLON semantic )? SEMI {ast_assign();} )+ 
     RCURLY SEMI
     ;
 
@@ -432,13 +445,29 @@ literal_value
     :  value=( FLOAT | INT | TRUE_TOKEN | FALSE_TOKEN )  { ast_push("literal"); ast_addvalue($value.text); }
     ;
 
+semantic
+    : SEMANTIC {ast_push("semantic"); ast_addvalue($SEMANTIC.text); ast_assign();}
+    | ID {ast_push("user_semantic"); ast_addvalue($ID.text); ast_assign();}
+    ;
+
 SEMANTIC
-    : 'POSITION'
-    | 'NORMAL'
+    : 'POSITION' ('0'..'8')?
+    | 'POSITIONT'
+    | 'NORMAL' ('0'..'8')?
     | 'SV_POSITION'
-    | 'COLOR' ('0'..'4')?
+    | 'COLOR' ('0'..'8')?
     | 'TEXCOORD' ('0'..'8')?
+    | 'TESSFACTOR' ('0'..'8')?
+    | 'PSIZE' ('0'..'8')?
+    | 'DEPTH' ('0'..'8')?
     | 'VPOS'
+    | 'VFACE'
+    | 'FOG'
+    | 'DIFFUSE'
+    | 'TANGENT' ('0'..'8')?
+    | 'BINORMAL' ('0'..'8')?
+    | 'BLENDINDICES' ('0'..'8')?
+    | 'BLENDWEIGHT' ('0'..'8')?
     ;
   
 SEMI:               ';';
@@ -555,6 +584,10 @@ SCALAR_TYPE
     | 'int'
     | 'float'
     | 'double'
+    ;
+
+STRING_TYPE
+    : 'string'
     ;
     
 ID  :	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*

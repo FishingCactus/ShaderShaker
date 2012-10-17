@@ -24,7 +24,16 @@ local
             POSITION = "gl_Position"
         },
         PixelShader = {
-            COLOR0 = "gl_FragColor",
+            COLOR0 = "gl_FragColor"
+        },
+    }
+    
+local
+    shader_input_replacement_table = {
+        VertexShader = {
+            
+        },
+        PixelShader = {
             VPOS = "gl_FragCoord"
         },
     }
@@ -39,6 +48,14 @@ end
 
 function GLSL_Helper_GetShaderOutputReplacement( shader_type, semantic, default_value )
     return shader_output_replacement_table[ shader_type ][ semantic ] or default_value
+end
+
+function GLSL_Helper_GetShaderInputReplacement( shader_type, semantic, default_value )
+    if shader_type and semantic then
+        return shader_input_replacement_table[ shader_type ][ semantic ] or default_value
+    end
+    
+    return default_value
 end
 
 function GLSL_Helper_GetAttribute( attribute )
