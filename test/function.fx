@@ -8,12 +8,14 @@ struct VS_OUTPUT
 VS_OUTPUT RenderSceneVS( float4 vPos : POSITION,
                          float3 vNormal : NORMAL,
                          float2 vTexCoord0 : TEXCOORD,
-                         /*
-                         uniform int nNumLights,
-                         uniform bool bTexture,
-                         uniform bool bAnimate 
-                         */
-                         )
+
+                        in const float2 vpos,
+                        out const float3 world_space_view_vector,
+
+                        uniform int nNumLights,
+                        uniform bool bTexture,
+                        uniform bool bAnimate 
+                        )
 {
     VS_OUTPUT Output;
 

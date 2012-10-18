@@ -312,17 +312,14 @@ argument_list
     ;
     
 argument
-    : {ast_push("argument");} type_modifier? input_modifier? type{ast_assign();} 
+    : {ast_push("argument");} input_modifier? ( type_modifier {ast_push("modifier"); ast_addvalue($type_modifier.text); ast_assign();})? type{ast_assign();} 
         Name=ID{ast_push("ID");ast_addvalue($ID.text);ast_assign();} 
-        ( COLON semantic {ast_assign();} )? 
+        ( COLON semantic )? 
         ( INTERPOLATION_MODIFIER )? ( ASSIGN initial_value {ast_assign();} )?
     ;
     
 input_modifier
-    : IN_TOKEN
-    | OUT_TOKEN
-    | INOUT
-    | UNIFORM
+    : modifier=( IN_TOKEN | OUT_TOKEN | INOUT | UNIFORM ) {ast_push("input_modifier");ast_addvalue($modifier.text);ast_assign();}
     ;
 
 // Texture & sampler

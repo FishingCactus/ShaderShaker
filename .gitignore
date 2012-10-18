@@ -38,3 +38,4 @@ src/host/lua-5.1.5/*
 ShaderShaker.deproj
 ShaderShaker.deuser
 _ReSharper.*
+output2.ast
