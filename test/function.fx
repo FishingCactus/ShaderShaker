@@ -8,9 +8,12 @@ struct VS_OUTPUT
 VS_OUTPUT RenderSceneVS( float4 vPos : POSITION,
                          float3 vNormal : NORMAL,
                          float2 vTexCoord0 : TEXCOORD,
+                         /*
                          uniform int nNumLights,
                          uniform bool bTexture,
-                         uniform bool bAnimate )
+                         uniform bool bAnimate 
+                         */
+                         )
 {
     VS_OUTPUT Output;
 

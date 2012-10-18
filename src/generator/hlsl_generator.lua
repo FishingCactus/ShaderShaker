@@ -488,7 +488,7 @@ HLSLGenerator = {
         return prefix .. HLSLGenerator.ProcessNode( node[1] ) .. node[2]
     end,
     
-    [ "process_!" ] = function( node )
+    [ "process_unary_!" ] = function( node )
     
         local node_1 = HLSLGenerator.ProcessNode( node[ 1 ] )
         local output = '!'
@@ -500,8 +500,7 @@ HLSLGenerator = {
         end
         
         return output
-    end
-    
+    end    
 }
 
 local function AddOperator( operator )

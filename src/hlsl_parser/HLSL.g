@@ -223,7 +223,7 @@ equality_expression
     ;
 
 relational_expression
-    : shift_expression ( op=(LT_TOKEN|GT|LTE|GTE){ast_push($op.text);ast_swap();ast_assign();} shift_expression{ast_assign();} )?
+    : shift_expression ( op=(LT_TOKEN|GT_TOKEN|LTE|GTE){ast_push($op.text);ast_swap();ast_assign();} shift_expression{ast_assign();} )?
     ;
 
 shift_expression
@@ -352,7 +352,7 @@ sampler_declaration
     ;
     
 sampler_body
-    : TEXTURE ASSIGN LT ID GT SEMI { ast_push("texture");ast_addvalue($ID.text);}
+    : TEXTURE ASSIGN LT_TOKEN ID GT_TOKEN SEMI { ast_push("texture");ast_addvalue($ID.text);}
     | Name=ID ASSIGN Value=ID SEMI  { ast_push("parameter");ast_addvalue($Name.text);ast_addvalue($Value.text);}
     ;
     
@@ -399,7 +399,7 @@ register_rule
     :;
 
 annotations
-    : LT annotation_entry* GT
+    : LT_TOKEN annotation_entry* GT_TOKEN
     ;
 
 annotation_entry
@@ -532,7 +532,7 @@ BITWISE_NOT:        '~';
 XOR:                '^^';
 LT_TOKEN:           '<';
 LTE:                '<=';
-GT:                 '>';
+GT_TOKEN:                 '>';
 GTE:                '>=';
 BITWISE_AND:        '&';
 BITWISE_OR:         '|';

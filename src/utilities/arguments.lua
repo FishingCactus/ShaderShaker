@@ -1,7 +1,7 @@
 function ParseArgumentTable( arguments )
 
     local result = {}
-    local arg_item = { output_files = {} }
+    local arg_item = { output_files = {}, constants_replacement = {}, optimize = false }
     local previous_argument = ""
     
     for i, argument in ipairs( arguments ) do
@@ -30,7 +30,10 @@ function ParseArgumentTable( arguments )
                 end
                 
                 previous_argument = "t"
-                
+            elseif arg_option == "c" then
+                previous_argument = "c"
+            elseif arg_option == "optimization" then
+                previous_argument = "optimization"
             else
                 error( "Invalid option", 1 );
             end
@@ -47,6 +50,12 @@ function ParseArgumentTable( arguments )
                 arg_item.technique = argument
             elseif arg_item.input_file then
                 error( "You can only specify another input file if you give an -o, -f or/and -r option before", 1 )
+            elseif previous_argument == "c" then
+                local constants_table = explode( "=", argument )
+
+                arg_item.constants_replacement[ constants_table[ 1 ] ] = constants_table[ 2 ]
+            elseif previous_argument == "optimization" then
+                arg_item.optimize = toboolean( argument )
             else
                 arg_item.input_file = argument
                 table.insert( result, arg_item )            
@@ -60,4 +69,21 @@ function ParseArgumentTable( arguments )
 
     return result
     
+end
+
+function explode( div, str ) 
+    if ( div == '' ) then 
+        return false 
+    end
+
+    local pos,arr = 0,{}
+
+    for st,sp in function() return string.find( str, div, pos, true) end do
+        table.insert( arr,string.sub( str,pos,st-1 ) ) 
+        pos = sp + 1 
+    end
+
+    table.insert( arr,string.sub( str,pos ) )
+    
+    return arr
 end

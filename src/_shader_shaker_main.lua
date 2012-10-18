@@ -28,12 +28,8 @@ function _shaker_shaker_process_files()
 
         ast = GenerateAstFromFileName( options.input_file )
         
-        if options.replacement_file then
-            replace_ast = GenerateAstFromFileName( options.replacement_file )
-        end
-        
-        ProcessAst( ast, replace_ast )
-    
+        ProcessAst( ast, options )
+
         for i, output_file in ipairs( options.output_files ) do
             local ast_copy = DeepCopy( ast )
         
