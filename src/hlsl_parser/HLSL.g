@@ -301,7 +301,7 @@ function_declaration
         ( type { ast_assign(); }| VOID_TOKEN {ast_push("type");ast_addvalue("void");ast_assign();} ) 
         ID{ ast_push("ID"); ast_addvalue($ID.text); ast_assign();} 
         LPAREN ( {ast_push("argument_list");} argument_list {ast_assign();})? RPAREN 
-        ( COLON semantic {ast_assign();} )?
+        ( COLON semantic )?
     LCURLY
         {ast_push("function_body");}( statement {ast_assign();} )*{ast_assign();}
     RCURLY
