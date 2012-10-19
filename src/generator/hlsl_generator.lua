@@ -87,7 +87,7 @@ HLSLGenerator = {
         local index
         local previous_i = i
         
-        output = prefix .. node[ 1 ] .. '('
+        output = node[ 1 ] .. '('
 
         if node[ 2 ] ~= nil then
             output = output .. ' '
