@@ -156,36 +156,47 @@ HLSLGenerator = {
     
     ["process_function"] = function( function_node )
     
-        local output
-        local function_body_index
+        local output = ""
         local prefix = string.rep( [[    ]], i )
         local previous_i = i
         
         i = i + 1
         
-        output = prefix .. function_node[ 1 ][ 1 ] .. ' ' .. function_node[ 2 ][ 1 ]
+        local result = {}
+        local get_result_value = function ( key ) return result[ key ][ 1 ] or "" end
+        local get_generated_result_value = function ( key ) if result[ key ] then return HLSLGenerator.ProcessNode( result[ key ] ) else return "" end end
         
-        if function_node[ 3 ].name == "argument_list" then
-            function_body_index = 4
-            output = output .. '(\n' .. HLSLGenerator.process_argument_list( function_node[ 3 ] ) .. '\n' .. prefix
-        else
-            output = output .. '('
-            function_body_index = 3
+        for index, node in ipairs( function_node ) do
+            result[ node.name ] = node
         end
         
-        output = output .. ')\n' .. prefix .. '{\n'
+        output = prefix .. get_result_value( "type" ) .. ' ' .. get_result_value( "ID" ) .. "("
+        local argument_list = get_generated_result_value( "argument_list" )
         
-        for _, statement in ipairs( function_node[ function_body_index ] ) do
-        
-            output = output .. HLSLGenerator.ProcessNode( statement ) .. '\n'
+        if argument_list ~= "" then
+            output = output .. '\n' .. argument_list .. " \n"
         end
+        
+        output = output .. ")" .. get_generated_result_value( "semantic" ) .. "\n"
+        output = output .. "{\n" .. get_generated_result_value( "function_body" ) .. "\n}"
         
         i = previous_i
 
-        return output .. prefix .. '}\n'
+        return output
         
     end,
     
+    ["process_function_body"] = function( function_body_node )
+
+        local output = ""
+
+        for _, statement in ipairs( function_body_node ) do
+            output = output .. HLSLGenerator.ProcessNode( statement ) .. '\n'
+        end
+
+        return output
+    end,
+
     ["process_argument_expression_list"] = function( argument_list )
 
         local result = {}
@@ -212,16 +223,26 @@ HLSLGenerator = {
     
     ["process_argument"] = function( argument )
 
-        local output = argument[ 1 ][ 1 ] .. ' ' .. argument[ 2 ][ 1 ]
+        local result = {}
+        local get_result_value = function ( key ) return result[ key ] or "" end
         
-        if #argument > 2 then
-            for i=3, #argument do
-                if argument[i].name == "semantic" then
-                    output = output .. ':' .. argument[i][1]
-                else
-                    local t = ""
-                end
-            end
+        for index, value in ipairs( argument ) do        
+            result[ argument[ index ].name ] = argument[ index ][ 1 ]
+        end
+        
+        local output = get_result_value( "input_modifier" ) .. " "
+                     .. get_result_value( "modifier" ) .. " " 
+                     .. get_result_value( "type" ) .. " " 
+                     .. get_result_value( "ID" )
+                     
+        local semantic = get_result_value( "semantic" )
+        
+        if semantic == "" then
+            semantic = get_result_value( "user_semantic" )
+        end
+
+        if semantic ~= "" then
+            output = output .. " : " .. semantic
         end
         
         return output

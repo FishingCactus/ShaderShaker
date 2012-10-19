@@ -1,9 +1,11 @@
+/*
 struct VS_OUTPUT
 {
     float4 Position   : SV_POSITION; 
     float4 Diffuse    : COLOR0;
     float2 TextureUV  : TEXCOORD0;
 };
+*/
 
 VS_OUTPUT RenderSceneVS( float4 vPos : POSITION,
                          float3 vNormal : NORMAL,
@@ -29,6 +31,20 @@ VS_OUTPUT RenderSceneVS( float4 vPos : POSITION,
     Blah( d + e );
 
     return Output;
+}
+
+float4 PSMain(
+    const VS_OUTPUT input,
+    in float2 vpos              : VPOS,
+    
+    uniform const bool it_has_rim,
+    uniform const bool it_uses_light_prepass,
+    uniform const bool it_uses_color_overlay,
+    uniform const bool it_uses_fog,
+    uniform const bool it_uses_forward_lights
+    ) : COLOR0
+{
+
 }
 
 // ~~
