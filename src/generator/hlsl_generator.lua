@@ -119,7 +119,7 @@ HLSLGenerator = {
         
         end
         
-        output = output .. '}'
+        output = output .. '};'
         return output
     
     end,
@@ -218,6 +218,8 @@ HLSLGenerator = {
             for i=3, #argument do
                 if argument[i].name == "semantic" then
                     output = output .. ':' .. argument[i][1]
+                else
+                    local t = ""
                 end
             end
         end
@@ -246,6 +248,7 @@ HLSLGenerator = {
         while node[index] ~= nil do
         
             local prefix = string.rep( [[    ]], i )
+            local sub_index = 2
             
             if index ~= 4 then
                 output = output .. ',\n'
@@ -253,8 +256,16 @@ HLSLGenerator = {
             
             output = output .. prefix .. node[ index ][ 1 ]
             
-            if node[ index ][2] ~= nil then
-                output = output .. '=' .. HLSLGenerator.ProcessNode( node[ index ][ 2 ] )
+            while node[index][ sub_index ] ~= nil do
+                local sub_output = HLSLGenerator.ProcessNode( node[ index ][ sub_index ] )
+                local sub_key_name = node[ index ][ sub_index ].name
+                
+                if sub_key_name ~= "annotations" and sub_key_name ~= "user_semantic" and sub_key_name ~= "semantic" and sub_key_name ~= "size" then
+                    output = output .. " = "
+                end
+                
+                output = output .. sub_output
+                sub_index = sub_index + 1
             end
             
             index = index + 1
@@ -500,7 +511,55 @@ HLSLGenerator = {
         end
         
         return output
-    end    
+    end,
+    
+    [ "process_unary_-" ] = function( node )
+    
+        local node_1 = HLSLGenerator.ProcessNode( node[ 1 ] )
+        local output = '-'
+        
+        if GetOperatorPrecedence( '!' ) < GetOperatorPrecedence( node[ 1 ].name ) then
+            output = output .. '(' .. node_1 .. ')'
+        else
+            output = output .. node_1
+        end
+        
+        return output
+    end,
+    
+    [ "process_annotations" ] = function( node )
+        local output = "< "
+        
+        for _, statement in ipairs( node ) do
+            output = output .. HLSLGenerator.ProcessNode( statement )
+        end
+        
+        return output .. " >"
+    end,
+    
+    [ "process_entry" ] = function( node )
+        local output = node[ 1 ] .. " " .. node[ 2 ] .. " = "
+        
+        if node[ 3 ][ 1 ] ~= nil then
+            output = output .. HLSLGenerator.ProcessNode( node[ 3 ] )
+        else
+            output = output .. node[ 3 ]
+        end
+        
+        return output .. ";"
+    end,
+    
+    [ "process_user_semantic" ] = function( node )
+        return " : " .. node[ 1 ]
+    end,
+    
+    [ "process_semantic" ] = function( node )
+        return " : " .. node[ 1 ]
+    end,
+    
+    [ "process_size" ] = function( node )
+        return "[" .. node[ 1 ] .. "]"
+    end
 }
 
 local function AddOperator( operator )
