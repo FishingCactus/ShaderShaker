@@ -7,7 +7,7 @@
 
     struct ShaderShakerContext;
 
-    ShaderShakerContext * ShaderShakerCreateContext( int argc, const char** argv );
+    ShaderShakerContext * ShaderShakerCreateContext( int argc, const char* const * argv );
     ShaderShakerContext * ShaderShakerCreateContextWithLanguage( const char * language );
     void ShaderShakerDestroyContext( ShaderShakerContext * context );
     const char * ShaderShakerGetProcessedCode( ShaderShakerContext * context, int file_index );

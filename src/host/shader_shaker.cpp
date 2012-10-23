@@ -22,13 +22,7 @@ struct ShaderShakerContext
 // Embedded scripts ( found in scripts.cpp )
 extern const char* builtin_scripts[];
 
-static const char
-    * LocalInputFile = 0,
-    * LocalReplaceFile = 0,
-    * LocalOutputFile = 0,
-    * LocalLanguage = 0;
-
-static bool load_builtin_scripts(lua_State* L, int argc, const char** argv );
+static bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv );
 
 #if !defined( SHADERSHAKER_IN_DLL ) && !defined( SHADERSHAKER_IN_LIB )
 
@@ -57,7 +51,7 @@ static bool load_builtin_scripts(lua_State* L, int argc, const char** argv );
 
 #endif
 
-ShaderShakerContext * ShaderShakerCreateContext( int argc, const char** argv )
+ShaderShakerContext * ShaderShakerCreateContext( int argc, const char* const * argv )
 {
     ShaderShakerContext
         * context;
@@ -125,7 +119,7 @@ const char * ShaderShakerGetProcessedCode( ShaderShakerContext * context, int fi
 /**
  * When running in debug mode, the scripts are loaded from the disk. 
  */
-bool load_builtin_scripts(lua_State* L, int argc, const char** argv )
+bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv )
 {
     const char
         * filename;
@@ -175,7 +169,7 @@ bool load_builtin_scripts(lua_State* L, int argc, const char** argv )
  * buffer, where they were stored by a preprocess. To update these embedded
  * scripts, run `premake4 embed` then rebuild.
  */
-bool load_builtin_scripts(lua_State* L, int argc, const char** argv )
+bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv )
 {
     int i;
     for (i = 0; builtin_scripts[i]; ++i)
