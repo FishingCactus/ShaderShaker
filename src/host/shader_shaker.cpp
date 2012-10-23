@@ -36,9 +36,6 @@ static bool load_builtin_scripts(lua_State* L, int argc, const char** argv );
     {
         ShaderShakerContext
             * context;
-        int
-            return_value;
-        
         bool
             result;
 
@@ -47,19 +44,15 @@ static bool load_builtin_scripts(lua_State* L, int argc, const char** argv );
         if( !context )
         {
             std::cerr << "Unable to load scripts\n";
-            return_value = -1;
+            return -1;
         }
         else
         {
             result = ShaderShakerLoadShaderFile( context );
+            ShaderShakerDestroyContext( context );
 
-            return_value = result ? 0 : 1;
+            return result ? 0 : 1;
         }
-
-        ShaderShakerDestroyContext( context );
-
-        return return_value;
-
     }
 
 #endif
@@ -182,7 +175,7 @@ bool load_builtin_scripts(lua_State* L, int argc, const char** argv )
  * buffer, where they were stored by a preprocess. To update these embedded
  * scripts, run `premake4 embed` then rebuild.
  */
-bool load_builtin_scripts(lua_State* L)
+bool load_builtin_scripts(lua_State* L, int argc, const char** argv )
 {
     int i;
     for (i = 0; builtin_scripts[i]; ++i)
@@ -195,7 +188,23 @@ bool load_builtin_scripts(lua_State* L)
         }
     }
 
-    if (lua_pcall(L, 3, 1, 0) != 0)
+    lua_getglobal( L, "_shader_shaker_main" );
+
+    lua_pushnil( L );
+    lua_newtable( L );
+
+    for ( int i = 1; i < argc; i++ )
+    {
+        const char
+            * argument;
+
+        argument = argv[ i ];
+
+        lua_pushstring( L, argument );
+        lua_rawseti( L, -2, i );
+    }
+
+    if (lua_pcall(L, 2, 1, 0) != 0)
     {
         std::cerr << lua_tostring(L, -1);
         return false;
