@@ -35,7 +35,7 @@ function _shaker_shaker_process_files()
         
             SelectPrinter( output_file, options.force_language )
         
-            if output_file ~= nil then
+            if output_file ~= "console_output" then
                 InitializeOutputFile( output_file )
             else
                 InitializeOutputPrint()
@@ -43,6 +43,13 @@ function _shaker_shaker_process_files()
             
             GetSelectedPrinter().ProcessAst( ast_copy, options.technique )
             
+        end
+
+        if _G.CodeOutput and #_G.CodeOutput then
+            for _, code in ipairs( _G.CodeOutput ) do
+                print( code )
+            end
+
         end
     
     end

@@ -30,7 +30,7 @@ static const char
 
 static bool load_builtin_scripts(lua_State* L, int argc, const char** argv );
 
-#ifndef SHADERSHAKER_IN_DLL
+#if !defined( SHADERSHAKER_IN_DLL ) && !defined( SHADERSHAKER_IN_LIB )
 
     int main(int argc, const char** argv)
     {
@@ -111,6 +111,21 @@ bool ShaderShakerLoadShaderFile( ShaderShakerContext * context )
 
         return true;
     }
+}
+
+// ~~
+
+const char * ShaderShakerGetProcessedCode( ShaderShakerContext * context, int file_index )
+{
+    const char * code;
+    lua_getglobal( context->L, "CodeOutput" );
+    lua_rawgeti( context->L, -1, file_index + 1 );
+    lua_pushstring( context->L, "text" );
+    lua_rawget( context->L, -2 );
+    code = lua_tostring( context->L, -1 );
+    lua_pop( context->L, 3 );
+
+    return code;
 }
 
 #if defined(_DEBUG)

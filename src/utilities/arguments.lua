@@ -58,6 +58,9 @@ function ParseArgumentTable( arguments )
                 arg_item.optimize = toboolean( argument )
             else
                 arg_item.input_file = argument
+                if #arg_item.output_files == 0 then
+                    table.insert( arg_item.output_files, "console_output" )
+                end
                 table.insert( result, arg_item )            
                 arg_item = {}
             end

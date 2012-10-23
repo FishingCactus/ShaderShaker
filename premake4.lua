@@ -92,6 +92,18 @@
 			kind "SharedLib"
 			targetdir   "bin/release_dll"
 
+	project "ShaderShakerLib"
+
+		defines{ "SHADERSHAKER_IN_LIB" }
+		
+		configuration "Debug"
+			kind "StaticLib"
+			targetdir   "bin/debug_lib"
+			
+		configuration "Release"
+			kind "StaticLib"
+			targetdir   "bin/release_lib"
+
 
 
 --

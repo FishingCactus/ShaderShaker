@@ -1,10 +1,5 @@
 
 local stream
-local old_print = print
-
-print = function( ... )
-    error( "Don't use print", 2 );
-end
 
 function ShaderPrint( ... )
     local argument = {...}
@@ -19,7 +14,13 @@ function ShaderPrint( ... )
 end
 
 function InitializeOutputPrint()
-    stream = io.stdout
+    stream = {
+		text = "",
+		write = function( self, data ) self.text = self.text .. data end,
+		}
+
+	_G.CodeOutput = _G.CodeOutput or {}
+	table.insert( _G.CodeOutput, stream )
 end
 
 function InitializeOutputFile( file )
