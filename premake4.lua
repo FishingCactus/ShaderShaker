@@ -15,7 +15,7 @@
 		targetname  "shader_shaker"
 		language    "C++"
 		kind        "ConsoleApp"
-		flags       { "No64BitChecks", "ExtraWarnings", "StaticRuntime" }	
+		flags       { "No64BitChecks", "ExtraWarnings" }	
 		includedirs { "include", "src/host/lua-5.2.0/src", "contrib", "src/hlsl_parser" }
 		
 		files 
