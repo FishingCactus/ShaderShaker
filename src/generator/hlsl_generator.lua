@@ -365,6 +365,8 @@ HLSLGenerator = {
         
         i = i + 1
         
+        local f = HLSLGenerator.ProcessNode( node[1] )
+        
         local output = prefix .. 'if (' .. HLSLGenerator.ProcessNode( node[1] ) .. ')\n'
         
         output = output .. HLSLGenerator.ProcessNode( node[ 2 ] )

@@ -1,6 +1,6 @@
 function ProcessAst( ast_node, options )
     
-    if options.optimization then
+    if options.optimize then
         local constants = GetConstants( ast_node )
         
         if options.constants_replacement ~= nil then
@@ -146,6 +146,8 @@ function ReplaceConstants( ast_node, constants )
                     if constants[ variable_node[ 1 ] ] then
                         variable_node[ 1 ] = constants[ variable_node[ 1 ] ].value
                     end
+                    
+                    ReplaceConstants( child_node, constants  )
                 end
             end
         else
@@ -158,14 +160,16 @@ function CleanAST( ast_node )
     CleanIfs( ast_node )
 end
 
-function CleanIfs( ast_node )
-    if ast_node == nil or type( ast_node ) ~= "table" then
+function CleanIfs( parent_node )
+    if parent_node == nil or type( parent_node ) ~= "table" then
         return
     end
     
-    for child_node_index=#ast_node, 1, -1 do
-        local child_node = ast_node[ child_node_index ]--for child_node_index, child_node in ipairs( ast_node ) do
+    for child_node_index=#parent_node, 1, -1 do
+        local child_node = parent_node[ child_node_index ]--for child_node_index, child_node in ipairs( ast_node ) do
+        
         if child_node.name == "if" then
+            
             local if_child_node_index = 1
             
             while child_node[ if_child_node_index ] ~= nil do
@@ -178,7 +182,9 @@ function CleanIfs( ast_node )
                     if test_condition ~= nil then
                         if test_condition then
                             local block_node = if_child_node[ 2 ]
-                            ast_node[ child_node_index ] = block_node[ 1 ]
+                            parent_node[ child_node_index ] = block_node[ 1 ]
+                            
+                            CleanIfs( parent_node[ child_node_index ] )
                             break
                         else
                             child_node[ if_child_node_index ] = nil
@@ -188,6 +194,8 @@ function CleanIfs( ast_node )
                             
                             while child_node[ update_node_index ] ~= nil do
                                 child_node[ update_node_index - 1 ] = child_node[ update_node_index ]
+                                CleanIfs( child_node[ update_node_index - 1 ] )
+                                
                                 update_node_index = update_node_index + 1
                             end
                             
@@ -197,7 +205,7 @@ function CleanIfs( ast_node )
                 else -- if_child_node.name == "else_block"
                     if if_child_node_index == 1 then
                         local block_node = if_child_node[ 1 ]
-                        ast_node[ child_node_index ] = block_node[ 1 ]
+                        parent_node[ child_node_index ] = block_node
                     end
                 end
                 
@@ -214,7 +222,7 @@ function CleanIfs( ast_node )
                 break
             end
             
-            if can_remove_if then
+            if can_remove_if and ast_node ~= nil then
                 table.remove( ast_node, child_node_index )
             end            
         else
@@ -252,10 +260,30 @@ function GetConstants( ast_node )
     for variable_declaration_node, variable_declaration_node_index in InverseNodeOfType( ast_node, "variable_declaration", false ) do
         local type = Variable_GetType( variable_declaration_node )
         for variable_node, variable_index in InverseNodeOfType( variable_declaration_node, "variable", false ) do
-            local name = variable_node[ 1 ]
-            local value = variable_node[ 2 ][ 1 ]
+            local index = 1
+            local name = variable_node[ index ]
+                        
+            constants[ name ] = { type = type }
             
-            constants[ name ] = { value = value, type = type }
+            while variable_node[ index ] ~= nil do
+                local node_name = variable_node[ index ].name;
+                
+                if node_name == "initial_value_table" then
+                    local value = variable_node[ index ]
+                    constants[ name ].value = value
+                    
+                    break
+                elseif node_name == "literal" then
+                    local value = variable_node[ index ]
+                    constants[ name ].value = value[ 1 ]
+                    
+                    break
+                end
+            
+                index = index + 1
+            end
+            
+            local t = ""
         end
     end
     

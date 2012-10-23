@@ -1,7 +1,7 @@
 function ParseArgumentTable( arguments )
 
     local result = {}
-    local arg_item = { output_files = {}, constants_replacement = {}, optimize = false }
+    local arg_item = { output_files = {}, constants_replacement = {}, optimize = true }
     local previous_argument = ""
     
     for i, argument in ipairs( arguments ) do
