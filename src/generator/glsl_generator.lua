@@ -1058,6 +1058,68 @@ GLSLGenerator = {
     [ "process_cast" ] = function( node )
         return GLSL_Helper_ConvertIntrinsic( node[1][1] ) .. '(' .. GLSLGenerator.ProcessNode( node[2] ) .. ')'
     end,
+    
+    [ "process_size" ] = function( node )
+        return "[" .. node[ 1 ] .. "]"
+    end,
+    
+    [ "process_unary_!" ] = function( node )
+    
+        local node_1 = GLSLGenerator.ProcessNode( node[ 1 ] )
+        local output = '!'
+        
+        if GetOperatorPrecedence( '!' ) < GetOperatorPrecedence( node[ 1 ].name ) then
+            output = output .. '(' .. node_1 .. ')'
+        else
+            output = output .. node_1
+        end
+        
+        return output
+    end,
+    
+    [ "process_unary_-" ] = function( node )
+    
+        local node_1 = GLSLGenerator.ProcessNode( node[ 1 ] )
+        local output = '-'
+        
+        if GetOperatorPrecedence( '!' ) < GetOperatorPrecedence( node[ 1 ].name ) then
+            output = output .. '(' .. node_1 .. ')'
+        else
+            output = output .. node_1
+        end
+        
+        return output
+    end,
+    
+    [ "process_annotations" ] = function( node )
+        local output = "< "
+        
+        for _, statement in ipairs( node ) do
+            output = output .. GLSLGenerator.ProcessNode( statement )
+        end
+        
+        return output .. " >"
+    end,
+    
+    [ "process_entry" ] = function( node )
+        local output = node[ 1 ] .. " " .. node[ 2 ] .. " = "
+        
+        if node[ 3 ][ 1 ] ~= nil then
+            output = output .. GLSLGenerator.ProcessNode( node[ 3 ] )
+        else
+            output = output .. node[ 3 ]
+        end
+        
+        return output .. ";"
+    end,
+    
+    [ "process_user_semantic" ] = function( node )
+        return " : " .. node[ 1 ]
+    end,
+    
+    [ "process_semantic" ] = function( node )
+        return " : " .. node[ 1 ]
+    end,
 }
 
 local function AddOperator( operator )
