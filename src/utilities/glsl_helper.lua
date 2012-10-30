@@ -24,6 +24,7 @@ local
             POSITION = "gl_Position"
         },
         PixelShader = {
+            COLOR = "gl_FragColor",
             COLOR0 = "gl_FragColor"
         },
     }
