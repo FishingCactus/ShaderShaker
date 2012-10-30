@@ -23,7 +23,13 @@ function Function_GetBody( function_node )
 end
 
 function Function_GetArgumentList( function_node )
-    return function_node[ 3 ]
+    for i, child_node in ipairs( function_node ) do
+        if child_node.name == "argument_list" then
+            return child_node
+        end
+    end
+
+    return {}    
 end
 
 function Function_GetReturnType( function_node )
@@ -31,8 +37,10 @@ function Function_GetReturnType( function_node )
 end
 
 function Function_GetSemantic( function_node )
-    if function_node[ 4 ] ~= nil and function_node[ 4 ].name == "semantic" then
-        return function_node[ 4 ][ 1 ] or ""
+    for i, child_node in ipairs( function_node ) do
+        if child_node.name == "semantic" then
+            return child_node[ 1 ]
+        end
     end
     
     return ""
@@ -42,8 +50,12 @@ function Function_GetArguments( function_node )
     local
         input_types = {}
         
-    for index, type in ipairs( function_node[ 3 ] ) do --argument_list
-        table.insert( input_types, type )
+    for i, child_node in ipairs( function_node ) do
+        if child_node.name == "argument_list" then
+            for j, type in ipairs( child_node ) do --argument_list
+                table.insert( input_types, type )
+            end
+        end
     end
     
     return input_types
