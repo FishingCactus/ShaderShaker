@@ -222,8 +222,8 @@ function CleanIfs( parent_node )
                 break
             end
             
-            if can_remove_if and ast_node ~= nil then
-                table.remove( ast_node, child_node_index )
+            if can_remove_if and parent_node ~= nil then
+                table.remove( parent_node, child_node_index )
             end            
         else
             CleanIfs( child_node )
