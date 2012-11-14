@@ -31,7 +31,7 @@ void HLSLParserListener::AddValue( const std::string & value )
     
     assert( lua_istable( State, -1 ) );
 
-    lua_len( State, -1 );
+    lua_pushnumber( State, lua_objlen( State, -1 ) );
     index = lua_tointeger( State, -1 );
     lua_pop( State, 1 );
     lua_pushstring( State, value.c_str() );
@@ -57,7 +57,7 @@ void HLSLParserListener::Assign()
     
     assert( lua_istable( State, -2) );
         
-    lua_len( State, -2 );
+    lua_pushnumber( State, lua_objlen( State, -2 ) );
     index = lua_tointeger( State, -1 );
     lua_pop( State, 1 );
     lua_rawseti( State, -2, index + 1 );

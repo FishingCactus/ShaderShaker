@@ -22,7 +22,7 @@ newoption
 		language    "C++"
 		kind        "ConsoleApp"
 		flags       { "No64BitChecks", "ExtraWarnings" }
-		includedirs { "include", "src/host/lua-5.2.0/src", "contrib", "src/hlsl_parser" }
+		includedirs { "include", "src/host/lua-5.1.5/src", "contrib", "src/hlsl_parser" }
 
 		files
 		{
@@ -33,11 +33,11 @@ newoption
 
 		excludes
 		{
-			"src/host/lua-5.2.0/src/lua.c",
-			"src/host/lua-5.2.0/src/luac.c",
-			"src/host/lua-5.2.0/src/print.c",
-			"src/host/lua-5.2.0/**.lua",
-			"src/host/lua-5.2.0/etc/*.c"
+			"src/host/lua-5.1.5/src/lua.c",
+			"src/host/lua-5.1.5/src/luac.c",
+			"src/host/lua-5.1.5/src/print.c",
+			"src/host/lua-5.1.5/**.lua",
+			"src/host/lua-5.1.5/etc/*.c"
 		}
 
 		if _OPTIONS[ "ios" ] then
