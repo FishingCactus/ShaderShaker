@@ -412,7 +412,7 @@ initial_value
     ;
     
 type
-    : ( intrinsic_type | user_defined_type ) { ast_push("type"); ast_addvalue($type.text); }
+    : ( intrinsic_type | user_defined_type | SAMPLER_TYPE ) { ast_push("type"); ast_addvalue($type.text); }
     ;
    
 intrinsic_type  
