@@ -1,5 +1,5 @@
 local intrinsic_functions = {
-    "dot", "normalize", "tex2D", "saturate", "reflect", "sin", "cos", "tan", "mul", "length", "exp", "pow", "texCUBE", "fmod", "sign", "abs", "lerp"
+    "dot", "normalize", "tex2D", "saturate", "reflect", "sin", "cos", "tan", "mul", "length", "exp", "pow", "texCUBE", "fmod", "sign", "abs", "lerp", "min"
 }
 
 function Function_GetNodeFromId( ast_node, function_id )
