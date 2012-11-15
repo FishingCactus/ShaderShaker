@@ -1,5 +1,5 @@
 local intrinsic_functions = {
-    "dot", "normalize", "tex2D", "saturate", "reflect", "sin", "cos", "tan", "mul", "length", "exp", "pow", "texCUBE", "fmod"
+    "dot", "normalize", "tex2D", "saturate", "reflect", "sin", "cos", "tan", "mul", "length", "exp", "pow", "texCUBE", "fmod", "sign", "abs", "lerp"
 }
 
 function Function_GetNodeFromId( ast_node, function_id )
@@ -37,13 +37,7 @@ function Function_GetReturnType( function_node )
 end
 
 function Function_GetSemantic( function_node )
-    for i, child_node in ipairs( function_node ) do
-        if child_node.name == "semantic" then
-            return child_node[ 1 ]
-        end
-    end
-    
-    return ""
+    return GetNodeNameValue( function_node, "semantic" )
 end
 
 function Function_GetArguments( function_node )
@@ -151,7 +145,11 @@ function Structure_GetName( struct_node )
 end
 
 function Field_GetSemantic( field_node )
-    return field_node[ 3 ][ 1 ]
+    if field_node[ 3 ] ~= nil then
+        return field_node[ 3 ][ 1 ]
+    end
+    
+    return nil
 end
 
 function Field_GetName( field_node )
@@ -163,19 +161,15 @@ function Field_GetType( field_node )
 end
 
 function Argument_GetType( argument_node )
-    return argument_node[ 1 ][ 1 ]
+    return GetNodeNameValue( argument_node, "type" )
 end
 
 function Argument_GetName( argument_node )
-    return argument_node[ 2 ][ 1 ]
+    return GetNodeNameValue( argument_node, "ID" )
 end
 
 function Argument_GetSemantic( argument_node )
-    if argument_node[ 3 ] then
-        return argument_node[ 3 ][ 1 ]
-    end
-    
-    return ""
+    return GetNodeNameValue( argument_node, "semantic" )
 end
 
 function Variable_GetStorage( variable_node )
@@ -232,4 +226,18 @@ end
 
 function Call_GetName( node )
     return node[ 1 ]
+end
+
+function GetNodeNameValue( node, node_name, child_node_value_index )
+    if child_node_value_index == nil then
+        child_node_value_index = 1
+    end
+
+    for idx, child_node in ipairs( node ) do
+        if child_node.name == node_name then
+            return child_node[ child_node_value_index ]
+        end
+    end
+    
+    return ""
 end
