@@ -824,6 +824,13 @@ GLSLGenerator = {
                 or argument_to_varying[ node[ 1 ] ]
                 or node[ 1 ]
                 
+        local complete_output = output
+        
+        -- node[ 2 ] could be set as an index (eg: output.WorldView = foo[3].xyz;
+        if node[ 2 ] ~= nil then
+            complete_output = complete_output .. GLSLGenerator.ProcessNode( node[ 2 ] )
+        end
+                
         local shader_type = current_function.shader_type
                 or current_function.root_shader_type
                 
@@ -831,19 +838,19 @@ GLSLGenerator = {
             for i, constant_value in ipairs( constants_table ) do
                 if constant_value.name == output then
                     techniques[ current_technique ][ shader_type ].uniforms[ output ] = true
-                    return output
+                    return complete_output
                 end
             end
             
             for i, texture_value in ipairs( textures_table ) do
                 if texture_value.name == output then
                     techniques[ current_technique ][ shader_type ].uniforms[ output ] = true
-                    return output
+                    return complete_output
                 end
             end
         end
                 
-        return output
+        return complete_output
     end,
     
     ["process_call"] = function( node )
@@ -1119,6 +1126,10 @@ GLSLGenerator = {
     
     [ "process_semantic" ] = function( node )
         return " : " .. node[ 1 ]
+    end,
+    
+    [ "process_index" ] = function( node )
+        return "[" .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. "]"
     end,
 }
 
