@@ -608,8 +608,16 @@ GLSLGenerator = {
     end,
     
     ["process_argument"] = function( argument )
-
-        local output = GLSL_Helper_ConvertIntrinsic( argument[ 1 ][ 1 ] ) .. ' ' .. argument[ 2 ][ 1 ]
+        local input_modifier = GetNodeNameValue( argument, "input_modifier" )
+        local modifier = GetNodeNameValue( argument, "modifier" )
+        local type = GetNodeNameValue( argument, "type" )
+        local ID = GetNodeNameValue( argument, "ID" )
+        local semantic = GetNodeNameValue( argument, "semantic" )
+        
+        return input_modifier .. " " .. modifier .. " " .. GLSL_Helper_ConvertIntrinsic( type ) .. " " .. ID
+        
+        --[[
+            local output = GLSL_Helper_ConvertIntrinsic( argument[ 1 ][ 1 ] ) .. ' ' .. argument[ 2 ][ 1 ]
         
         if #argument > 2 then
             for i=3, #argument do
@@ -620,6 +628,7 @@ GLSLGenerator = {
         end
         
         return output
+        ]]--
     end,
     
     [ "process_function_body" ] = function( node )
