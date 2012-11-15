@@ -405,7 +405,7 @@ GLSLGenerator = {
         local output = ""
         local called_functions = Function_GetCalledFunctions( ast, function_name )
         
-        for i, called_function_name in ipairs( called_functions ) do
+        for called_function_name, b in pairs( called_functions ) do
             output = output .. prefix() .. GLSLGenerator.ProcessFunction( ast, called_function_name )
         end
     

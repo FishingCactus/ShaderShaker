@@ -88,24 +88,27 @@ function Function_GetCalledFunctions( ast_node, function_name, include_intrinsic
         end
         
         if can_add then
-            table.insert( called_functions, 1, called_function_name )
+        
+            if called_functions[ called_function_name ] == nil then
+                called_functions[ called_function_name ] = true
             
-            if not is_intrinsic then
-                local other_called_functions = Function_GetCalledFunctions( ast_node, called_function_name, include_intrinsics )
-                
-                for i, f in ipairs( other_called_functions ) do
-                
-                    local can_add_other = true
+                if not is_intrinsic then
+                    local other_called_functions = Function_GetCalledFunctions( ast_node, called_function_name, include_intrinsics )
                     
-                    for j, v in ipairs( called_functions ) do
-                        if v == f then
-                            can_add_other = false
-                            break
+                    for f, b in pairs( other_called_functions ) do
+                    
+                        local can_add_other = true
+                        
+                        for v, b in ipairs( called_functions ) do
+                            if v == f then
+                                can_add_other = false
+                                break
+                            end
                         end
-                    end
-                    
-                    if can_add_other then
-                        table.insert( called_functions, 1,  f )
+                        
+                        if can_add_other then
+                            table.insert( called_functions, 1,  f )
+                        end
                     end
                 end
             end
