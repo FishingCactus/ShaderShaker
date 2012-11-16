@@ -15,8 +15,8 @@ end
 local node_rewrite_table =
 {
     ['unary_!'] = {
-        [is_not_( "1" )] = replace_by_( "0" ),
-        [is_not_( "0" )] = replace_by_( "1" )
+        {is_not_( "1" ), replace_by_( "0" ) },
+        {is_not_( "0" ), replace_by_( "1" ) }
     },
 	['if'] = ast_rewrite_if_rules
 }
@@ -38,6 +38,8 @@ local function rewrite_node( node, parent, index )
                     return true
                 end
              end
+             
+             return false
         end
 
         it_has_changed = evaluate()

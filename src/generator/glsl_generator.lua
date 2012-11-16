@@ -1150,6 +1150,10 @@ GLSLGenerator = {
     [ "process_index" ] = function( node )
         return "[" .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. "]"
     end,
+    
+    [ "process_nop" ] = function( node )
+        return ""
+    end,
 }
 
 local function AddOperator( operator )
