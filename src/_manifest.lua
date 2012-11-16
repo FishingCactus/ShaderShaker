@@ -26,8 +26,10 @@ return {
     "utilities/reflection.lua",
     "utilities/glsl_helper.lua",
     "utilities/string.lua",
+	"utilities/tree.lua",
 
     -- Process
     
-    "process/process.lua"
+    "process/process.lua",
+	"process/ast_rewrite.lua"
 }

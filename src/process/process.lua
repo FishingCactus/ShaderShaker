@@ -8,6 +8,8 @@ function ProcessAst( ast_node, options )
             ReplaceConstants( ast_node, constants )
         end
         
+		AST_Rewrite( ast_node )
+		
         CleanAST( ast_node )
 
         CleanConstants( ast_node )
@@ -172,7 +174,7 @@ function CleanIfs( parent_node )
             
             local if_child_node_index = 1
             
-            while child_node[ if_child_node_index ] ~= nil do
+             while child_node[ if_child_node_index ] ~= nil do
                 local if_child_node = child_node[ if_child_node_index ]
                 local increment_child_node_index = true
                 
