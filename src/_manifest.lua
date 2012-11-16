@@ -31,5 +31,6 @@ return {
     -- Process
     
     "process/process.lua",
+	"process/ast_rewrite_if.lua",
 	"process/ast_rewrite.lua"
 }

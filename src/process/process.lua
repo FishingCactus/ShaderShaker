@@ -10,7 +10,7 @@ function ProcessAst( ast_node, options )
         
 		AST_Rewrite( ast_node )
 		
-        CleanAST( ast_node )
+        --CleanAST( ast_node )
 
         CleanConstants( ast_node )
     end
