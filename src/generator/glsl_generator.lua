@@ -808,7 +808,17 @@ GLSLGenerator = {
     end,
     
     ["process_literal"] = function( node )
-        return node[ 1 ]
+        if node == nil or node[ 1 ] == nil then
+            return ""
+        end
+        
+        local output = node[ 1 ]
+        
+        if string.sub( output, string.len( output ) ) == "f" then
+            output = string.sub( output, 1, -2 )
+        end
+
+        return output
     end,
     
     ["process_variable"] = function( node )
