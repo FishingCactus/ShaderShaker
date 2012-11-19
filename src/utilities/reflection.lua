@@ -107,7 +107,7 @@ function Function_GetCalledFunctions( ast_node, function_name, include_intrinsic
                         end
                         
                         if can_add_other then
-                            table.insert( called_functions, 1,  f )
+                            called_functions[ called_function_name ] = true
                         end
                     end
                 end
