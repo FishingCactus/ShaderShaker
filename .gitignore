@@ -39,3 +39,5 @@ ShaderShaker.deproj
 ShaderShaker.deuser
 _ReSharper.*
 output2.ast
+*.deproj
+*.deuser

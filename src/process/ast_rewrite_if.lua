@@ -36,12 +36,12 @@ end
 
 local function if_has_no_else( node )
     assert( node.name == 'if' )
-    return node[ 2 ] == nil or node[ 2 ].name ~= "else"
+    return node[ 2 ] == nil or node[ 2 ].name ~= "else_block"
 end
 
 local function if_has_else( node )
     assert( node.name == 'if' )
-    return node[ 2 ] ~= nil and node[ 2 ].name == "else"
+    return node[ 2 ] ~= nil and node[ 2 ].name == "else_block"
 end
 
 local function if_has_else_if( node )
