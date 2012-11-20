@@ -1,7 +1,8 @@
 function ProcessAst( ast_node, options )
-    
     if options.optimize then
         local constants = GetConstants( ast_node )
+        
+        InlineShaderParameters( ast_node )
         
         if options.constants_replacement ~= nil then
             UpdateConstantsWithReplacements( constants, options.constants_replacement )        
@@ -9,8 +10,6 @@ function ProcessAst( ast_node, options )
         end
         
 		AST_Rewrite( ast_node )
-		
-        --CleanAST( ast_node )
 
         CleanConstants( ast_node )
     end
@@ -18,6 +17,48 @@ function ProcessAst( ast_node, options )
     if options.replacement_file then
         replace_ast = GenerateAstFromFileName( options.replacement_file )
         ReplaceFunctions( ast_node, replace_node )
+    end
+end
+
+function InlineShaderParameters( ast_node )
+    local reimplemented_functions_table = {}
+    
+    for node_index, node in pairs( ast_node ) do
+        if node.name == "technique" then
+            local technique_name
+            
+            for index, technique_child in pairs( node ) do
+                if index == 1 then
+                    technique_name = technique_child
+                elseif technique_child.name == "pass" then
+                    for pass_child_node_index, pass_child_node in ipairs( technique_child ) do
+                        if pass_child_node.name == "shader_call" then
+                            local shader_function_to_call = pass_child_node[ 3 ]
+                            local parameters_table = pass_child_node[ 4 ]
+                            
+                            if parameters_table ~= nil then
+                                local function_to_call = DuplicateAndReturnFunction( shader_function_to_call, ast_node )
+                                local constants_table = CreateConstantsTable( parameters_table, function_to_call )
+                                local function_name = ConcatFunctionNameAndParameters( parameters_table, function_to_call )
+                                
+                                if reimplemented_functions_table[ function_name ] == nil then
+                                    ReplaceConstants( function_to_call, constants_table )
+                                    
+                                    function_to_call[ 2 ][ 1 ] = function_name
+                                    
+                                    reimplemented_functions_table[ function_name ] = function_to_call
+                                end
+                                
+                                RemoveFunctionInlinedParameters( function_to_call, parameters_table )
+                                
+                                pass_child_node[ 3 ] = function_name
+                                table.remove( pass_child_node, 4 )
+                            end
+                        end
+                    end
+                end
+            end
+        end
     end
 end
 
@@ -147,6 +188,7 @@ function ReplaceConstants( ast_node, constants )
                     
                     if constants[ variable_node[ 1 ] ] then
                         variable_node[ 1 ] = constants[ variable_node[ 1 ] ].value
+                        --variable_node.name = "literal"
                     end
                     
                     ReplaceConstants( child_node, constants  )
@@ -154,81 +196,6 @@ function ReplaceConstants( ast_node, constants )
             end
         else
             ReplaceConstants( child_node, constants  )
-        end
-    end
-end
-
-function CleanAST( ast_node )
-    CleanIfs( ast_node )
-end
-
-function CleanIfs( parent_node )
-    if parent_node == nil or type( parent_node ) ~= "table" then
-        return
-    end
-    
-    for child_node_index=#parent_node, 1, -1 do
-        local child_node = parent_node[ child_node_index ]--for child_node_index, child_node in ipairs( ast_node ) do
-        
-        if child_node.name == "if" then
-            
-            local if_child_node_index = 1
-            
-             while child_node[ if_child_node_index ] ~= nil do
-                local if_child_node = child_node[ if_child_node_index ]
-                local increment_child_node_index = true
-                
-                if if_child_node.name == "if_block" or if_child_node.name == "else_if_block" then
-                    local test_condition = TestCondition( if_child_node )
-                    
-                    if test_condition ~= nil then
-                        if test_condition then
-                            local block_node = if_child_node[ 2 ]
-                            parent_node[ child_node_index ] = block_node[ 1 ]
-                            
-                            CleanIfs( parent_node[ child_node_index ] )
-                            break
-                        else
-                            child_node[ if_child_node_index ] = nil
-                            increment_child_node_index = false
-                            
-                            local update_node_index = if_child_node_index + 1
-                            
-                            while child_node[ update_node_index ] ~= nil do
-                                child_node[ update_node_index - 1 ] = child_node[ update_node_index ]
-                                CleanIfs( child_node[ update_node_index - 1 ] )
-                                
-                                update_node_index = update_node_index + 1
-                            end
-                            
-                            child_node[ update_node_index - 1 ] = nil
-                        end
-                    end
-                else -- if_child_node.name == "else_block"
-                    if if_child_node_index == 1 then
-                        local block_node = if_child_node[ 1 ]
-                        parent_node[ child_node_index ] = block_node
-                    end
-                end
-                
-                if increment_child_node_index then
-                    if_child_node_index = if_child_node_index + 1
-                end
-            end
-            
-            if_child_node_index = 1
-            local can_remove_if = true
-            
-            while child_node[ if_child_node_index ] ~= nil do
-                can_remove_if = false
-                break
-            end
-            
-            if can_remove_if and parent_node ~= nil then
-                table.remove( parent_node, child_node_index )
-            end            
-        else
-            CleanIfs( child_node )
         end
     end
 end
@@ -299,5 +266,48 @@ function UpdateConstantsWithReplacements( constants, constants_replacement )
         end
         
         constants[ constant_replacement_name ].value = constant_replacement_value
+    end
+end
+
+function CreateConstantsTable( parameters_value_table, function_to_call )
+    local constants_table = {}
+    local parameters_table = function_to_call[ 3 ]
+    local parameters_starting_index = #parameters_table - #parameters_value_table
+    
+    for index = 1, #parameters_value_table do
+        local ID = GetNodeNameValue( parameters_table[ parameters_starting_index + index ], "ID" )
+        
+        constants_table[ ID ] = { value = parameters_value_table[ index ][ 1 ], type = parameters_value_table[ index ].name }
+    end
+    
+    return constants_table
+end
+
+function ConcatFunctionNameAndParameters( parameters_value_table, function_to_call )
+    local function_final_name = function_to_call[ 2 ][ 1 ]
+    
+    for index = 1, #parameters_value_table do
+        function_final_name = function_final_name .. parameters_value_table[ index ][ 1 ]
+    end
+    
+    return function_final_name
+end
+
+function DuplicateAndReturnFunction( shader_function_to_call, ast_node )
+    for node_index, node in pairs( ast_node ) do
+        if node.name == "function" and node[ 2 ][ 1 ] == shader_function_to_call then
+            local copied_function = DeepCopy( node )
+            table.insert( ast_node, node_index + 1, copied_function )
+            
+            return copied_function
+        end
+    end
+end
+
+function RemoveFunctionInlinedParameters( function_to_call, parameters_table )
+    local function_parameters = function_to_call[ 3 ]
+    
+    for parameter_to_remove_index = 1, #parameters_table do
+        table.remove( function_parameters, #function_parameters - #parameters_table + parameter_to_remove_index )
     end
 end
