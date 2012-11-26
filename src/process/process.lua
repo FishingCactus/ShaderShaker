@@ -38,8 +38,8 @@ function InlineShaderParameters( ast_node )
                             
                             if parameters_table ~= nil then
                                 local function_to_call = DuplicateAndReturnFunction( shader_function_to_call, ast_node )
-                                local constants_table = CreateConstantsTable( parameters_table, function_to_call )
-                                local function_name = ConcatFunctionNameAndParameters( parameters_table, function_to_call )
+                                local constants_table = CreateConstantsTableFromParametersTable( parameters_table, function_to_call )
+                                local function_name = ConcatFunctionNameAndParametersFromShaderParameters( parameters_table, function_to_call )
                                 
                                 if reimplemented_functions_table[ function_name ] == nil then
                                     ReplaceConstants( function_to_call, constants_table )
@@ -51,7 +51,7 @@ function InlineShaderParameters( ast_node )
                                     reimplemented_functions_table[ function_name ] = function_to_call
                                 end
                                 
-                                RemoveFunctionInlinedParameters( function_to_call, parameters_table )
+                                RemoveShaderInlinedParameters( function_to_call, parameters_table )
                                 
                                 pass_child_node[ 3 ] = function_name
                                 table.remove( pass_child_node, 4 )
@@ -271,7 +271,7 @@ function UpdateConstantsWithReplacements( constants, constants_replacement )
     end
 end
 
-function CreateConstantsTable( parameters_value_table, function_to_call )
+function CreateConstantsTableFromParametersTable( parameters_value_table, function_to_call )
     local constants_table = {}
     local parameters_table = function_to_call[ 3 ]
     local parameters_starting_index = #parameters_table - #parameters_value_table
@@ -285,7 +285,7 @@ function CreateConstantsTable( parameters_value_table, function_to_call )
     return constants_table
 end
 
-function CreateConstantsTableFromInputConstants( input_constants_table, function_to_call )
+function CreateConstantsSubTableFromInputConstants( input_constants_table, function_to_call )
     local constants_table = {}
     local parameters_table = function_to_call[ 3 ]
     
@@ -302,7 +302,7 @@ function CreateConstantsTableFromInputConstants( input_constants_table, function
     return constants_table
 end
 
-function ConcatFunctionNameAndParameters( parameters_value_table, function_to_call )
+function ConcatFunctionNameAndParametersFromShaderParameters( parameters_value_table, function_to_call )
     local function_final_name = function_to_call[ 2 ][ 1 ]
     
     for index = 1, #parameters_value_table do
@@ -312,7 +312,7 @@ function ConcatFunctionNameAndParameters( parameters_value_table, function_to_ca
     return function_final_name
 end
 
-function ConcatFunctionNameAndParameters2( parameters_value_table, function_to_call )
+function ConcatFunctionNameAndParametersFromConstants( parameters_value_table, function_to_call )
     local function_final_name = function_to_call[ 2 ][ 1 ]
     
     for index, value in pairs( parameters_value_table ) do
@@ -333,7 +333,7 @@ function DuplicateAndReturnFunction( shader_function_to_call, ast_node )
     end
 end
 
-function RemoveFunctionInlinedParameters( function_to_call, parameters_table )
+function RemoveShaderInlinedParameters( function_to_call, parameters_table )
     local function_parameters = function_to_call[ 3 ]
     
     for parameter_to_remove_index = 1, #parameters_table do
@@ -341,7 +341,7 @@ function RemoveFunctionInlinedParameters( function_to_call, parameters_table )
     end
 end
 
-function RemoveFunctionInlinedParameters2( function_to_call, parameters_table )
+function RemoveFunctionInlinedParameters( function_to_call, parameters_table )
     local function_parameters = function_to_call[ 3 ]
     
     for parameter_index = 1, #function_parameters do
@@ -364,13 +364,13 @@ function ReplaceFunctionsCallInsideFunction( ast_node, function_to_call, constan
         
         ReplaceFunctionsCallInsideFunction( ast_node, function_to_replace, constants_table )
         
-        local function_constants_table = CreateConstantsTableFromInputConstants( constants_table, function_to_replace )
+        local function_constants_table = CreateConstantsSubTableFromInputConstants( constants_table, function_to_replace )
         
-        local function_to_replace_name = ConcatFunctionNameAndParameters2( function_constants_table, function_to_replace )
+        local function_to_replace_name = ConcatFunctionNameAndParametersFromConstants( function_constants_table, function_to_replace )
         
         ReplaceConstants( function_to_replace, constants_table )
         
-        RemoveFunctionInlinedParameters2( function_to_replace, function_constants_table )
+        RemoveFunctionInlinedParameters( function_to_replace, function_constants_table )
         
         function_to_replace[ 2 ][ 1 ] = function_to_replace_name
         called_function[ 1 ] = function_to_replace_name
