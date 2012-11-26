@@ -45,6 +45,8 @@ function InlineShaderParameters( ast_node )
                                     ReplaceConstants( function_to_call, constants_table )
                                     
                                     function_to_call[ 2 ][ 1 ] = function_name
+
+                                    ReplaceFunctionsCallInsideFunction( ast_node, function_to_call, constants_table )
                                     
                                     reimplemented_functions_table[ function_name ] = function_to_call
                                 end
@@ -188,7 +190,7 @@ function ReplaceConstants( ast_node, constants )
                     
                     if constants[ variable_node[ 1 ] ] then
                         variable_node[ 1 ] = constants[ variable_node[ 1 ] ].value
-                        --variable_node.name = "literal"
+                        variable_node.name = "literal"
                     end
                     
                     ReplaceConstants( child_node, constants  )
@@ -283,11 +285,38 @@ function CreateConstantsTable( parameters_value_table, function_to_call )
     return constants_table
 end
 
+function CreateConstantsTableFromInputConstants( input_constants_table, function_to_call )
+    local constants_table = {}
+    local parameters_table = function_to_call[ 3 ]
+    
+    for index, value in ipairs( parameters_table ) do
+        local ID = GetNodeNameValue( value, "ID" )
+        
+        for input_constant_name, input_constant_value in pairs( input_constants_table ) do
+            if ID == input_constant_name then
+                constants_table[ ID ] = input_constant_value
+            end
+        end
+    end
+    
+    return constants_table
+end
+
 function ConcatFunctionNameAndParameters( parameters_value_table, function_to_call )
     local function_final_name = function_to_call[ 2 ][ 1 ]
     
     for index = 1, #parameters_value_table do
         function_final_name = function_final_name .. parameters_value_table[ index ][ 1 ]
+    end
+    
+    return function_final_name
+end
+
+function ConcatFunctionNameAndParameters2( parameters_value_table, function_to_call )
+    local function_final_name = function_to_call[ 2 ][ 1 ]
+    
+    for index, value in pairs( parameters_value_table ) do
+        function_final_name = function_final_name .. value.value
     end
     
     return function_final_name
@@ -309,5 +338,41 @@ function RemoveFunctionInlinedParameters( function_to_call, parameters_table )
     
     for parameter_to_remove_index = 1, #parameters_table do
         table.remove( function_parameters, #function_parameters - #parameters_table + parameter_to_remove_index )
+    end
+end
+
+function RemoveFunctionInlinedParameters2( function_to_call, parameters_table )
+    local function_parameters = function_to_call[ 3 ]
+    
+    for parameter_index = 1, #function_parameters do
+        local ID = GetNodeNameValue( function_parameters[ #function_parameters ], "ID" )
+        
+        for parameter_to_remove_name, parameter_to_remove in pairs( parameters_table ) do
+            if ID == parameter_to_remove_name then
+                table.remove( function_parameters, #function_parameters )
+            end
+        end
+    end
+end
+
+function ReplaceFunctionsCallInsideFunction( ast_node, function_to_call, constants_table )
+    local function_name = function_to_call[ 2 ][ 1 ]
+    local function_body = Function_GetBody( function_to_call )
+
+    for called_function in NodeOfType( function_body, "call", false ) do
+        local function_to_replace = DuplicateAndReturnFunction( called_function[ 1 ], ast_node )
+        
+        ReplaceFunctionsCallInsideFunction( ast_node, function_to_replace, constants_table )
+        
+        local function_constants_table = CreateConstantsTableFromInputConstants( constants_table, function_to_replace )
+        
+        local function_to_replace_name = ConcatFunctionNameAndParameters2( function_constants_table, function_to_replace )
+        
+        ReplaceConstants( function_to_replace, constants_table )
+        
+        RemoveFunctionInlinedParameters2( function_to_replace, function_constants_table )
+        
+        function_to_replace[ 2 ][ 1 ] = function_to_replace_name
+        called_function[ 1 ] = function_to_replace_name
     end
 end

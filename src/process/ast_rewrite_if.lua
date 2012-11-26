@@ -59,7 +59,7 @@ ast_rewrite_if_rules =
 
     {if_block_( "literal" , "1" ),   validate_if_block },
     
-    {predicate_and( if_block_( "literal" , "0" ), if_has_else_if ), replace_if_block },
+    {predicate_and( if_block_( "literal" , "0" ), if_has_else_if ), replace_else_if_block },
     {predicate_and( if_block_( "literal" , "0" ), if_has_else ), keep_else_block },
     {predicate_and( if_block_( "literal" , "0" ), if_has_no_else ), remove_if_block },
     
