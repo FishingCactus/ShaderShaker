@@ -30,24 +30,53 @@ function _shaker_shaker_process_files()
         
         ProcessAst( ast, options )
 
-        for i, output_file in ipairs( options.output_files ) do
-            local ast_copy = DeepCopy( ast )
-        
-            SelectPrinter( output_file, options.force_language )
-        
-            if output_file ~= "console_output" then
-                InitializeOutputFile( output_file )
-            else
-                InitializeOutputPrint()
-            end         
+        if options.check_file then 
+
+            SelectPrinter( options.check_file );
+            InitializeOutputPrint()
+
+            GetSelectedPrinter().ProcessAst( ast )
+
+            local generated_file = tokenizer( _G.CodeOutput[ 1 ].text );
+
+            local file = assert(io.open(options.check_file, "r"))
+            local ground_truth = tokenizer( file:read("*all") )
+            file:close()
+
+            repeat
+                token_a, value_a = generated_file()
+                token_b, value_b = ground_truth()
+
+                if token_a ~= token_b or value_a ~= value_b then
+                    error( "expected " .. value_b .. ", got " .. value_a )
+                    return 1
+                end
+
+            until token_a == nil and token_b == nil
+
+            return 0
+
+        else
+
+            for i, output_file in ipairs( options.output_files ) do
+                local ast_copy = DeepCopy( ast )
             
-            GetSelectedPrinter().ProcessAst( ast_copy, options.technique )
+                SelectPrinter( output_file, options.force_language )
             
+                if output_file ~= "console_output" then
+                    InitializeOutputFile( output_file )
+                else
+                    InitializeOutputPrint()
+                end         
+                
+                GetSelectedPrinter().ProcessAst( ast_copy, options.technique )
+                
+            end
         end
 
         if _G.CodeOutput and #_G.CodeOutput then
             for _, code in ipairs( _G.CodeOutput ) do
-                print( code )
+                print( code.text )
             end
 
         end

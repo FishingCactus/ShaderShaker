@@ -32,5 +32,9 @@ return {
     
     "process/process.lua",
 	"process/ast_rewrite_if.lua",
-	"process/ast_rewrite.lua"
+	"process/ast_rewrite.lua",
+
+    -- Test
+
+    "test/tokenizer.lua"
 }

@@ -10,56 +10,58 @@ function ParseArgumentTable( arguments )
         
             local arg_option = string.sub( argument, 2 )
             
-            if arg_option == 'o' then
-                previous_argument = "o"
+            if arg_option == 'o' or arg_option == 'c' then
+                previous_argument = arg_option
             elseif arg_option == 'f' then
                 if arg_item.force_language then
                     error( "You cannot force another language before you give an input file", 1 )
                 end
                 
-                previous_argument = "f"
+                previous_argument = 'f'
             elseif arg_option == 'r' then
                 if arg_item.replacement_file then
                     error( "You cannot specify another replacement file before you give an input file", 1 )
                 end
                 
-                previous_argument = "r"
+                previous_argument = 'r'
             elseif arg_option == 't' then
                 if arg_item.technique then
                     error( "You can specify only one technique for each input file", 1 )
                 end
                 
-                previous_argument = "t"
-            elseif arg_option == "c" then
-                previous_argument = "c"
-            elseif arg_option == "optimization" then
-                previous_argument = "optimization"
+                previous_argument = 't'
+            elseif arg_option == 'optimization' then
+                previous_argument = 'optimization'
+            elseif arg_option == 'check' then
+                previous_argument = 'check'
             else
-                error( "Invalid option", 1 );
+                error( 'Invalid option', 1 );
             end
         
         else
         
-            if previous_argument == "o" then
+            if previous_argument == 'o' then
                 table.insert( arg_item.output_files, argument )
-            elseif previous_argument == "f" then
+            elseif previous_argument == 'f' then
                 arg_item.force_language = argument
-            elseif previous_argument == "r" then
+            elseif previous_argument == 'r' then
                 arg_item.replacement_file = argument
-            elseif previous_argument == "t" then
+            elseif previous_argument == 't' then
                 arg_item.technique = argument
             elseif arg_item.input_file then
                 error( "You can only specify another input file if you give an -o, -f or/and -r option before", 1 )
-            elseif previous_argument == "c" then
-                local constants_table = explode( "=", argument )
+            elseif previous_argument == 'c' then
+                local constants_table = explode( '=', argument )
 
                 arg_item.constants_replacement[ constants_table[ 1 ] ] = constants_table[ 2 ]
-            elseif previous_argument == "optimization" then
+            elseif previous_argument == 'optimization' then
                 arg_item.optimize = toboolean( argument )
+            elseif previous_argument == 'check' then
+                arg_item.check_file = argument
             else
                 arg_item.input_file = argument
                 if #arg_item.output_files == 0 then
-                    table.insert( arg_item.output_files, "console_output" )
+                    table.insert( arg_item.output_files, 'console_output' )
                 end
                 table.insert( result, arg_item )            
                 arg_item = {}
