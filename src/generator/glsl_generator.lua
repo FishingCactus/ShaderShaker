@@ -268,6 +268,8 @@ GLSLGenerator = {
         output = output .. prefix() .. "}\n"        
         output = output .. prefix() .. "]]>\n"
         
+        variables_table = {}
+        
         return output
     end,
     
@@ -562,6 +564,21 @@ GLSLGenerator = {
             local type = Argument_GetType( argument )
             local semantic = Argument_GetSemantic( argument )
             local found = false
+            
+            for j, structure in ipairs( structures_table ) do
+                if structure.type == type then
+                                    
+                    table.insert( variables_table,
+                                    {
+                                        name = name,
+                                        type = type
+                                    } )
+                                    
+                    found = true
+                    
+                    break
+                end
+            end
             
             for j, varying_member in ipairs( techniques[ current_technique ].VaryingMembersTable ) do
                 if semantic == varying_member.semantic and type == varying_member.type then
