@@ -341,15 +341,15 @@ function RemoveShaderInlinedParameters( function_to_call, parameters_table )
     end
 end
 
-function RemoveFunctionInlinedParameters( function_to_call, parameters_table )
-    local function_parameters = function_to_call[ 3 ]
-    
+function RemoveFunctionInlinedParameters( function_parameters, function_call_parameters, parameters_table )
     for parameter_index = 1, #function_parameters do
         local ID = GetNodeNameValue( function_parameters[ #function_parameters ], "ID" )
         
         for parameter_to_remove_name, parameter_to_remove in pairs( parameters_table ) do
             if ID == parameter_to_remove_name then
-                table.remove( function_parameters, #function_parameters )
+                local function_parameters_index = #function_parameters
+                table.remove( function_parameters, function_parameters_index  )
+                table.remove( function_call_parameters, function_parameters_index )
             end
         end
     end
@@ -370,7 +370,7 @@ function ReplaceFunctionsCallInsideFunction( ast_node, function_to_call, constan
         
         ReplaceConstants( function_to_replace, constants_table )
         
-        RemoveFunctionInlinedParameters( function_to_replace, function_constants_table )
+        RemoveFunctionInlinedParameters( function_to_replace[ 3 ], called_function[ 2 ], function_constants_table )
         
         function_to_replace[ 2 ][ 1 ] = function_to_replace_name
         called_function[ 1 ] = function_to_replace_name
