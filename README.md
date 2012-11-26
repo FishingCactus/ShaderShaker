@@ -1,4 +1,4 @@
-ShaderShaker
+ShaderShaker [![Build Status](https://travis-ci.org/FishingCactus/ShaderShaker.png)](https://travis-ci.org/FishingCactus/ShaderShaker)
 ============
 
 Shader Shaker has bee developed to solve our two main problems with shader development : 
