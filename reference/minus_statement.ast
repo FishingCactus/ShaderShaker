@@ -1,0 +1,34 @@
+
+{
+    variable_declaration
+    {
+        storage{},
+        modifier{},
+        type{"float3"},
+        variable{"LightDirection0"}
+    },
+    function
+    {
+        type{"float4"},
+        ID{"RenderSceneVS"},
+        function_body
+        {
+            variable_declaration
+            {
+                storage{},
+                modifier{},
+                type{"float3"},
+                variable{"light_direction"}
+            },
+            =_statement
+            {
+                variable{"light_direction"},
+                call
+                {
+                    "normalize",
+                    argument_expression_list{unary_-{variable{"LightDirection0"}}}
+                }
+            }
+        }
+    }
+}

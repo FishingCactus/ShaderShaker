@@ -28,9 +28,6 @@ VS_OUTPUT RenderSceneVS( float4 vPos : POSITION,
 
     output.Position.x = d + e;
 
-    HelloWorld( d, e );
-    Blah( d + e );
-
     return Output;
 }
 
@@ -40,12 +37,6 @@ technique Default
 {
     pass P0
     {
-        VertexShader = compile vs_3_0 vs();
-        PixelShader = compile ps_3_0 ps( false, 123 );
-    }
-    pass P1
-    {
-        VertexShader = compile vs_3_0 vs1();
-        PixelShader = compile ps_3_0 ps1();
+        VertexShader = compile vs_3_0 RenderSceneVS( 1, true, false );
     }
 }

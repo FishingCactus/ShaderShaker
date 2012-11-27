@@ -39,7 +39,7 @@ function InlineShaderParameters( ast_node )
                             if parameters_table ~= nil then
                                 local function_to_call = DuplicateAndReturnFunction( shader_function_to_call, ast_node )
                                 local constants_table = CreateConstantsTableFromParametersTable( parameters_table, function_to_call )
-                                local function_name = ConcatFunctionNameAndParametersFromShaderParameters( parameters_table, function_to_call )
+                                local function_name = function_to_call[ 2 ][ 1 ] .. HashArgumentList( parameters_table )
                                 
                                 if reimplemented_functions_table[ function_name ] == nil then
                                     ReplaceConstants( function_to_call, constants_table )
@@ -302,26 +302,6 @@ function CreateConstantsSubTableFromInputConstants( input_constants_table, funct
     return constants_table
 end
 
-function ConcatFunctionNameAndParametersFromShaderParameters( parameters_value_table, function_to_call )
-    local function_final_name = function_to_call[ 2 ][ 1 ]
-    
-    for index = 1, #parameters_value_table do
-        function_final_name = function_final_name .. parameters_value_table[ index ][ 1 ]
-    end
-    
-    return function_final_name
-end
-
-function ConcatFunctionNameAndParametersFromConstants( parameters_value_table, function_to_call )
-    local function_final_name = function_to_call[ 2 ][ 1 ]
-    
-    for index, value in pairs( parameters_value_table ) do
-        function_final_name = function_final_name .. value.value
-    end
-    
-    return function_final_name
-end
-
 function DuplicateAndReturnFunction( shader_function_to_call, ast_node )
     for node_index, node in pairs( ast_node ) do
         if node.name == "function" and node[ 2 ][ 1 ] == shader_function_to_call then
@@ -366,7 +346,7 @@ function ReplaceFunctionsCallInsideFunction( ast_node, function_to_call, constan
         
         local function_constants_table = CreateConstantsSubTableFromInputConstants( constants_table, function_to_replace )
         
-        local function_to_replace_name = ConcatFunctionNameAndParametersFromConstants( function_constants_table, function_to_replace )
+        local function_to_replace_name = function_to_replace[ 2 ][ 1 ] .. HashArgumentList( function_constants_table )
         
         ReplaceConstants( function_to_replace, constants_table )
         
@@ -375,4 +355,22 @@ function ReplaceFunctionsCallInsideFunction( ast_node, function_to_call, constan
         function_to_replace[ 2 ][ 1 ] = function_to_replace_name
         called_function[ 1 ] = function_to_replace_name
     end
+end
+
+function HashArgumentList( arguments )
+    concatArguments = function( args )
+        local output = ""
+
+        for i, j in pairs( args ) do
+            if type( j ) == "table" then
+                output = output .. concatArguments( j )
+            else
+                output = output .. string.sub( j, 1, 1 )
+            end
+        end
+
+        return output
+    end
+    
+    return concatArguments( arguments )
 end

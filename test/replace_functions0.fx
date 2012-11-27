@@ -14,6 +14,21 @@ float3 GetPosition(
     return float3( x, y, z );
 }
 
+void HelloWorld(
+	float in_data
+	)
+{
+	float r = in_data * in_data;
+}
+
+float Blah(
+	float d,
+	float e
+	)
+{
+	return d * e;
+}
+
 // ~~
 
 VS_OUTPUT RenderSceneVS( float4 vPos : POSITION,
@@ -33,8 +48,7 @@ VS_OUTPUT RenderSceneVS( float4 vPos : POSITION,
 
     output.Position = float4( GetPosition( d, e, f ), 0.0f );
     
-    HelloWorld( d, e );
-    Blah( d + e );
+    HelloWorld( Blah( d + e ) );
 
     return Output;
 }
@@ -45,12 +59,6 @@ technique Default
 {
     pass P0
     {
-        VertexShader = compile vs_3_0 vs();
-        PixelShader = compile ps_3_0 ps( false, 123 );
-    }
-    pass P1
-    {
-        VertexShader = compile vs_3_0 vs1();
-        PixelShader = compile ps_3_0 ps1();
+        VertexShader = compile vs_3_0 RenderSceneVS( 0, false, false );
     }
 }

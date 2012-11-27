@@ -1,0 +1,25 @@
+
+{
+    struct_definition
+    {
+        "VS_OUTPUT",
+        field
+        {
+            type{"float4"},
+            ID{"Position"},
+            semantic{"SV_POSITION"}
+        },
+        field
+        {
+            type{"float4"},
+            ID{"Diffuse"},
+            semantic{"COLOR0"}
+        },
+        field
+        {
+            type{"float2"},
+            ID{"TextureUV"},
+            semantic{"TEXCOORD0"}
+        }
+    }
+}
