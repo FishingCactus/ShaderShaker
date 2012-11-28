@@ -245,6 +245,7 @@ GLSLGenerator = {
         local function_body_node = Function_GetBody( function_node )
         local called_functions_output = ""
         local function_body_output = ""
+        variables_table = {}
         
         GLSLGenerator.FillVertexShaderAttributesTable( ast, function_name )
         GLSLGenerator.FillVertexShaderVaryingMembersTable( ast, function_name )
