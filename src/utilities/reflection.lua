@@ -66,6 +66,16 @@ function Function_GetProperties( function_node )
     return result    
 end
 
+function Function_IsIntrinsic( called_function_name )
+    for i, intrinsic in ipairs( intrinsic_functions ) do
+        if intrinsic == called_function_name then
+            return true
+        end
+    end
+    
+    return false
+end
+
 function Function_GetCalledFunctions( ast_node, function_name, include_intrinsics )
 
     local called_functions = {}
@@ -73,15 +83,8 @@ function Function_GetCalledFunctions( ast_node, function_name, include_intrinsic
 
     for node in NodeOfType( function_node, "call", true ) do
         local called_function_name = node[ 1 ]
-        local is_intrinsic = false
+        local is_intrinsic = Function_IsIntrinsic( called_function_name )
         local can_add = true
-        
-        for i, intrinsic in ipairs( intrinsic_functions ) do
-            if intrinsic == called_function_name then
-                is_intrinsic = true
-                break
-            end
-        end
         
         if is_intrinsic and not include_intrinsic then
             can_add = false
@@ -107,7 +110,7 @@ function Function_GetCalledFunctions( ast_node, function_name, include_intrinsic
                         end
                         
                         if can_add_other then
-                            called_functions[ called_function_name ] = true
+                            called_functions[ f ] = true
                         end
                     end
                 end

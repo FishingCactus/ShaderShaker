@@ -46,7 +46,7 @@ function InlineShaderParameters( ast_node )
                                     
                                     function_to_call[ 2 ][ 1 ] = function_name
 
-                                    ReplaceFunctionsCallInsideFunction( ast_node, function_to_call, constants_table )
+                                    ReplaceFunctionsCallInsideFunction( ast_node, Function_GetBody( function_to_call ), constants_table )
                                     
                                     reimplemented_functions_table[ function_name ] = function_to_call
                                 end
@@ -313,6 +313,14 @@ function DuplicateAndReturnFunction( shader_function_to_call, ast_node )
     end
 end
 
+function FindFunction( shader_function_to_call, ast_node )
+    for node_index, node in pairs( ast_node ) do
+        if node.name == "function" and node[ 2 ][ 1 ] == shader_function_to_call then
+            return node
+        end
+    end
+end
+
 function RemoveShaderInlinedParameters( function_to_call, parameters_table )
     local function_parameters = function_to_call[ 3 ]
     
@@ -321,39 +329,55 @@ function RemoveShaderInlinedParameters( function_to_call, parameters_table )
     end
 end
 
-function RemoveFunctionInlinedParameters( function_parameters, function_call_parameters, parameters_table )
-    for parameter_index = 1, #function_parameters do
-        local ID = GetNodeNameValue( function_parameters[ #function_parameters ], "ID" )
-        
-        for parameter_to_remove_name, parameter_to_remove in pairs( parameters_table ) do
+function RemoveFunctionInlinedParameters( function_parameters, parameters_table )
+    for parameter_to_remove_name, parameter_to_remove in pairs( parameters_table ) do
+        for parameter_index = 1, #function_parameters do
+            local ID = ""
+            if function_parameters.name == "argument_expression_list" then
+                ID = function_parameters[ parameter_index ][ 1 ]                
+            else
+                ID = GetNodeNameValue( function_parameters[ parameter_index ], "ID" )
+            end
+            
             if ID == parameter_to_remove_name then
-                local function_parameters_index = #function_parameters
-                table.remove( function_parameters, function_parameters_index  )
-                table.remove( function_call_parameters, function_parameters_index )
+                table.remove( function_parameters, parameter_index  )
+                break
             end
         end
     end
 end
 
-function ReplaceFunctionsCallInsideFunction( ast_node, function_to_call, constants_table )
-    local function_name = function_to_call[ 2 ][ 1 ]
-    local function_body = Function_GetBody( function_to_call )
+function ReplaceFunctionsCallInsideFunction( ast_node, body, constants_table )
+    local reimplemented_functions_table = {}
 
-    for called_function in NodeOfType( function_body, "call", false ) do
-        local function_to_replace = DuplicateAndReturnFunction( called_function[ 1 ], ast_node )
-        
-        ReplaceFunctionsCallInsideFunction( ast_node, function_to_replace, constants_table )
-        
-        local function_constants_table = CreateConstantsSubTableFromInputConstants( constants_table, function_to_replace )
-        
-        local function_to_replace_name = function_to_replace[ 2 ][ 1 ] .. HashArgumentList( function_constants_table )
-        
-        ReplaceConstants( function_to_replace, constants_table )
-        
-        RemoveFunctionInlinedParameters( function_to_replace[ 3 ], called_function[ 2 ], function_constants_table )
-        
-        function_to_replace[ 2 ][ 1 ] = function_to_replace_name
-        called_function[ 1 ] = function_to_replace_name
+    for i, node in pairs( body ) do
+        if node.name == "call" and not Function_IsIntrinsic( node[ 1 ] ) then
+            local base_function = FindFunction( node[ 1 ], ast_node )
+            local function_constants_table = CreateConstantsSubTableFromInputConstants( constants_table, base_function )
+            local function_to_replace_name = base_function[ 2 ][ 1 ] .. HashArgumentList( function_constants_table )
+            
+            if function_to_replace_name ~= base_function[ 2 ][ 1 ] then
+                if reimplemented_functions_table[ function_to_replace_name ] == nil then
+                    local function_to_replace = DuplicateAndReturnFunction( node[ 1 ], ast_node )
+                    
+                    ReplaceFunctionsCallInsideFunction( ast_node, function_to_replace, function_constants_table )
+                    
+                    ReplaceConstants( function_to_replace, constants_table )
+                    
+                    function_to_replace[ 2 ][ 1 ] = function_to_replace_name
+                    
+                    reimplemented_functions_table[ function_to_replace_name ] = function_to_replace_name
+                    
+                    RemoveFunctionInlinedParameters( function_to_replace[ 3 ], function_constants_table )
+                end
+                
+                node[ 1 ] = function_to_replace_name
+                
+                RemoveFunctionInlinedParameters( node[ 2 ], function_constants_table )
+            end
+        elseif type( node ) == "table" then
+            ReplaceFunctionsCallInsideFunction( ast_node, node, constants_table )
+        end
     end
 end
 

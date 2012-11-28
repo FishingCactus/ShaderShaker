@@ -152,7 +152,7 @@ block_statement
     ;
   
 expression_statement
-    : expression SEMI
+    : {ast_push("expression_statement");} expression SEMI{ast_assign();}
     ;
     
 if_statement
