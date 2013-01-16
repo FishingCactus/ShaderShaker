@@ -76,10 +76,16 @@ function Function_IsIntrinsic( called_function_name )
     return false
 end
 
-function Function_GetCalledFunctions( ast_node, function_name, include_intrinsics )
+function Function_GetCalledFunctions( ast_node, function_name, include_intrinsics, function_index )
 
     local called_functions = {}
     local function_node = Function_GetNodeFromId( ast_node, function_name )
+    
+    if function_index then
+        function_index = function_index + 1
+    else
+        function_index = 0
+    end
 
     for node in NodeOfType( function_node, "call", true ) do
         local called_function_name = node[ 1 ]
@@ -93,10 +99,10 @@ function Function_GetCalledFunctions( ast_node, function_name, include_intrinsic
         if can_add then
         
             if called_functions[ called_function_name ] == nil then
-                called_functions[ called_function_name ] = true
+                called_functions[ called_function_name ] = function_index
             
                 if not is_intrinsic then
-                    local other_called_functions = Function_GetCalledFunctions( ast_node, called_function_name, include_intrinsics )
+                    local other_called_functions = Function_GetCalledFunctions( ast_node, called_function_name, include_intrinsics, function_index )
                     
                     for f, b in pairs( other_called_functions ) do
                     
@@ -110,7 +116,7 @@ function Function_GetCalledFunctions( ast_node, function_name, include_intrinsic
                         end
                         
                         if can_add_other then
-                            called_functions[ f ] = true
+                            called_functions[ f ] = function_index + 1
                         end
                     end
                 end

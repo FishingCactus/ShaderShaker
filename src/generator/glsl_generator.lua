@@ -411,8 +411,22 @@ GLSLGenerator = {
         local output = ""
         local called_functions = Function_GetCalledFunctions( ast, function_name )
         
-        for called_function_name, _  in pairs( called_functions ) do
-            output = output .. prefix() .. GLSLGenerator.ProcessFunction( ast, called_function_name )
+        if next( called_functions ) ~= nil then
+            local sorted_called_functions = {}
+        
+            for function_name, index in pairs( called_functions ) do
+                if sorted_called_functions[ index ] == nil then
+                    sorted_called_functions[ index ] = {}
+                end
+                
+                table.insert( sorted_called_functions[ index ], function_name )
+            end
+            
+            for index, called_function_name_table in IterateTableByKeyOrder( sorted_called_functions, function ( left, right ) return left > right end ) do
+                for _, called_function_name in ipairs( called_function_name_table ) do
+                    output = output .. prefix() .. GLSLGenerator.ProcessFunction( ast, called_function_name )
+                end
+            end
         end
     
         return output
