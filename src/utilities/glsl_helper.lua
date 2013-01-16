@@ -17,7 +17,18 @@ local
         texCUBE = "textureCube",
         fmod = "mod",
         lerp = "mix",
-        saturate = function( str ) return "clamp( " .. str .. ", 0.0f, 1.0f)" end
+        saturate = function( str ) return "clamp( " .. str .. ", 0.0, 1.0)" end
+    }
+    
+local
+    intrinsic_types_with_precision = {
+        float = true,
+        vec2 = true,
+        vec3 = true,
+        vec4 = true,
+        mat2 = true,
+        mat3 = true,
+        mat4 = true
     }
     
 local
@@ -40,6 +51,14 @@ local
             VPOS = "gl_FragCoord"
         },
     }
+    
+function GLSL_Helper_PrefixIntrinsicWithPrecision( intrinsic, precision )
+    if intrinsic_types_with_precision[ intrinsic ] then
+        return precision .. " " .. intrinsic
+    end
+    
+    return intrinsic
+end
     
 function GLSL_Helper_GetNameFromSemanticAttribute( semantic_name )
     return semantic_attribute_to_name[ semantic_name ] or semantic_name
@@ -79,8 +98,10 @@ function GLSL_Helper_GetAttribute( attribute )
     return output .. ";\n"
 end
 
-function GLSL_Helper_GetVarying( varying )
+function GLSL_Helper_GetVarying( varying, precision )
     
+    precision = precision or ""
+
     local output = ""
     local varying_semantic = varying.semantic
     local varying_name = varying.name
@@ -92,7 +113,7 @@ function GLSL_Helper_GetVarying( varying )
         name_from_semantic = GLSL_Helper_GetNameFromSemanticAttribute( varying_semantic )
     end
     ]]--
-    output =  "varying " .. GLSL_Helper_ConvertIntrinsic( varying.type ) .. " "
+    output =  "varying " .. GLSL_Helper_PrefixIntrinsicWithPrecision( GLSL_Helper_ConvertIntrinsic( varying.type ), precision ) .. " "
     
     --if varying_semantic ~= "" and varying_semantic ~= name_from_semantic then
         --name = name_from_semantic
@@ -110,8 +131,10 @@ function GLSL_Helper_GetVaryingPrefix( )
     return "vary_"
 end
 
-function GLSL_Helper_GetUniformFromConstant( constant )    
-    return "uniform " .. GLSL_Helper_ConvertIntrinsic( constant.type ) .. " " .. constant.name .. ";\n"
+function GLSL_Helper_GetUniformFromConstant( constant, precision )    
+    precision = precision or ""
+    
+    return "uniform " .. GLSL_Helper_PrefixIntrinsicWithPrecision( GLSL_Helper_ConvertIntrinsic( constant.type ), precision ) .. " " .. constant.name .. ";\n"
 end
 
 function GLSL_Helper_GetUniformFromSampler( sampler_type, texture_name  )

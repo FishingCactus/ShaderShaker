@@ -3,6 +3,7 @@ local prefix_index
 current_technique = ""
 technique_name = ""
 wanted_technique = ""
+options = ""
 
 techniques = {}
 
@@ -47,10 +48,12 @@ GLSLGenerator = {
     
     end,
     
-    ["ProcessAst"] = function( ast, technique )
+    ["ProcessAst"] = function( ast, process_options )
         local output = "<Shader>\n"
         local technique_count = 0
         local technique_name = ""
+        
+        options = process_options
                 
         prefix_index = 1
         
@@ -347,7 +350,7 @@ GLSLGenerator = {
         local output = ""
         
         for varying_member_name, varying_member in pairs( techniques[ current_technique ].UsedVaryingMembersTable ) do
-            output = output .. prefix() .. GLSL_Helper_GetVarying( varying_member )
+            output = output .. prefix() .. GLSL_Helper_GetVarying( varying_member, options.default_precision )
         end
         
         return output
@@ -390,7 +393,7 @@ GLSLGenerator = {
         
         for i, constant in ipairs( constants_table ) do
             if techniques[ current_technique ][ current_function.shader_type ].uniforms[ constant.name ] then
-                output = output .. prefix() .. GLSL_Helper_GetUniformFromConstant( constant )
+                output = output .. prefix() .. GLSL_Helper_GetUniformFromConstant( constant, options.default_precision )
             end
         end
         
@@ -632,7 +635,7 @@ GLSLGenerator = {
         local ID = GetNodeNameValue( argument, "ID" )
         local semantic = GetNodeNameValue( argument, "semantic" )
         
-        return input_modifier .. " " .. modifier .. " " .. GLSL_Helper_ConvertIntrinsic( type ) .. " " .. ID
+        return input_modifier .. " " .. modifier .. " " .. GLSL_Helper_PrefixIntrinsicWithPrecision( GLSL_Helper_ConvertIntrinsic( type ), options.default_precision ) .. " " .. ID
         
         --[[
             local output = GLSL_Helper_ConvertIntrinsic( argument[ 1 ][ 1 ] ) .. ' ' .. argument[ 2 ][ 1 ]
@@ -690,7 +693,7 @@ GLSLGenerator = {
             output = output .. table.concat( node[2], ' ' ) .. ' ';
         end
         
-        output = output .. GLSL_Helper_ConvertIntrinsic( node[3][1] ) .. ' '
+        output = output .. GLSL_Helper_PrefixIntrinsicWithPrecision( GLSL_Helper_ConvertIntrinsic( node[3][1] ), options.default_precision ) .. ' '
         
         index = 4
         prefix_index = prefix_index + 1
@@ -1062,7 +1065,7 @@ GLSLGenerator = {
             current_function.root_shader_type = previous_function.root_shader_type
         end
         
-        output = GLSL_Helper_ConvertIntrinsic( function_node[ 1 ][ 1 ] ) .. ' ' .. function_node[ 2 ][ 1 ]
+        output = GLSL_Helper_PrefixIntrinsicWithPrecision( GLSL_Helper_ConvertIntrinsic( function_node[ 1 ][ 1 ] ), options.default_precision ) .. ' ' .. function_node[ 2 ][ 1 ]
         
         if function_node[ 3 ].name == "argument_list" then
             function_body_index = 4

@@ -1,7 +1,7 @@
 function ParseArgumentTable( arguments )
 
     local result = {}
-    local arg_item = { output_files = {}, constants_replacement = {}, optimize = true }
+    local arg_item = { output_files = {}, constants_replacement = {}, optimize = true, default_precision = "" }
     local previous_argument = ""
     
     for i, argument in ipairs( arguments ) do
@@ -34,6 +34,8 @@ function ParseArgumentTable( arguments )
                 previous_argument = 'optimization'
             elseif arg_option == 'check' then
                 previous_argument = 'check'
+            elseif arg_option == 'default_precision' then
+                previous_argument = 'default_precision'
             else
                 error( 'Invalid option', 1 );
             end
@@ -56,6 +58,8 @@ function ParseArgumentTable( arguments )
                 arg_item.constants_replacement[ constants_table[ 1 ] ] = constants_table[ 2 ]
             elseif previous_argument == 'optimization' then
                 arg_item.optimize = toboolean( argument )
+            elseif previous_argument == 'default_precision' then
+                arg_item.default_precision = argument
             elseif previous_argument == 'check' then
                 arg_item.check_file = argument
             else
