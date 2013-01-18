@@ -121,11 +121,30 @@ const char * ShaderShakerGetProcessedCode( ShaderShakerContext * context, int fi
  */
 bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv )
 {
-    const char
-        * filename;
-        
-    //:TODO: option to change scripts directory
-    filename = "src/_shader_shaker_main.lua";
+    char
+        source_path[ 1024 ],
+        filename[ 1024 ];
+
+    strcpy( source_path,  "" );
+
+    for ( int i = 1; i < argc; i++ )
+    {
+        const char
+            * argument;
+
+        argument = argv[ i ];
+
+        if ( argument == "-source_directory" )
+        {
+            strcat( source_path,  argv[ i + 1 ] );
+            break;
+        }
+    }
+
+    strcat( source_path, "src" );
+
+    strcpy( filename, source_path );
+    strcat( filename, "/_shader_shaker_main.lua" );
 
     if ( luaL_dofile( L, filename ) )
     {
@@ -135,7 +154,7 @@ bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv )
 
     lua_getglobal( L, "_shader_shaker_main" );
 
-    lua_pushstring( L, "src" );
+    lua_pushstring( L, source_path );
 
     lua_newtable( L );
 

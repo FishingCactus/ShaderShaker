@@ -37,7 +37,7 @@ function ParseArgumentTable( arguments )
             elseif arg_option == 'default_precision' then
                 previous_argument = 'default_precision'
             else
-                error( 'Invalid option', 1 );
+                previous_argument = 'UNSUPPORTED_ARGUMENT'
             end
         
         else
@@ -62,7 +62,7 @@ function ParseArgumentTable( arguments )
                 arg_item.default_precision = argument
             elseif previous_argument == 'check' then
                 arg_item.check_file = argument
-            else
+            elseif previous_argument ~= "UNSUPPORTED_ARGUMENT" then
                 arg_item.input_file = argument
                 if #arg_item.output_files == 0 then
                     table.insert( arg_item.output_files, 'console_output' )
