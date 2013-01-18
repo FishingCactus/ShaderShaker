@@ -25,6 +25,9 @@ texture_to_sampler = {}
 
 argument_to_varying = {}
 
+helper_function_argument_replacement_table = {}
+helper_function_call_arguments = {}
+
 function prefix()
     return string.rep( [[    ]], prefix_index )
 end
@@ -249,6 +252,7 @@ GLSLGenerator = {
         local called_functions_output = ""
         local function_body_output = ""
         variables_table = {}
+        helper_function_call_arguments = {}
         
         GLSLGenerator.FillVertexShaderAttributesTable( ast, function_name )
         GLSLGenerator.FillVertexShaderVaryingMembersTable( ast, function_name )
@@ -360,6 +364,7 @@ GLSLGenerator = {
     [ "ProcessPixelShader" ] = function ( ast, function_name )
         local output = prefix() .. "<![CDATA[\n"
         local output2 = ""
+        helper_function_call_arguments = {}
         
         local function_node = Function_GetNodeFromId( ast, function_name )
         local function_argument_list_node = Function_GetArgumentList( function_node )
@@ -650,20 +655,6 @@ GLSLGenerator = {
         local semantic = GetNodeNameValue( argument, "semantic" )
         
         return input_modifier .. " " .. modifier .. " " .. GLSL_Helper_PrefixIntrinsicWithPrecision( GLSL_Helper_ConvertIntrinsic( type ), options.default_precision ) .. " " .. ID
-        
-        --[[
-            local output = GLSL_Helper_ConvertIntrinsic( argument[ 1 ][ 1 ] ) .. ' ' .. argument[ 2 ][ 1 ]
-        
-        if #argument > 2 then
-            for i=3, #argument do
-                if argument[i].name == "semantic" then
-                    --output = output .. ':' .. argument[i][1]
-                end
-            end
-        end
-        
-        return output
-        ]]--
     end,
     
     [ "process_function_body" ] = function( node )
@@ -803,6 +794,7 @@ GLSLGenerator = {
                                         end
                                         
                                         return prefix() .. replacement
+                                        
                                     elseif structure.is_input then
                                     
                                         for l, attribute in ipairs( techniques[ current_technique ].VertexShader.attributes ) do
@@ -822,6 +814,12 @@ GLSLGenerator = {
                         end
                     end
                 end
+            end
+            
+            local return_value = helper_function_argument_replacement_table[ left .. "." .. right ] or ""
+            
+            if return_value ~= "" then
+                return return_value
             end
         
         end       
@@ -908,12 +906,47 @@ GLSLGenerator = {
     end,
     
     ["process_call"] = function( node )
-        local intrinsic = GLSL_Helper_ConvertIntrinsic( node[ 1 ] )
+        local function_called_name = node[ 1 ]
+        local intrinsic = GLSL_Helper_ConvertIntrinsic( function_called_name )
         local output = ""
         local output2 = ""
 
         if node[ 2 ] ~= nil then
-            output2 = ' ' .. GLSLGenerator.ProcessNode( node[ 2 ] ) .. ' '
+            local result = {}
+        
+            for index, argument in ipairs( node[ 2 ] ) do
+            
+                if helper_function_call_arguments[ function_called_name ]
+                    and helper_function_call_arguments[ function_called_name ][ index ] then
+                    
+                    local does_argument_belong_to_variables_table = false
+                    
+                    for j, variable in ipairs( variables_table ) do
+                        if variable.name == argument[ 1 ] then
+                            does_argument_belong_to_variables_table = true
+                            break    
+                        end
+                    end
+                
+                    for j, new_argument_name in ipairs( helper_function_call_arguments[ function_called_name ][ index ] ) do
+                        if does_argument_belong_to_variables_table then
+                            local postfix_node = { name = "postfix" }
+                            postfix_node[ 1 ] = { name = "variable" }
+                            postfix_node[ 1 ][ 1 ] = argument[ 1 ]
+                            postfix_node[ 2 ] = { name = "variable" }
+                            postfix_node[ 2 ][ 1 ] = new_argument_name.name
+                            
+                            table.insert( result, GLSLGenerator.ProcessNode( postfix_node ) )
+                        else
+                            table.insert( result,  new_argument_name.name ) -- not sure it is correct, but not sure either it can happen
+                        end
+                    end
+                else
+                    table.insert( result,  GLSLGenerator.ProcessNode( argument ) )
+                end
+            end
+            
+            output2 = table.concat( result, ', ' );
         end
         
         if type( intrinsic ) == "function" then
@@ -1070,6 +1103,9 @@ GLSLGenerator = {
         local output
         local function_body_index
         local previous_function = current_function
+        local function_name = function_node[ 2 ][ 1 ]
+        
+        helper_function_argument_replacement_table = {}
         
         current_function = Function_GetProperties( function_node )
         
@@ -1079,11 +1115,58 @@ GLSLGenerator = {
             current_function.root_shader_type = previous_function.root_shader_type
         end
         
-        output = GLSL_Helper_PrefixIntrinsicWithPrecision( GLSL_Helper_ConvertIntrinsic( function_node[ 1 ][ 1 ] ), options.default_precision ) .. ' ' .. function_node[ 2 ][ 1 ]
+        output = GLSL_Helper_PrefixIntrinsicWithPrecision( GLSL_Helper_ConvertIntrinsic( function_node[ 1 ][ 1 ] ), options.default_precision ) .. ' ' .. function_name
         
         if function_node[ 3 ].name == "argument_list" then
             function_body_index = 4
-            output = output .. '(\n' .. GLSLGenerator.process_argument_list( function_node[ 3 ] ) .. '\n'
+            output = output .. '(\n' 
+            local arguments_output_table = {}
+
+            for index, argument in ipairs( function_node[ 3 ] ) do
+                local argument_type = GetNodeNameValue( argument, "type" )
+                local ID = GetNodeNameValue( argument, "ID" )
+
+                local is_argument_a_structure = false
+                
+                for i, structure in ipairs( structures_table ) do
+                    if structure.type == argument_type then
+                        local structure_members_used_in_function = GLSL_Helper_GetStructureMembersUsedInFunction( function_node[ function_body_index ], ID )
+
+                        is_argument_a_structure = true
+                        helper_function_call_arguments[ function_name ] = {}
+                        helper_function_call_arguments[ function_name ][ index ] = {}
+                        
+                        for j, structure_member in ipairs( structure.members ) do
+                            if structure_members_used_in_function[ structure_member.name ] then                            
+                                local argument_name = ID .. "_" .. structure_member.name
+                                local new_argument = { name = "argument" }
+                                new_argument[ 1 ] = { name = "modifier" }
+                                new_argument[ 1 ][ 1 ] = "const"
+                                new_argument[ 2 ] = { name = "type" }
+                                new_argument[ 2 ][ 1 ] = structure_member.type
+                                new_argument[ 3 ] = { name = "ID" }
+                                new_argument[ 3 ][ 1 ] = argument_name
+                                table.insert( arguments_output_table, GLSLGenerator.process_argument( new_argument ) )
+                                
+                                helper_function_argument_replacement_table[ ID .. "." .. structure_member.name ] = argument_name
+                                table.insert( helper_function_call_arguments[ function_name ][ index ], structure_member )
+                            end
+                        end
+                        
+                        break
+                    end
+                end
+
+                if not is_argument_a_structure then
+                    table.insert( arguments_output_table, GLSLGenerator.process_argument( argument ) )
+                end
+            end
+            
+            prefix_index = prefix_index + 1
+            
+            output = output .. prefix() .. table.concat( arguments_output_table, ',\n' .. prefix() );
+            
+            prefix_index = prefix_index - 1
         else
             output = output .. '('
             function_body_index = 3

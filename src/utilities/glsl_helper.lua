@@ -223,3 +223,17 @@ function GLSL_Helper_ConvertInitialValueTables( root_node )
     end
 
 end
+
+function GLSL_Helper_GetStructureMembersUsedInFunction( function_body_node, structure_parameter_name )
+
+    local result = {}
+
+    for child_node in NodeOfType( function_body_node, 'postfix' ) do    
+        if child_node[ 1 ][ 1 ] == structure_parameter_name then
+            result[ child_node[ 2 ][ 1 ] ] = true
+        end    
+    end
+    
+    return result
+
+end
