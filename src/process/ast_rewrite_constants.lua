@@ -63,3 +63,11 @@ ast_rewrite_boolean_and_rules =
     {if_literal_true( 1 ), replace_by_right_block},
     {if_literal_true( 2 ), replace_by_left_block},
 }
+
+ast_rewrite_boolean_or_rules =
+{
+    {if_literal_false( 1 ), replace_by_right_block},
+    {if_literal_false( 2 ), replace_by_left_block},
+    {if_literal_true( 1 ), replace_by_left_block},
+    {if_literal_true( 2 ), replace_by_right_block},
+}
