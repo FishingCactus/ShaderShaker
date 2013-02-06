@@ -18,12 +18,13 @@ local node_rewrite_table =
         {is_not_( "1" ), replace_by_( "0" ) },
         {is_not_( "0" ), replace_by_( "1" ) }
     },
-	['if'] = ast_rewrite_if_rules
+    ['if'] = ast_rewrite_if_rules,
+    [ '*' ] = ast_rewrite_multiplication_rules
 }
 
 local function rewrite_node( node, parent, index )
     local it_has_changed = false
-    
+
     repeat
         local rewrite_table = node_rewrite_table[ node.name ]
         
@@ -37,13 +38,12 @@ local function rewrite_node( node, parent, index )
                     ( predicate_action[2] )( node, parent, index )
                     return true
                 end
-             end
-             
-             return false
+            end
+            return false
         end
 
         it_has_changed = evaluate()
-    
+
     until it_has_changed == false or node ~= parent[ index ]
 end
 

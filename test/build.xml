@@ -17,11 +17,24 @@
 			
 			<fileset dir=".">
 				<include name="**/*.fx" />
+				<exclude name="optim/**/*" />
+			</fileset>
+		</apply>
+
+		<apply executable="${shader_shaker}" dir="..">
+			<mapper type="glob" from="*.fx" to="*.reference.ast"/>
+			<arg value="-optimization true"/>
+			<arg value="-o"/>
+			<targetfile/>
+			<srcfile/>
+
+			<fileset dir=".">
+				<include name="optim/**/*.fx" />
 			</fileset>
 		</apply>
 	</target>
 	
-	<target name="check"  if="executable_exists">
+	<target name="check" if="executable_exists">
 		<apply executable="${shader_shaker}" force="true" dir="..">
 			<mapper type="glob" from="*.fx" to="*.reference.ast"/>
 			<arg value="-check"/>
@@ -30,6 +43,19 @@
 
 			<fileset dir=".">
 				<include name="**/*.fx" />
+				<exclude name="optim/**/*" />
+			</fileset>
+		</apply>
+
+		<apply executable="${shader_shaker}" force="true" dir="..">
+			<mapper type="glob" from="*.fx" to="*.reference.ast"/>
+			<arg value="-optimization true"/>
+			<arg value="-check"/>
+			<targetfile/>
+			<srcfile/>
+
+			<fileset dir=".">
+				<include name="optim/**/*.fx" />
 			</fileset>
 		</apply>
 	</target>
