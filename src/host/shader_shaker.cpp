@@ -134,9 +134,9 @@ bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv )
 
         argument = argv[ i ];
 
-        if ( argument == "-source_directory" )
+        if ( strcmp( argument, "-source_directory" ) == 0 )
         {
-            strcat( source_path,  argv[ i + 1 ] );
+            strcat( source_path, argv[ i + 1 ] );
             break;
         }
     }
