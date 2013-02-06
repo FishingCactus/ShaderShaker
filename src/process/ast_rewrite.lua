@@ -18,7 +18,8 @@ local node_rewrite_table =
         {is_not_( "1" ), replace_by_( "0" ) },
         {is_not_( "0" ), replace_by_( "1" ) }
     },
-    ['if'] = ast_rewrite_if_rules,
+    ['if_block'] = ast_rewrite_if_block_rules,
+    ['else_if_block'] = ast_rewrite_else_if_block_rules,
     [ '*' ] = ast_rewrite_multiplication_rules,
     [ '+' ] = ast_rewrite_addition_rules,
     [ '&&' ] = ast_rewrite_boolean_and_rules,
@@ -27,6 +28,11 @@ local node_rewrite_table =
 
 local function rewrite_node( node, parent, index )
     local it_has_changed = false
+
+    if node == nil then
+        -- Tricky: Rewrite might delete next node and for does not reevaluate 
+        return
+    end
 
     repeat
         local rewrite_table = node_rewrite_table[ node.name ]

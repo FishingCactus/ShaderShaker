@@ -1,71 +1,60 @@
-function predicate_and( ... )
-    local function_table = {...}
-    return function( node )
-        for _, func in ipairs( function_table ) do 
-            if func( node ) == false then return false end
-        end
-        return true;
-    end
-end
 
-local function if_block_( type, value )
+local function if_block_( value )
 	return function( node )
-		assert( node.name == 'if' )
-		
-		return node[ 1 ][ 1 ].name == type and node[ 1 ][ 1 ][ 1 ] == value
+        return node[ 1 ].name == "literal" and node[ 1 ][ 1 ] == value
 	end
 end
 
-local function remove_if_block( node, parent, index )  
-    parent[index].name = "nop"
-    parent[index][1] =  nil
+local function keep_if_block( node, parent, index )
+    assert( index == 1 )
+    assert( node[ 2 ].name == "block" )
+
+    while table.remove( parent ) ~= nil do end
+    parent.name = "block"
+    parent[ 1 ] = node[ 2 ][ 1 ];
 end
 
-local function validate_if_block( node, parent, index )
-    parent[index] = node[ 1 ][ 2 ]
+local function transform_to_else_and_discard_following( node, parent, index )
+
+    while #parent > index do
+        table.remove( parent )
+    end
+
+    node.name = "else_block"
+    table.remove( node, 1 )
 end
 
-local function keep_else_block( node, parent, index )
-    parent[index] = node[ 2 ][ 1 ]
+local function discard_if( node, parent, index )
+    assert( index == 1 )
+
+    if #parent == 1 then
+        table.remove( parent )
+        parent.name = "nop"
+    elseif parent[ 2 ].name == "else_block" then
+        table.remove( parent )
+        parent.name = "block"
+        parent[ 1 ] = node[ 2 ][ 1 ];
+    else 
+        assert( parent[ 2 ].name == "else_if_block" )
+
+        table.remove( parent, 1 )
+        parent[ 1 ].name = "if_block"
+    end
 end
 
-local function replace_else_if_block( node, parent, index )
-    table.remove( node, 1 );
-    node[ 1 ].name = "if_block"
-end
-
-local function if_has_no_else( node )
-    assert( node.name == 'if' )
-    return node[ 2 ] == nil or node[ 2 ].name ~= "else_block"
-end
-
-local function if_has_else( node )
-    assert( node.name == 'if' )
-    return node[ 2 ] ~= nil and node[ 2 ].name == "else_block"
-end
-
-local function if_has_else_if( node )
-    assert( node.name == 'if' )
-	return node[ 2 ] ~= nil and node[ 2 ].name == "else_if_block"
+local function discard_block( node, parent, index )
+    table.remove( parent, index )
 end
 
 
-ast_rewrite_if_rules =
+ast_rewrite_if_block_rules =
 {
-    {if_block_( "variable" , "true" ), validate_if_block},
-    {predicate_and( if_block_( "variable" , "false" ), if_has_else_if ), replace_else_if_block },
-    {predicate_and( if_block_( "variable" , "false" ), if_has_else ), keep_else_block },
-    {predicate_and( if_block_( "variable" , "false" ), if_has_no_else ), remove_if_block },
+    {if_block_( "true" ), keep_if_block},
+    {if_block_( "false" ), discard_if},
+}
 
-    {if_block_( "literal" , "1" ),   validate_if_block },
-    
-    {predicate_and( if_block_( "literal" , "0" ), if_has_else_if ), replace_else_if_block },
-    {predicate_and( if_block_( "literal" , "0" ), if_has_else ), keep_else_block },
-    {predicate_and( if_block_( "literal" , "0" ), if_has_no_else ), remove_if_block },
-    
-    {predicate_and( if_block_( "literal" , "false" ), if_has_else_if ), replace_else_if_block },
-    {predicate_and( if_block_( "literal" , "false" ), if_has_no_else ), remove_if_block },
-    {predicate_and( if_block_( "literal" , "false" ), if_has_else ), keep_else_block },
-    
-    {if_block_( "literal" , "true" ),  validate_if_block},
+ast_rewrite_else_if_block_rules =
+{
+    {if_block_( "true" ), transform_to_else_and_discard_following },
+    {if_block_( "false" ), discard_block},
 }
