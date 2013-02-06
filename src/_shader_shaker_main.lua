@@ -26,6 +26,8 @@ function _shaker_shaker_process_files()
             ast,
             replace_ast
 
+        print( "Process file " .. options.input_file .. "\n" )
+
         ast = GenerateAstFromFileName( options.input_file )
         
         ProcessAst( ast, options )
