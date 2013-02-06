@@ -94,37 +94,6 @@
     },
     function
     {
-        type{"void"},
-        ID{"HelloWorld"},
-        argument_list
-        {
-            argument
-            {
-                type{"float"},
-                ID{"in_data"}
-            }
-        },
-        function_body
-        {
-            variable_declaration
-            {
-                storage{},
-                modifier{},
-                type{"float"},
-                variable
-                {
-                    "r",
-                    *
-                    {
-                        variable{"in_data"},
-                        variable{"in_data"}
-                    }
-                }
-            }
-        }
-    },
-    function
-    {
         type{"float"},
         ID{"Blah"},
         argument_list
@@ -280,20 +249,23 @@
                     }
                 }
             },
-            call
+            expression_statement
             {
-                "HelloWorld",
-                argument_expression_list
+                call
                 {
-                    call
+                    "HelloWorld",
+                    argument_expression_list
                     {
-                        "Blah",
-                        argument_expression_list
+                        call
                         {
-                            +
+                            "Blah",
+                            argument_expression_list
                             {
-                                variable{"d"},
-                                variable{"e"}
+                                +
+                                {
+                                    variable{"d"},
+                                    variable{"e"}
+                                }
                             }
                         }
                     }
@@ -412,20 +384,23 @@
                     }
                 }
             },
-            call
+            expression_statement
             {
-                "HelloWorld",
-                argument_expression_list
+                call
                 {
-                    call
+                    "HelloWorld",
+                    argument_expression_list
                     {
-                        "Blah",
-                        argument_expression_list
+                        call
                         {
-                            +
+                            "Blah",
+                            argument_expression_list
                             {
-                                variable{"d"},
-                                variable{"e"}
+                                +
+                                {
+                                    variable{"d"},
+                                    variable{"e"}
+                                }
                             }
                         }
                     }

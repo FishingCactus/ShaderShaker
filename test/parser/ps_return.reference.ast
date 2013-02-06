@@ -59,6 +59,23 @@
     },
     function
     {
+        type{"float2"},
+        ID{"HelloWorldftc"},
+        argument_list{},
+        function_body
+        {
+            return
+            {
+                *
+                {
+                    variable{"toto"},
+                    literal{"1.5f"}
+                }
+            }
+        }
+    },
+    function
+    {
         type{"VS_TEXTURED_OUTPUT"},
         ID{"vs"},
         argument_list
@@ -263,6 +280,41 @@
     function
     {
         type{"float4"},
+        ID{"pixel_shader_commontl"},
+        argument_list
+        {
+            argument
+            {
+                type{"float2"},
+                ID{"texture_coordinate"},
+                semantic{"TEXCOORD0"}
+            }
+        },
+        function_body
+        {
+            variable_declaration
+            {
+                storage{},
+                modifier{},
+                type{"float4"},
+                variable
+                {
+                    "result",
+                    initial_value_table
+                    {
+                        literal{"0.0f"},
+                        literal{"0.0f"},
+                        literal{"0.0f"},
+                        literal{"0.0f"}
+                    }
+                }
+            },
+            return{variable{"result"}}
+        }
+    },
+    function
+    {
+        type{"float4"},
         ID{"ps"},
         argument_list
         {
@@ -385,12 +437,8 @@
                     variable{"color_multiplier"},
                     call
                     {
-                        "pixel_shader_common",
-                        argument_expression_list
-                        {
-                            variable{"texture_coordinate"},
-                            variable{"it_use_shadow_mask"}
-                        }
+                        "pixel_shader_commontl",
+                        argument_expression_list{variable{"texture_coordinate"}}
                     }
                 }
             }
