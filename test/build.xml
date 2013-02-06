@@ -1,38 +1,38 @@
 <project name="Shader Shaker" basedir=".">
 
-	<property name="shader_shaker" location="..\bin\release\shader_shaker.exe" />
+	<property name="shader_shaker" location="../bin/debug/shader_shaker" />
 	
 	<condition property="executable_exists">
 		<resourceexists>
-            <file file="..\bin\release\shader_shaker.exe" />
+            <file file="../bin/debug/shader_shaker" />
         </resourceexists>
 	</condition>
 	
 	<target name="generate_reference" if="executable_exists">
 		<mkdir dir="..\reference" />
 		
-		<apply executable="${shader_shaker}" dest="..\reference">
-			<mapper type="glob" from="*.fx" to="*.ast"/>
+		<apply executable="${shader_shaker}" dest=".">
+			<mapper type="glob" from="*.fx" to="*.reference.ast"/>
 			<arg value="-o"/>
 			<targetfile />
 			<srcfile />
 			
-			<fileset dir="..\test">
-				<include name="*.fx" />
+			<fileset dir=".">
+				<include name="**/*.fx" />
 			</fileset>
 		</apply>
 	</target>
 	
 	<target name="check"  if="executable_exists">
-		<apply executable="${shader_shaker}" dest="..\reference" force="true">
-			<mapper type="glob" from="*.fx" to="*.ast"/>
+		<apply executable="${shader_shaker}" force="true" dir="..">
+			<mapper type="glob" from="*.fx" to="*.reference.ast"/>
 			<arg value="-check"/>
-			<targetfile />
-			
-			<fileset dir="..\test">
-				<include name="*.fx" />
+			<targetfile/>
+			<srcfile/>
+
+			<fileset dir=".">
+				<include name="**/*.fx" />
 			</fileset>
-			<srcfile />
 		</apply>
 	</target>
 </project>
