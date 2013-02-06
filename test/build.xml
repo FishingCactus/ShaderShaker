@@ -9,9 +9,7 @@
 	</condition>
 	
 	<target name="generate_reference" if="executable_exists">
-		<mkdir dir="..\reference" />
-		
-		<apply executable="${shader_shaker}" dest=".">
+		<apply executable="${shader_shaker}" dir="..">
 			<mapper type="glob" from="*.fx" to="*.reference.ast"/>
 			<arg value="-o"/>
 			<targetfile />
