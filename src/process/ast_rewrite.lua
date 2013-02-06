@@ -21,6 +21,7 @@ local node_rewrite_table =
     ['if'] = ast_rewrite_if_rules,
     [ '*' ] = ast_rewrite_multiplication_rules,
     [ '+' ] = ast_rewrite_addition_rules,
+    [ '&&'] = ast_rewrite_boolean_and_rules,
 }
 
 local function rewrite_node( node, parent, index )
