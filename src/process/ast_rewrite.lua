@@ -19,7 +19,8 @@ local node_rewrite_table =
         {is_not_( "0" ), replace_by_( "1" ) }
     },
     ['if'] = ast_rewrite_if_rules,
-    [ '*' ] = ast_rewrite_multiplication_rules
+    [ '*' ] = ast_rewrite_multiplication_rules,
+    [ '+' ] = ast_rewrite_addition_rules,
 }
 
 local function rewrite_node( node, parent, index )

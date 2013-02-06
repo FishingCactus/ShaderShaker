@@ -33,3 +33,9 @@ ast_rewrite_multiplication_rules =
     {if_literal_one( 1 ), replace_by_right_block},
     {if_literal_one( 2 ), replace_by_left_block}
 }
+
+ast_rewrite_addition_rules =
+{
+    {if_literal_zero( 1 ), replace_by_right_block},
+    {if_literal_zero( 2 ), replace_by_left_block},
+}
