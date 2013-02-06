@@ -41,6 +41,13 @@ local function replace_by_left_block( node, parent, index )
     parent[ index ] = node[ 1 ]
 end
 
+local function replace_by_( value )
+    return function( node, parent, index )    
+        parent[ index ] = { name ='literal', [1] = value }
+    end
+end
+
+
 
 ast_rewrite_multiplication_rules =
 {
@@ -70,4 +77,12 @@ ast_rewrite_boolean_or_rules =
     {if_literal_false( 2 ), replace_by_left_block},
     {if_literal_true( 1 ), replace_by_left_block},
     {if_literal_true( 2 ), replace_by_right_block},
+}
+
+ast_rewrite_unary_not_rules =
+{
+    {if_literal_zero( 1 ), replace_by_( "true" ) },
+    {if_literal_false( 1 ), replace_by_( "true" ) },
+    {if_literal_one( 1 ), replace_by_( "false" ) },
+    {if_literal_true( 1 ), replace_by_( "false" ) }
 }

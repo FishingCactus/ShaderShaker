@@ -1,23 +1,7 @@
-local function is_not_( value )
-    return function( node )
-        assert( node.name == 'unary_!' )
-        return node[ 1 ].name == 'literal' and node[1][1] == value
-    end
-end
-local function replace_by_( value )
-    return function( node, parent, index )    
-        parent[ index ] = { name ='literal', [1] = value }
-    end
-end
-
-
 
 local node_rewrite_table =
 {
-    ['unary_!'] = {
-        {is_not_( "1" ), replace_by_( "0" ) },
-        {is_not_( "0" ), replace_by_( "1" ) }
-    },
+    ['unary_!'] = ast_rewrite_unary_not_rules,
     ['if_block'] = ast_rewrite_if_block_rules,
     ['else_if_block'] = ast_rewrite_else_if_block_rules,
     [ '*' ] = ast_rewrite_multiplication_rules,
