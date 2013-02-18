@@ -21,6 +21,7 @@ struct ShaderShakerContext
 
 // Embedded scripts ( found in scripts.cpp )
 extern const char* builtin_scripts[];
+void ( *log_print_callback )( const char * );
 
 static bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv );
 
@@ -37,7 +38,10 @@ static bool load_builtin_scripts(lua_State* L, int argc, const char* const * arg
 
         if( !context )
         {
-            std::cerr << "Unable to load scripts\n";
+            if ( log_print_callback )
+            {
+                log_print_callback( "Unable to load scripts\n" );
+            }
             return -1;
         }
         else
@@ -50,6 +54,11 @@ static bool load_builtin_scripts(lua_State* L, int argc, const char* const * arg
     }
 
 #endif
+
+void ShaderShakerSetLogCallback( void ( *log_print )( const char * ) )
+{
+    log_print_callback = log_print;
+}
 
 ShaderShakerContext * ShaderShakerCreateContext( int argc, const char* const * argv )
 {
@@ -85,14 +94,20 @@ bool ShaderShakerLoadShaderFile( ShaderShakerContext * context )
 
     if ( lua_pcall( context->L, 0, 1, 0 ) != 0 )
     {
-        std::cerr << lua_tostring( context->L, -1 );
+        if ( log_print_callback )
+        {
+            log_print_callback( lua_tostring( context->L, -1 ) );
+        }
         return false;
     }
     else
     {
         if( lua_isstring( context->L, -1 ) && !lua_isnumber( context->L, -1 ) )
         {
-            std::cerr << lua_tostring( context->L, -1 ) << std::endl;
+            if ( log_print_callback )
+            {
+                log_print_callback( lua_tostring( context->L, -1 ) );
+            }
             return false;
         }
 
@@ -116,7 +131,7 @@ const char * ShaderShakerGetProcessedCode( ShaderShakerContext * context, int fi
 }
 
 #if defined(_DEBUG)
-/**
+/*
  * When running in debug mode, the scripts are loaded from the disk. 
  */
 bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv )
@@ -148,7 +163,10 @@ bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv )
 
     if ( luaL_dofile( L, filename ) )
     {
-        std::cerr << lua_tostring( L, -1 );
+        if ( log_print_callback )
+        {
+            log_print_callback( lua_tostring( L, -1 ) );
+        }
         return false;
     }
 
@@ -171,7 +189,10 @@ bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv )
 
     if ( lua_pcall( L, 2, 1, 0 ) != 0 )
     {
-        std::cerr << lua_tostring( L, -1 );
+        if ( log_print_callback )
+        {
+            log_print_callback( lua_tostring( L, -1 ) );
+        }
         return false;
     }
     else
@@ -195,7 +216,10 @@ bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv )
     {
         if (luaL_dostring(L, builtin_scripts[i]) != 0 )
         {
-            std::cerr << lua_tostring(L, -1);
+            if ( log_print_callback )
+            {
+                log_print_callback( lua_tostring( L, -1 ) );
+            }
             
             return false;
         }
@@ -219,7 +243,10 @@ bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv )
 
     if (lua_pcall(L, 2, 1, 0) != 0)
     {
-        std::cerr << lua_tostring(L, -1);
+        if ( log_print_callback )
+        {
+            log_print_callback( lua_tostring( L, -1 ) );
+        }
         return false;
     }
     else
