@@ -25,7 +25,7 @@
 
 
 
-LUAI_DDEF const TValue luaO_nilobject_ = {NILCONSTANT};
+LUAI_DDEF const TValue luaO_nilobject__ = {NILCONSTANT};
 
 
 /*

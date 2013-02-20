@@ -575,10 +575,10 @@ typedef struct Table {
 /*
 ** (address of) a fixed nil value
 */
-#define luaO_nilobject		(&luaO_nilobject_)
+#define luaO_nilobject		(&luaO_nilobject__)
 
 
-LUAI_DDEC const TValue luaO_nilobject_;
+LUAI_DDEC const TValue luaO_nilobject__;
 
 
 LUAI_FUNC int luaO_int2fb (unsigned int x);
