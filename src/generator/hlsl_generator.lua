@@ -324,7 +324,14 @@ HLSLGenerator = {
     end,
     
     ["process_variable"] = function( node )
-        return node[ 1 ]
+        local output = node[ 1 ]
+        
+        -- node[ 2 ] can be an index (eg foo[3])
+        if node[ 2 ] ~= nil then
+            output = output .. HLSLGenerator.ProcessNode( node[ 2 ] )
+        end
+        
+        return output
     end,
     
     ["process_literal"] = function( node )
@@ -582,7 +589,15 @@ HLSLGenerator = {
     
     [ "process_size" ] = function( node )
         return "[" .. node[ 1 ] .. "]"
-    end
+    end,
+    
+    [ "process_expression_statement" ] = function( node )
+        return HLSLGenerator.ProcessNode( node[ 1 ] ) .. ";"
+    end,
+    
+    [ "process_index" ] = function( node )
+        return "[" .. HLSLGenerator.ProcessNode( node[ 1 ] ) .. "]"
+    end,
 }
 
 local function AddOperator( operator )

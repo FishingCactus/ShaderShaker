@@ -1,0 +1,38 @@
+
+{
+    function
+    {
+        type{"bool"},
+        ID{"test"},
+        function_body
+        {
+            variable_declaration
+            {
+                storage{},
+                modifier{},
+                type{"float4x4"},
+                variable{"foo"}
+            },
+            variable_declaration
+            {
+                storage{},
+                modifier{},
+                type{"float3"},
+                variable
+                {
+                    "bar",
+                    swizzle
+                    {
+                        variable
+                        {
+                            "foo",
+                            index{literal{"3"}}
+                        },
+                        "xyz"
+                    }
+                }
+            },
+            return{literal{"false"}}
+        }
+    }
+}
