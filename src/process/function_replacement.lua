@@ -2,21 +2,23 @@ function ProcessFunctionReplacement( ast_node, replacement_file_names, inline_re
 
     local function_name_to_ast = {}
     local structure_name_to_ast = {}
+    local variable_name_to_ast = {}
     local replaced_functions = {}
     
-    --[[
+    for index, name in ipairs( replacement_file_names ) do
+        local replace_ast = GenerateAstFromFileName( name )
+        
+        --[[
         Populate function_name_to_ast ( key : function_name, value : function_ast )
         The order in which the replacement files is given is important: functions defined in the latest replacement files will override the definitions found in the first files
-    ]]--    
-    for index, name in ipairs( replacement_file_names ) do
-        local replace_ast = GenerateAstFromFileName( name )
+        ]]--    
         function_name_to_ast = GetFunctionNamesFromAst( replace_ast, function_name_to_ast )
-    end
 
-    -- Populate structure_name_to_ast ( key : structure_name, value : structure_ast )
-    for index, name in ipairs( replacement_file_names ) do
-        local replace_ast = GenerateAstFromFileName( name )
+        -- Populate structure_name_to_ast ( key : structure_name, value : structure_ast )
         structure_name_to_ast = GetStructureNamesFromAst( replace_ast, structure_name_to_ast )
+
+        -- Populate variable_name_to_ast ( key : variable_name, value : structure_ast )
+        variable_name_to_ast = GetVariableNamesFromAst( replace_ast, variable_name_to_ast )
     end
     
     if not inline_replacement_functions then
@@ -79,6 +81,9 @@ function ProcessFunctionReplacement( ast_node, replacement_file_names, inline_re
         
         -- Augment structure definitions with members found in the replacement files
         UpdateStructureDefinitions( ast_node, structure_name_to_ast )
+        
+        -- Augment variable declarations with members found in the replacement files
+        UpdateVariableDeclaration( ast_node, variable_name_to_ast )
     end
 end
 
@@ -127,6 +132,16 @@ function GetStructureNamesFromAst( replacement_file_ast, structure_name_to_ast )
     end
     
     return structure_name_to_ast
+end
+
+function GetVariableNamesFromAst( replacement_file_ast, variable_name_to_ast )
+    for variable_declaration_node, ast_function_index in NodeOfType( replacement_file_ast, "variable_declaration", false ) do
+        local variable_name = Variable_GetName( variable_declaration_node )
+        
+        variable_name_to_ast[ variable_name ] = variable_declaration_node
+    end
+    
+    return variable_name_to_ast
 end
 
 function InlineReplacementFunctions( ast_node, function_name, function_ast_node )
@@ -230,5 +245,11 @@ function UpdateStructureDefinitions( ast_node, structure_name_to_ast )
                 table.insert( ast_structure_node, field_node )
             end
         end    
+    end
+end
+
+function UpdateVariableDeclaration( ast_node, variable_name_to_ast )
+    for variable_name, variable_ast in pairs( variable_name_to_ast ) do
+        table.insert( ast_node, 1, variable_ast )
     end
 end
