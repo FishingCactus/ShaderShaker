@@ -1,7 +1,7 @@
 function ParseArgumentTable( arguments )
 
     local result = {}
-    local arg_item = { output_files = {}, constants_replacement = {}, optimize = true, default_precision = "" }
+    local arg_item = { output_files = {}, constants_replacement = {}, optimize = true, default_precision = "", replacement_files = {}, inline_replacement_functions = false }
     local previous_argument = ""
     
     for i, argument in ipairs( arguments ) do
@@ -24,6 +24,9 @@ function ParseArgumentTable( arguments )
                 end
                 
                 previous_argument = 'r'
+            elseif arg_option == 'ri' then
+                previous_argument = 'ri'
+                arg_item.inline_replacement_functions = true
             elseif arg_option == 't' then
                 if arg_item.technique then
                     error( "You can specify only one technique for each input file", 1 )
@@ -47,7 +50,7 @@ function ParseArgumentTable( arguments )
             elseif previous_argument == 'f' then
                 arg_item.force_language = argument
             elseif previous_argument == 'r' then
-                arg_item.replacement_file = argument
+                table.insert( arg_item.replacement_files, argument )
             elseif previous_argument == 't' then
                 arg_item.technique = argument
             elseif arg_item.input_file then

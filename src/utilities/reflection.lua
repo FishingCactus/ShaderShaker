@@ -15,11 +15,13 @@ function Function_GetName( function_node )
 end
 
 function Function_GetBody( function_node )
-    if function_node[ 4 ].name == "function_body" then
-        return function_node[ 4 ]
+    for i, child_node in ipairs( function_node ) do
+        if child_node.name == "function_body" then
+            return child_node
+        end
     end
-    
-    return function_node[ 5 ]
+
+    return {}
 end
 
 function Function_GetArgumentList( function_node )
