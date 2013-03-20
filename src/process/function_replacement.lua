@@ -192,7 +192,7 @@ function InlineReplacementFunctions( ast_node, function_name, function_ast_node 
                 local block_node = { name = "block" }
                 
                 for i, n in ipairs( function_body_ast ) do
-                    table.insert( block_node, DeepCopy( n ) )
+                    table.insert( block_node, n )
                 end
                
                 ast_node[ child_index ] = block_node
