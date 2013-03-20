@@ -191,11 +191,14 @@ function InlineReplacementFunctions( ast_node, function_name, function_ast_node 
                 local function_body_ast = Function_GetBody( function_ast_node )
                 local block_node = { name = "block" }
                 
-                for i, n in ipairs( function_body_ast ) do
-                    table.insert( block_node, n )
+                if #function_body_ast > 0 then
+                    for i, n in ipairs( function_body_ast ) do
+                        table.insert( block_node, n )
+                    end
+                    ast_node[ child_index ] = block_node
+                else
+                    table.remove( ast_node, child_index )
                 end
-               
-                ast_node[ child_index ] = block_node
             end
          end
     end
