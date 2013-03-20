@@ -50,6 +50,11 @@ function ProcessFunctionReplacement( ast_node, replacement_file_names, inline_re
                 for _, called_function_name in ipairs( called_function_name_table ) do       
                     if not Function_IsIntrinsic( called_function_name ) then
                         table.insert( inversed_sorted_functions, called_function_name )
+                        
+                        if function_name_to_ast[ called_function_name ] == nil then
+                            function_name_to_ast[ called_function_name ] = {}
+                        end
+                        
                         function_count = function_count + 1
                     end
                 end
@@ -62,9 +67,9 @@ function ProcessFunctionReplacement( ast_node, replacement_file_names, inline_re
             for index = 1, function_count - 1 do
                 local function_name = inversed_sorted_functions[ index ]
                 local function_body_ast = function_name_to_ast[ function_name ]
-                
+            
                 for index2 = index + 1, function_count do
-                    local other_function_name = inversed_sorted_functions[ index2 ]
+                    local other_function_name = inversed_sorted_functions[ index2 ]                    
                     InlineReplacementFunctions( function_name_to_ast[ other_function_name ], function_name, function_body_ast )
                 end
             end
@@ -110,7 +115,10 @@ end
 function GetFunctionNamesFromAst( replacement_file_ast, function_name_to_ast )
     for ast_function_node, ast_function_index in NodeOfType( replacement_file_ast, "function", false ) do
         local id = GetDataByName( ast_function_node, "ID" )
-        function_name_to_ast[ id ] = ast_function_node
+        
+        if string.starts( id, "__" ) then
+            function_name_to_ast[ id ] = ast_function_node
+        end
     end
     
     return function_name_to_ast
@@ -165,7 +173,7 @@ function GetVariableNamesFromAst( replacement_file_ast, variable_name_to_ast )
 end
 
 function InlineReplacementFunctions( ast_node, function_name, function_ast_node )
-    if Function_IsIntrinsic( function_name ) or not string.starts( function_name, "__" ) then
+    if Function_IsIntrinsic( function_name ) or not string.starts( function_name, "__" )  then
         return 0
     end
     
@@ -188,7 +196,6 @@ function InlineReplacementFunctions( ast_node, function_name, function_ast_node 
                 end
                
                 ast_node[ child_index ] = block_node
-                local t = ""
             end
          end
     end
