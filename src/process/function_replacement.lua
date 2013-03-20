@@ -135,17 +135,37 @@ function GetStructureNamesFromAst( replacement_file_ast, structure_name_to_ast )
 end
 
 function GetVariableNamesFromAst( replacement_file_ast, variable_name_to_ast )
-    for variable_declaration_node, ast_function_index in NodeOfType( replacement_file_ast, "variable_declaration", false ) do
-        local variable_name = Variable_GetName( variable_declaration_node )
+    for node, ast_function_index in NodeOfType( replacement_file_ast, "variable_declaration", false ) do
+        local variable_name = Variable_GetName( node )
         
-        variable_name_to_ast[ variable_name ] = variable_declaration_node
+        variable_name_to_ast[ variable_name ] = node
+    end
+    
+    for node, ast_function_index in NodeOfType( replacement_file_ast, "texture_declaration", false ) do
+        local variable_name = Texture_GetName( node )
+        
+        variable_name_to_ast[ variable_name ] = node
+    end
+    
+    for node, ast_function_index in NodeOfType( replacement_file_ast, "sampler_declaration", false ) do
+        local variable_name = Sampler_GetName( node )
+        
+        variable_name_to_ast[ variable_name ] = node
+    end
+    
+    for node, ast_function_index in NodeOfType( replacement_file_ast, "function", false ) do
+        local variable_name = Function_GetName( node )
+        
+        if not string.starts( variable_name, "__" ) then
+            variable_name_to_ast[ variable_name ] = node
+        end
     end
     
     return variable_name_to_ast
 end
 
 function InlineReplacementFunctions( ast_node, function_name, function_ast_node )
-    if Function_IsIntrinsic( function_name ) then
+    if Function_IsIntrinsic( function_name ) or not string.starts( function_name, "__" ) then
         return 0
     end
     
