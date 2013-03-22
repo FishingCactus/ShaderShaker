@@ -22,8 +22,10 @@ How to build
 
 Premake is used as project generator. To build the project, follow those steps : 
 
-	premake embed # generate a script to embed all scripts in release mode
-	premake vs2010 # or any target you want to use ( gmake, xcode4, ... )
+    cd src/hlsl_parser      # go to HLSL parser directory
+    ./generate_parser.sh    # generate the HLSL parser (use .bat file for Windows systems)
+    premake embed           # generate a script to embed all scripts in release mode
+    premake gmake           # or any target you want to use ( vs2010, xcode4, ... )
 
 You now have a valid project to build.
 
@@ -36,9 +38,9 @@ To use the command line tools, here are the arguments :
 
     shader_shaker [options] input_file
     Options can be any of these :
-    	-f language : selects language when no output file is given. Supported for now are hlsl, glsl or ast
-    	-o output_file : the output file extension is used to select the language ( .fx, .glfx, .ast)
-    	-r replacement_file : provides a file use for replacement ( see Function Replacement )
+        -f language : selects language when no output file is given. Supported for now are hlsl, glsl or ast
+        -o output_file : the output file extension is used to select the language ( .fx, .glfx, .ast)
+        -r replacement_file : provides a file use for replacement ( see Function Replacement )
 
 For the moment, the glfx format is specific to our engine, Mojito. It consists of an xml that contains technique definition, similar to an HLSL effect file. But a generic glsl processor will be written soon. 
 
