@@ -2,7 +2,7 @@ function ProcessFunctionReplacement( ast_node, replacement_file_names, inline_re
 
     local function_name_to_ast = {}
     local structure_name_to_ast = {}
-    local variable_name_to_ast = {}
+    local variable_name_to_ast = { variable_declarations = {}, texture_declarations = {}, sampler_declarations = {}, function_declarations = {} }
     local replaced_functions = {}
     
     for index, name in ipairs( replacement_file_names ) do
@@ -146,26 +146,26 @@ function GetVariableNamesFromAst( replacement_file_ast, variable_name_to_ast )
     for node, ast_function_index in NodeOfType( replacement_file_ast, "variable_declaration", false ) do
         local variable_name = Variable_GetName( node )
         
-        variable_name_to_ast[ variable_name ] = node
+        variable_name_to_ast.variable_declarations[ variable_name ] = node
     end
     
     for node, ast_function_index in NodeOfType( replacement_file_ast, "texture_declaration", false ) do
         local variable_name = Texture_GetName( node )
         
-        variable_name_to_ast[ variable_name ] = node
+        variable_name_to_ast.texture_declarations[ variable_name ] = node
     end
     
     for node, ast_function_index in NodeOfType( replacement_file_ast, "sampler_declaration", false ) do
         local variable_name = Sampler_GetName( node )
         
-        variable_name_to_ast[ variable_name ] = node
+        variable_name_to_ast.sampler_declarations[ variable_name ] = node
     end
     
     for node, ast_function_index in NodeOfType( replacement_file_ast, "function", false ) do
         local variable_name = Function_GetName( node )
         
         if not string.starts( variable_name, "__" ) then
-            variable_name_to_ast[ variable_name ] = node
+            variable_name_to_ast.function_declarations[ variable_name ] = node
         end
     end
     
@@ -279,7 +279,10 @@ function UpdateStructureDefinitions( ast_node, structure_name_to_ast )
 end
 
 function UpdateVariableDeclaration( ast_node, variable_name_to_ast )
-    for variable_name, variable_ast in pairs( variable_name_to_ast ) do
-        table.insert( ast_node, 1, variable_ast )
-    end
+    local insert_declarations = function ( declarations_table ) for variable_name, variable_ast in pairs( declarations_table ) do table.insert( ast_node, 1, variable_ast ) end end
+    
+    insert_declarations( variable_name_to_ast.function_declarations )
+    insert_declarations( variable_name_to_ast.sampler_declarations )
+    insert_declarations( variable_name_to_ast.texture_declarations )
+    insert_declarations( variable_name_to_ast.variable_declarations )
 end

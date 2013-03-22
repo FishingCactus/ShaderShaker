@@ -13,7 +13,7 @@ function ProcessAst( ast_node, options )
             ReplaceConstants( ast_node, constants )
         end
         
-		AST_Rewrite( ast_node )
+        AST_Rewrite( ast_node )
 
         CleanConstants( ast_node )
     end
