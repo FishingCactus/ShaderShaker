@@ -10,6 +10,7 @@ extern "C"
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <cstring>
 #include "HLSLConverter.h"
 #include "ShaderShaker.h"
 
