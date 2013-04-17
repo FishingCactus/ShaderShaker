@@ -1200,7 +1200,19 @@ GLSLGenerator = {
     end,
     
     [ "process_cast" ] = function( node )
-        return GLSL_Helper_ConvertIntrinsic( node[1][1] ) .. '(' .. GLSLGenerator.ProcessNode( node[2] ) .. ')'
+        return '(' .. GLSLGenerator.ProcessNode( node[1] ) .. ')' .. GLSLGenerator.ProcessNode( node[2] )
+    end,
+    
+    [ "process_type" ] = function( node )
+        local output = ""
+        
+        output = GLSL_Helper_ConvertIntrinsic( node[1] )
+        
+        if node[ 2 ] then
+            output = output .. GLSLGenerator.ProcessNode( node[2] )
+        end
+        
+        return output
     end,
     
     [ "process_size" ] = function( node )

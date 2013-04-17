@@ -348,11 +348,22 @@ HLSLGenerator = {
         return '{' .. table.concat( result, ', ' ) .. '}';
     end,
     
-    ["process_cast"] = function( node )
-    
-        return '(' ..node[1][1] .. ')' .. HLSLGenerator.ProcessNode( node[2] )
+    [ "process_cast" ] = function( node )
+        return '(' .. HLSLGenerator.ProcessNode( node[1] ) .. ')' .. HLSLGenerator.ProcessNode( node[2] )
     end,
     
+    [ "process_type" ] = function( node )
+        local output = ""
+        
+        output = node[1]
+        
+        if node[ 2 ] then
+            output = output .. HLSLGenerator.ProcessNode( node[2] )
+        end
+        
+        return output
+    end,
+
     -- If statement
     
     ["process_if"] = function( node )
