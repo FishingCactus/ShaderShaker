@@ -84,8 +84,10 @@ function ProcessFunctionReplacement( ast_node, replacement_file_names, inline_re
             end
         end
         
+        local used_structure_members_by_shader = GetUsedStructureMembersByShader( ast_node )
+        
         -- Augment structure definitions with members found in the replacement files
-        UpdateStructureDefinitions( ast_node, structure_name_to_ast )
+        UpdateStructureDefinitions( ast_node, structure_name_to_ast, used_structure_members_by_shader )
         
         -- Augment variable declarations with members found in the replacement files
         UpdateVariableDeclaration( ast_node, variable_name_to_ast )
@@ -189,13 +191,20 @@ function InlineReplacementFunctions( ast_node, function_name, function_ast_node 
             
             if found_index > 0 then
                 local function_body_ast = Function_GetBody( function_ast_node )
-                local block_node = { name = "block" }
                 
                 if #function_body_ast > 0 then
+                    --local block_node = { name = "block" }
+                    local inserted_node_index = child_index
+                    
+                    table.remove( ast_node, child_index )
+
                     for i, n in ipairs( function_body_ast ) do
-                        table.insert( block_node, n )
+                        table.insert( ast_node, inserted_node_index, n )
+                        
+                        inserted_node_index = inserted_node_index + 1
                     end
-                    ast_node[ child_index ] = block_node
+                    
+                    --ast_node[ child_index ] = block_node
                 else
                     table.remove( ast_node, child_index )
                 end
@@ -266,15 +275,36 @@ function ReplaceFunctions( ast_node, function_name_to_ast )
     return replaced_functions
 end
 
-function UpdateStructureDefinitions( ast_node, structure_name_to_ast )
+function UpdateStructureDefinitions( ast_node, structure_name_to_ast, used_structure_members_by_shader )
+    local get_structure_member_name = function( ast ) return ast[ 2 ][ 1 ] end
+
     for ast_structure_node, index in NodeOfType( ast_node, "struct_definition", false ) do
         local structure_name  = ast_structure_node[ 1 ]
+        local member_indexes_to_delete = {}
+        local structure_members = Structure_GetMembers( ast_structure_node )
+        
+        for member_index, member_node in ipairs( structure_members ) do
+            local member_id = get_structure_member_name( member_node )
+            
+            if not used_structure_members_by_shader[ structure_name ][ member_id ] then
+                table.insert( member_indexes_to_delete, member_index + 1 ) -- Add one because Structure_GetMembers doesn't return the first element of the members ( the name of the structure )
+            end
+        end
+        
+        for i = #member_indexes_to_delete, 1, -1 do
+            local index_to_delete = member_indexes_to_delete[ i ]
+            table.remove( ast_structure_node, index_to_delete )
+        end
         
         if structure_name_to_ast[ structure_name ] ~= nil then
             for field_index, field_node in ipairs( structure_name_to_ast[ structure_name ] ) do
-                table.insert( ast_structure_node, field_node )
+                local member_id = get_structure_member_name( field_node )
+                
+                if used_structure_members_by_shader[ structure_name ][ member_id ] then
+                    table.insert( ast_structure_node, field_node )
+                end
             end
-        end    
+        end
     end
 end
 
@@ -285,4 +315,36 @@ function UpdateVariableDeclaration( ast_node, variable_name_to_ast )
     insert_declarations( variable_name_to_ast.sampler_declarations )
     insert_declarations( variable_name_to_ast.texture_declarations )
     insert_declarations( variable_name_to_ast.variable_declarations )
+end
+
+function GetUsedStructureMembersByShader( ast_node )
+
+    local return_value = { VS_INPUT = {}, VS_OUTPUT = {}, PS_INPUT = {}, PS_OUTPUT = {} }
+    local vertex_shader_node = Function_GetNodeFromId( ast_node, "VSMain" )
+    
+    for child_node in NodeOfType( vertex_shader_node, 'postfix' ) do    
+        local postfix_left_member = child_node[ 1 ][ 1]
+        local postfix_right_member = child_node[ 2 ][ 1]
+        
+        if postfix_left_member == "input" then
+            return_value.VS_INPUT[ postfix_right_member ] = true
+        else
+            return_value.VS_OUTPUT[ postfix_right_member ] = true
+        end
+    end
+    
+    local pixel_shader_node = Function_GetNodeFromId( ast_node, "PSMain" )
+    
+    for child_node in NodeOfType( pixel_shader_node, 'postfix' ) do    
+        local postfix_left_member = child_node[ 1 ][ 1]
+        local postfix_right_member = child_node[ 2 ][ 1]
+        
+        if postfix_left_member == "input" then
+            return_value.PS_INPUT[ postfix_right_member ] = true
+        else
+            return_value.PS_OUTPUT[ postfix_right_member ] = true
+        end
+    end
+
+    return return_value
 end
