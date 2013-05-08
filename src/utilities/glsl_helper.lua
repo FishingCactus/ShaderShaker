@@ -12,7 +12,8 @@ local
         float2 = "vec2", 
         float3 = "vec3", 
         float4 = "vec4",
-        float4x4 = "mat4",
+        float4x4 = "mat4x4",
+        float4x3 = "mat4x3",
         tex2D = "texture2D",
         texCUBE = "textureCube",
         fmod = "mod",
@@ -38,7 +39,8 @@ local
         },
         PixelShader = {
             COLOR = "gl_FragColor",
-            COLOR0 = "gl_FragColor"
+            COLOR0 = "gl_FragColor",
+            COLOR1 = "gl_FragData[ 0 ]"
         },
     }
     
