@@ -9,11 +9,12 @@ local
 
 local
     intrinsic_types_table = { 
+        int4 = "vec4",
         float2 = "vec2", 
         float3 = "vec3", 
         float4 = "vec4",
-        float4x4 = "mat4x4",
-        float4x3 = "mat4x3",
+        float4x4 = "mat4",
+        float4x3 = "mat4",
         tex2D = "texture2D",
         texCUBE = "textureCube",
         fmod = "mod",
