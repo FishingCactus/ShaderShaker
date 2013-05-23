@@ -137,9 +137,17 @@ function GLSL_Helper_GetVaryingPrefix( )
 end
 
 function GLSL_Helper_GetUniformFromConstant( constant, precision )    
+    local output = ""
+    
     precision = precision or ""
     
-    return "uniform " .. GLSL_Helper_PrefixIntrinsicWithPrecision( GLSL_Helper_ConvertIntrinsic( constant.type ), precision ) .. " " .. constant.name .. ";\n"
+    output = "uniform " .. GLSL_Helper_PrefixIntrinsicWithPrecision( GLSL_Helper_ConvertIntrinsic( constant.type ), precision ) .. " " .. constant.name
+    
+    if constant.size ~= nil then
+        output = output .. "[" .. constant.size .. "]"
+    end
+    
+    return output .. ";\n"
 end
 
 function GLSL_Helper_GetUniformFromSampler( sampler_type, texture_name  )
