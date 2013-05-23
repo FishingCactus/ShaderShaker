@@ -4,7 +4,9 @@ local
         TEXCOORD0 = "TextureCoordinate",
         TEXCOORD1 = "TextureCoordinate",
         VPOS = "ScreenCoordinates",
-        COLOR0 = "Color"
+        COLOR0 = "Color",
+        BLENDINDICES = "BoneIndices",
+        BLENDWEIGHT = "BoneWeights"
     }
 
 local
