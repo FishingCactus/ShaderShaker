@@ -128,7 +128,13 @@ GLSLGenerator = {
             local type = Variable_GetType( node )
 
             for variable_node in NodeOfType( node, "variable", false ) do
-                table.insert( constants_table, { name = variable_node[ 1 ], type = type } )
+                local constant_node = { name = variable_node[ 1 ], type = type }
+                
+                if variable_node[ 2 ] ~= nil then
+                    constant_node[ variable_node[ 2 ].name ] = variable_node[ 2 ][ 1 ]
+                end
+                
+                table.insert( constants_table, constant_node )
             end
         end
 
