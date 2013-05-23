@@ -1311,6 +1311,10 @@ GLSLGenerator = {
     [ "process_expression_statement" ] = function( node )
         return GLSLGenerator.ProcessNode( node[ 1 ] ) .. ";"
     end,
+    
+    [ "process_discard" ] = function( node )
+        return "discard;"
+    end,
 }
 
 local function AddOperator( operator )
