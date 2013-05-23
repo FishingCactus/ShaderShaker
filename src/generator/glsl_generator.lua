@@ -805,8 +805,14 @@ GLSLGenerator = {
 
                                         for l, attribute in ipairs( techniques[ current_technique ].VertexShader.attributes ) do
                                             if attribute.semantic == field.semantic then
+                                                local output = attribute.name
                                                 techniques[ current_technique ].VertexShader.used_attributes[ attribute.name ] = attribute
-                                                return attribute.name
+                                                
+                                                if node[2][2] ~= nil then -- Might contain an index node when accessing an array index
+                                                    output = output .. GLSLGenerator.ProcessNode( node[2][2] )
+                                                end
+                                                
+                                                return output
                                             end
                                         end
 
