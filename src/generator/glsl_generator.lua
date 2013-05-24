@@ -129,11 +129,11 @@ GLSLGenerator = {
 
             for variable_node in NodeOfType( node, "variable", false ) do
                 local constant_node = { name = variable_node[ 1 ], type = type }
-                
+
                 if variable_node[ 2 ] ~= nil then
                     constant_node[ variable_node[ 2 ].name ] = variable_node[ 2 ][ 1 ]
                 end
-                
+
                 table.insert( constants_table, constant_node )
             end
         end
@@ -279,6 +279,11 @@ GLSLGenerator = {
         output = output .. called_functions_output .. "\n"
         output = output .. prefix() .. "void main()\n" .. prefix() .. "{"
         output = output .. function_body_output
+
+        for left, right in pairs( techniques[ current_technique ].VaryingAssignmentsTable ) do
+            output = output .. left .. " = " .. right .. ";\n"
+        end
+
         output = output .. prefix() .. "}\n"
         output = output .. prefix() .. "]]>\n"
 
@@ -489,7 +494,8 @@ GLSLGenerator = {
                     input_replacements = {}
                 },
                 VaryingMembersTable = {},
-                UsedVaryingMembersTable = {}
+                UsedVaryingMembersTable = {},
+                VaryingAssignmentsTable = {}
             }
 
         for index, pass_node in ipairs( node ) do
@@ -777,6 +783,8 @@ GLSLGenerator = {
 
             local left = node[ 1 ][ 1 ]
             local right = node[ 2 ][ 1 ]
+            
+            local left_of_postfix_is_output = left == "output"
 
             for i, variable in ipairs( variables_table ) do
                 if variable.name == left then
@@ -786,20 +794,47 @@ GLSLGenerator = {
                                 if right == field.name then
 
                                     if structure.is_output then
-                                        local replacement = GLSL_Helper_GetShaderOutputReplacement( structure.shader_type, field.semantic, field.name )
-
+                                        local output = ""
+                                        local replacement
+                                        
+                                        --[[
+                                            This check if to prevent to get a replacement when the postfix is named input whereas the structure type is an output type
+                                            For example, in the pixel shader, we may want to access input.Position, with input of type VS_OUTPUT
+                                            Without this check, GLSL_Helper_GetShaderOutputReplacement would return gl_Position, which is not available in the PS
+                                            So we need to force the use of vary_Position, which would have been created before, when generating the vertex shader
+                                        ]]--
+                                        if not left_of_postfix_is_output then
+                                            replacement = field.name
+                                        else
+                                            replacement = GLSL_Helper_GetShaderOutputReplacement( structure.shader_type, field.semantic, field.name )
+                                        end
+                                        
                                         if replacement == field.name then
-                                            if structure.is_output then
-                                                for l, varying_member in ipairs( techniques[ current_technique ].VaryingMembersTable ) do
-                                                    if varying_member.semantic == field.semantic then
-                                                        techniques[ current_technique ].UsedVaryingMembersTable[ varying_member.name ] = varying_member
-                                                        return prefix() .. GLSL_Helper_GetVaryingPrefix() .. varying_member.name
-                                                    end
+                                            for l, varying_member in ipairs( techniques[ current_technique ].VaryingMembersTable ) do
+                                                if varying_member.semantic == field.semantic then
+                                                    techniques[ current_technique ].UsedVaryingMembersTable[ varying_member.name ] = varying_member
+                                                    return prefix() .. GLSL_Helper_GetVaryingPrefix() .. varying_member.name
+                                                end
+                                            end
+                                        end
+                                        
+                                        --[[
+                                            This function will force the creation of a varying even if the checks above will replace the postfix by a built-in GL variable
+                                            Typically, we may need in the pixel shader to use VS_OUTPUT.Position, which would have been translated to gl_Position in the vertex shader just before
+                                            As we don't have access to gl_Position in the pixel shader, we create a varying of the same type
+                                            If it's not used anyway, it will be removed later by the optimizer
+                                        ]]--
+                                        if GLSL_Helper_MustCreateVaryingForVariable( structure.shader_type, replacement ) then
+                                            for l, varying_member in ipairs( techniques[ current_technique ].VaryingMembersTable ) do
+                                                if varying_member.semantic == field.semantic then
+                                                    techniques[ current_technique ].UsedVaryingMembersTable[ varying_member.name ] = varying_member
+                                                    techniques[ current_technique ].VaryingAssignmentsTable[ GLSL_Helper_GetVaryingPrefix() .. varying_member.name ] = replacement
+                                                    break
                                                 end
                                             end
                                         end
 
-                                        return prefix() .. replacement
+                                        return output .. prefix() .. replacement
 
                                     elseif structure.is_input then
 
@@ -807,11 +842,11 @@ GLSLGenerator = {
                                             if attribute.semantic == field.semantic then
                                                 local output = attribute.name
                                                 techniques[ current_technique ].VertexShader.used_attributes[ attribute.name ] = attribute
-                                                
+
                                                 if node[2][2] ~= nil then -- Might contain an index node when accessing an array index
                                                     output = output .. GLSLGenerator.ProcessNode( node[2][2] )
                                                 end
-                                                
+
                                                 return output
                                             end
                                         end
@@ -1311,7 +1346,7 @@ GLSLGenerator = {
     [ "process_expression_statement" ] = function( node )
         return GLSLGenerator.ProcessNode( node[ 1 ] ) .. ";"
     end,
-    
+
     [ "process_discard" ] = function( node )
         return "discard;"
     end,
