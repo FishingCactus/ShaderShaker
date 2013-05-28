@@ -131,80 +131,7 @@ const char * ShaderShakerGetProcessedCode( ShaderShakerContext * context, int fi
     return code;
 }
 
-#if defined(_DEBUG)
-/*
- * When running in debug mode, the scripts are loaded from the disk. 
- */
-bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv )
-{
-    char
-        source_path[ 1024 ],
-        filename[ 1024 ];
-
-    strcpy( source_path,  "" );
-
-    for ( int i = 1; i < argc; i++ )
-    {
-        const char
-            * argument;
-
-        argument = argv[ i ];
-
-        if ( strcmp( argument, "-source_directory" ) == 0 )
-        {
-            strcat( source_path, argv[ i + 1 ] );
-            break;
-        }
-    }
-
-    strcat( source_path, "src" );
-
-    strcpy( filename, source_path );
-    strcat( filename, "/_shader_shaker_main.lua" );
-
-    if ( luaL_dofile( L, filename ) )
-    {
-        if ( log_print_callback )
-        {
-            log_print_callback( lua_tostring( L, -1 ) );
-        }
-        return false;
-    }
-
-    lua_getglobal( L, "_shader_shaker_main" );
-
-    lua_pushstring( L, source_path );
-
-    lua_newtable( L );
-
-    for ( int i = 1; i < argc; i++ )
-    {
-        const char
-            * argument;
-
-        argument = argv[ i ];
-
-        lua_pushstring( L, argument );
-        lua_rawseti( L, -2, i );
-    }
-
-    if ( lua_pcall( L, 2, 1, 0 ) != 0 )
-    {
-        if ( log_print_callback )
-        {
-            log_print_callback( lua_tostring( L, -1 ) );
-        }
-        return false;
-    }
-    else
-    {
-        return lua_tonumber( L, -1 ) == 0;
-    }
-}
-#endif
-
-
-#if defined(NDEBUG)
+#if defined(EMBEDDED_SCRIPTS)
 /**
  * When running in release mode, the scripts are loaded from a static data
  * buffer, where they were stored by a preprocess. To update these embedded
@@ -225,23 +152,23 @@ bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv )
             return false;
         }
     }
-
+    
     lua_getglobal( L, "_shader_shaker_main" );
-
+    
     lua_pushnil( L );
     lua_newtable( L );
-
+    
     for ( int i = 1; i < argc; i++ )
     {
         const char
-            * argument;
-
+        * argument;
+        
         argument = argv[ i ];
-
+        
         lua_pushstring( L, argument );
         lua_rawseti( L, -2, i );
     }
-
+    
     if (lua_pcall(L, 2, 1, 0) != 0)
     {
         if ( log_print_callback )
@@ -253,6 +180,76 @@ bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv )
     else
     {
         return lua_tonumber(L, -1) == 0;
+    }
+}
+#else
+/*
+ * When running in debug mode, the scripts are loaded from the disk.
+ */
+bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv )
+{
+    char
+    source_path[ 1024 ],
+    filename[ 1024 ];
+    
+    strcpy( source_path,  "" );
+    
+    for ( int i = 1; i < argc; i++ )
+    {
+        const char
+        * argument;
+        
+        argument = argv[ i ];
+        
+        if ( strcmp( argument, "-source_directory" ) == 0 )
+        {
+            strcat( source_path, argv[ i + 1 ] );
+            break;
+        }
+    }
+    
+    strcat( source_path, "src" );
+    
+    strcpy( filename, source_path );
+    strcat( filename, "/_shader_shaker_main.lua" );
+    
+    if ( luaL_dofile( L, filename ) )
+    {
+        if ( log_print_callback )
+        {
+            log_print_callback( lua_tostring( L, -1 ) );
+        }
+        return false;
+    }
+    
+    lua_getglobal( L, "_shader_shaker_main" );
+    
+    lua_pushstring( L, source_path );
+    
+    lua_newtable( L );
+    
+    for ( int i = 1; i < argc; i++ )
+    {
+        const char
+        * argument;
+        
+        argument = argv[ i ];
+        
+        lua_pushstring( L, argument );
+        lua_rawseti( L, -2, i );
+    }
+    
+    if ( lua_pcall( L, 2, 1, 0 ) != 0 )
+    {
+        if ( log_print_callback )
+        {
+            log_print_callback( lua_tostring( L, -1 ) );
+        }
+        return false;
+    }
+    else
+    {
+        return lua_tonumber( L, -1 ) == 0;
     }
 }
 #endif
