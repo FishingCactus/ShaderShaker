@@ -155,7 +155,15 @@ function GenerateAstFromFileName( file_name )
     local
         ast;
     local
-        extension = string.match( file_name, "%w+%.(%w+)" )
+        extension = ""
+        
+    for index = string.len( file_name ), 1, -1 do
+        local character = string.sub( file_name, index, index )
+        if character == '.' then
+            extension = string.sub( file_name, index + 1 )
+            break
+        end
+    end
     
     if extension == "lua" or extension == "ssl" then
         ast = dofile( file_name )
