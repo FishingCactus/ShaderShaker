@@ -32,10 +32,10 @@ function SelectPrinter( filename, override_name )
     local
         extension = nil
         
-    for index = string.len( file_name ), 1, -1 do
-        local character = string.sub( file_name, index, index )
+    for index = string.len( filename ), 1, -1 do
+        local character = string.sub( filename, index, index )
         if character == '.' then
-            extension = string.sub( file_name, index + 1 )
+            extension = string.sub( filename, index + 1 )
             break
         end
     end
