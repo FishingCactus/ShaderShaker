@@ -29,7 +29,18 @@ function SelectPrinter( filename, override_name )
         error( "Language should be specified when outputing to the console" )
     end
     
-    local extension = string.match( filename, ".-[^\\/]-%.?([^%.\\/]*)$" )
+    local
+        extension = nil
+        
+    for index = string.len( file_name ), 1, -1 do
+        local character = string.sub( file_name, index, index )
+        if character == '.' then
+            extension = string.sub( file_name, index + 1 )
+            break
+        end
+    end
+
+    --local extension = string.match( filename, ".-[^\\/]-%.?([^%.\\/]*)$" )
     
     if extension == nil then
         error( "Unable to extract file extension" );
