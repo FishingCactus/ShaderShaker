@@ -1,3 +1,9 @@
+newoption
+{
+    trigger = "ios",
+    description = "generates ios project without native target"
+}
+
 --
 -- ShaderShaker build configuration script (heavily inspired by Premake's one)
 -- 
@@ -33,13 +39,21 @@
 			"src/host/lua-5.2.0/**.lua",
 			"src/host/lua-5.2.0/etc/*.c"
 		}
-		
-		configuration "Debug"
+
+		if _OPTIONS[ "ios" ] then
+	        platforms { "ios" }
+		end
+
+		configuration "DebugWithoutEmbeddedScripts"
 			defines     "_DEBUG"
 			flags       { "Symbols" }
-			
+		
+		configuration "Debug"
+			defines		{ "_DEBUG", "EMBEDDED_SCRIPTS" }
+			flags       { "Symbols" }
+
 		configuration "Release"
-			defines     "NDEBUG"
+			defines     { "NDEBUG", "EMBEDDED_SCRIPTS" }
 			flags       { "OptimizeSize" }
 
 		configuration "vs*"
@@ -72,7 +86,10 @@
 			
 		configuration { "solaris" }
 			linkoptions { "-Wl,--export-dynamic" }
-	
+
+		configuration { "ios" }
+			deploymenttarget "5.1"
+
 	project "ShaderShaker"
 	
 		configuration "Debug"
@@ -97,6 +114,10 @@
 		defines{ "SHADERSHAKER_IN_LIB" }
 		
 		configuration "Debug"
+			kind "StaticLib"
+			targetdir   "bin/debug_lib"
+
+		configuration "DebugWithoutEmbeddedScripts"
 			kind "StaticLib"
 			targetdir   "bin/debug_lib"
 			
