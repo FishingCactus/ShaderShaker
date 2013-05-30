@@ -20,18 +20,18 @@ function SelectPrinter( filename, override_name )
         if PrinterTable[ override_name ] == nil then
             error( "Invalid language name" )
         end
-        
+
         SelectedPrinter = PrinterTable[ override_name ].printer
         return
     end
-    
+
     if filename == nil then
         error( "Language should be specified when outputing to the console" )
     end
-    
+
     local
         extension = nil
-        
+
     for index = string.len( filename ), 1, -1 do
         local character = string.sub( filename, index, index )
         if character == '.' then
@@ -40,20 +40,18 @@ function SelectPrinter( filename, override_name )
         end
     end
 
-    --local extension = string.match( filename, ".-[^\\/]-%.?([^%.\\/]*)$" )
-    
     if extension == nil then
         error( "Unable to extract file extension" );
     end
-    
+
     for name, description in pairs( PrinterTable ) do
-    
+
         if description.extension == extension then
             SelectedPrinter = description.printer
             return
         end
-        
+
     end
-    
+
     error( "Unable to detect language from file extension" )
 end
