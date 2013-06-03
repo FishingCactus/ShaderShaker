@@ -226,10 +226,9 @@ function GLSL_Helper_ConvertInitialValueTables( root_node )
                     end
                 end
             end
+            GLSL_Helper_ConvertInitialValueTables( node )
         end
-        GLSL_Helper_ConvertInitialValueTables( node )
     end
-end
 end
 
 function GLSL_Helper_GetStructureMembersUsedInFunction( function_body_node, structure_parameter_name )
