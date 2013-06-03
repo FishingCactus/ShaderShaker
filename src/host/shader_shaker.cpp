@@ -133,7 +133,7 @@ const char * ShaderShakerGetProcessedCode( ShaderShakerContext * context, int fi
     return code;
 }
 
-#if defined( EMBEDDED_SCRIPTS )
+#if defined( SHADERSHAKER_EMBEDDED_SCRIPTS )
 /**
  * The scripts are loaded from a static data buffer, where they were stored by a preprocess.
  * To update these embedded scripts, run `premake4 embed` then rebuild.
