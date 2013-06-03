@@ -255,3 +255,13 @@ function GetNodeNameValue( node, node_name, child_node_value_index )
     
     return ""
 end
+
+function GetNodeFromName( node, node_name )
+    for idx, child_node in ipairs( node ) do
+        if child_node.name == node_name then
+            return child_node
+        end
+    end
+    
+    return nil
+end
