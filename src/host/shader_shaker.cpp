@@ -1,11 +1,13 @@
-
-
+#if !defined( SHADERSHAKER_AS_SOURCE )
 extern "C"
 {
+#endif
     #include "lua.h"
     #include "lauxlib.h"
     #include "lualib.h"
+#if !defined( SHADERSHAKER_AS_SOURCE )
 }
+#endif
 
 #include <iostream>
 #include <vector>
@@ -26,7 +28,7 @@ void ( *log_print_callback )( const char * );
 
 static bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv );
 
-#if !defined( SHADERSHAKER_IN_DLL ) && !defined( SHADERSHAKER_IN_LIB )
+#if !defined( SHADERSHAKER_IN_DLL ) && !defined( SHADERSHAKER_IN_LIB ) && !defined( SHADERSHAKER_AS_SOURCE )
 
     int main(int argc, const char** argv)
     {
@@ -67,7 +69,7 @@ ShaderShakerContext * ShaderShakerCreateContext( int argc, const char* const * a
         * context;
 
     context = new ShaderShakerContext;
-        
+
     context->L = luaL_newstate();
     luaL_openlibs( context->L );
     lua_pushcfunction( context->L, &HLSLConverter::ParseAst );
@@ -131,11 +133,10 @@ const char * ShaderShakerGetProcessedCode( ShaderShakerContext * context, int fi
     return code;
 }
 
-#if defined(EMBEDDED_SCRIPTS)
+#if defined( EMBEDDED_SCRIPTS )
 /**
- * When running in release mode, the scripts are loaded from a static data
- * buffer, where they were stored by a preprocess. To update these embedded
- * scripts, run `premake4 embed` then rebuild.
+ * The scripts are loaded from a static data buffer, where they were stored by a preprocess.
+ * To update these embedded scripts, run `premake4 embed` then rebuild.
  */
 bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv )
 {
@@ -148,27 +149,27 @@ bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv )
             {
                 log_print_callback( lua_tostring( L, -1 ) );
             }
-            
+
             return false;
         }
     }
-    
+
     lua_getglobal( L, "_shader_shaker_main" );
-    
+
     lua_pushnil( L );
     lua_newtable( L );
-    
+
     for ( int i = 1; i < argc; i++ )
     {
         const char
         * argument;
-        
+
         argument = argv[ i ];
-        
+
         lua_pushstring( L, argument );
         lua_rawseti( L, -2, i );
     }
-    
+
     if (lua_pcall(L, 2, 1, 0) != 0)
     {
         if ( log_print_callback )
@@ -184,35 +185,35 @@ bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv )
 }
 #else
 /*
- * When running in debug mode, the scripts are loaded from the disk.
+ * The scripts are loaded from the disk.
  */
 bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv )
 {
     char
     source_path[ 1024 ],
     filename[ 1024 ];
-    
+
     strcpy( source_path,  "" );
-    
+
     for ( int i = 1; i < argc; i++ )
     {
         const char
         * argument;
-        
+
         argument = argv[ i ];
-        
+
         if ( strcmp( argument, "-source_directory" ) == 0 )
         {
             strcat( source_path, argv[ i + 1 ] );
             break;
         }
     }
-    
+
     strcat( source_path, "src" );
-    
+
     strcpy( filename, source_path );
     strcat( filename, "/_shader_shaker_main.lua" );
-    
+
     if ( luaL_dofile( L, filename ) )
     {
         if ( log_print_callback )
@@ -221,24 +222,24 @@ bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv )
         }
         return false;
     }
-    
+
     lua_getglobal( L, "_shader_shaker_main" );
-    
+
     lua_pushstring( L, source_path );
-    
+
     lua_newtable( L );
-    
+
     for ( int i = 1; i < argc; i++ )
     {
         const char
         * argument;
-        
+
         argument = argv[ i ];
-        
+
         lua_pushstring( L, argument );
         lua_rawseti( L, -2, i );
     }
-    
+
     if ( lua_pcall( L, 2, 1, 0 ) != 0 )
     {
         if ( log_print_callback )

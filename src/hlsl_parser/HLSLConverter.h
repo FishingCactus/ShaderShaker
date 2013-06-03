@@ -1,11 +1,15 @@
 #ifndef HLSLCONVERTER
 #define HLSLCONVERTER
 
-    extern "C" 
+    #if !defined( SHADERSHAKER_AS_SOURCE )
+    extern "C"
     {
+    #endif
         #include <lua.h>
+    #if !defined( SHADERSHAKER_AS_SOURCE )
     }
-    
+    #endif
+
     #include <string>
     #include "HLSLParserListener.h"
 
