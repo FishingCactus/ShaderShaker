@@ -285,8 +285,18 @@ function UpdateStructureDefinitions( ast_node, structure_name_to_ast, used_struc
 
         for member_index, member_node in ipairs( structure_members ) do
             local member_id = get_structure_member_name( member_node )
+            local is_member_redefined = false
+            
+            if structure_name_to_ast[ structure_name ] ~= nil then
+                for _, redefined_member in ipairs( structure_name_to_ast[ structure_name ] ) do
+                    if get_structure_member_name( redefined_member ) == member_id then
+                        is_member_redefined = true
+                        break
+                    end
+                end
+            end
 
-            if not used_structure_members_by_shader[ structure_name ][ member_id ] then
+            if is_member_redefined or not used_structure_members_by_shader[ structure_name ][ member_id ] then
                 table.insert( member_indexes_to_delete, member_index + 1 ) -- Add one because Structure_GetMembers doesn't return the first element of the members ( the name of the structure )
             end
         end
