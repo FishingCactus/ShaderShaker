@@ -537,7 +537,7 @@ HLSLGenerator = {
     [ "process_post_modify_statement" ] = function( node )
         local prefix = string.rep([[    ]], i )
 
-        return prefix .. HLSLGenerator.ProcessNode( node[1] ) .. node[2]
+        return prefix .. HLSLGenerator.ProcessNode( node[1] ) .. node[2] .. ";"
     end,
 
     [ "process_unary_!" ] = function( node )
