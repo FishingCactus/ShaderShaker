@@ -307,10 +307,19 @@ function UpdateStructureDefinitions( ast_node, structure_name_to_ast, used_struc
         end
 
         if structure_name_to_ast[ structure_name ] ~= nil then
+            --[[ 
+            It may happen that the same structure member is redefined by different replacement files
+            We then need to filter the members to add to the structure, to keep only the latest defined members
+            ]]--
+            local filtered_structure_members = {}
+            
             for field_index, field_node in ipairs( structure_name_to_ast[ structure_name ] ) do
                 local member_id = get_structure_member_name( field_node )
-
-                if used_structure_members_by_shader[ structure_name ][ member_id ] then
+                filtered_structure_members[ member_id ] = field_node
+            end
+            
+            for field_name, field_node in pairs( filtered_structure_members ) do
+                if used_structure_members_by_shader[ structure_name ][ field_name ] then
                     table.insert( ast_structure_node, field_node )
                 end
             end
