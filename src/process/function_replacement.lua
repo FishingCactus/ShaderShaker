@@ -1,9 +1,36 @@
-function ProcessFunctionReplacement( ast_node, replacement_file_names, inline_replacement_functions, optimize )
+function ProcessFunctionReplacement( ast_node, replacement_file_names, inline_replacement_functions )
 
+    if not inline_replacement_functions then
+        ReplaceFunctions( ast_node, replacement_file_names )
+    else
+        ReplaceAndInlineFunctions( ast_node, replacement_file_names )
+    end
+
+end
+
+function ReplaceFunctions( ast_node, replacement_file_names )
+    local function_name_to_ast = {}
+
+    for index, name in ipairs( replacement_file_names ) do
+        local replace_ast = GenerateAstFromFileName( name )
+
+        function_name_to_ast = GetFunctionNamesFromAst( replace_ast, function_name_to_ast )
+    end
+
+    local replaced_functions = ReplaceFunctions( ast_node, function_name_to_ast )
+
+    -- Some replaced functions may need additional functions. Add them to the AST
+    for function_name, function_ast in pairs( function_name_to_ast ) do
+        if not replaced_functions[ function_name ] then
+            table.insert( ast_node, 1, function_ast )
+        end
+    end
+end
+
+function ReplaceAndInlineFunctions( ast_node, replacement_file_names )
     local function_name_to_ast = {}
     local structure_name_to_ast = {}
     local variable_name_to_ast = { variable_declarations = {}, texture_declarations = {}, sampler_declarations = {}, function_declarations = {} }
-    local replaced_functions = {}
 
     for index, name in ipairs( replacement_file_names ) do
         local replace_ast = GenerateAstFromFileName( name )
@@ -21,97 +48,253 @@ function ProcessFunctionReplacement( ast_node, replacement_file_names, inline_re
         variable_name_to_ast = GetVariableNamesFromAst( replace_ast, variable_name_to_ast )
     end
 
-    if not inline_replacement_functions then
-        replaced_functions = ReplaceFunctions( ast_node, function_name_to_ast )
+    local function_tree = GetFunctionTree( ast_node, function_name_to_ast )
 
-        -- Some replaced functions may need additional functions. Add them to the AST
-        for function_name, function_ast in pairs( function_name_to_ast ) do
-            if not replaced_functions[ function_name ] then
-                table.insert( ast_node, 1, function_ast )
+    function_tree = CleanFunctionTree( function_tree )
+
+    local caller_callee_table = GetCallerCalleeTable( function_tree )
+    local ponderated_function_table = GetPonderatedFunctionTable( function_tree )
+
+    local max_deepness = #ponderated_function_table
+
+    --[[
+        Don't need to run InlineReplacementFunctions for the deepest functions of the hierarchy
+        We know they don't call any other replaceable functions
+    ]]--
+    for deepness = max_deepness - 1, 1, -1 do
+        local function_table = ponderated_function_table[ deepness ]
+
+        for i, function_name in ipairs( function_table ) do
+            local function_ast = function_name_to_ast[ function_name ]
+
+            if function_ast ~= nil then
+                local function_body_ast = Function_GetBody( function_ast )
+
+                if function_body_ast ~= nil then
+                    InlineReplacementFunctions( function_name, function_body_ast, function_name_to_ast, caller_callee_table )
+                end
             end
         end
-    else
-        local sorted_functions = GetSortedFunctions( function_name_to_ast )
+    end
 
-        if next( sorted_functions ) ~= nil then
-            local sorted_functions2 = {}
-            local inversed_sorted_functions = {}
-            local function_count = 0
+    for function_ast in NodeOfType( ast_node, "function", true ) do
+        local function_body_ast = Function_GetBody( function_ast )
+        local function_name = Function_GetName( function_ast )
 
-            for function_name, index in pairs( sorted_functions ) do
-                if sorted_functions2[ index ] == nil then
-                    sorted_functions2[ index ] = {}
-                end
+        InlineReplacementFunctions( function_name, function_body_ast, function_name_to_ast, caller_callee_table )
+    end
 
-                table.insert( sorted_functions2[ index ], function_name )
-            end
+    local used_structure_members_by_shader = GetUsedStructureMembersByShader( ast_node )
 
-            for index, called_function_name_table in IterateTableByKeyOrder( sorted_functions2, function ( left, right ) return left > right end ) do
-                for _, called_function_name in ipairs( called_function_name_table ) do
-                    if not Function_IsIntrinsic( called_function_name ) then
-                        table.insert( inversed_sorted_functions, called_function_name )
+    -- Augment structure definitions with members found in the replacement files
+    UpdateStructureDefinitions( ast_node, structure_name_to_ast, used_structure_members_by_shader )
 
-                        if function_name_to_ast[ called_function_name ] == nil then
-                            function_name_to_ast[ called_function_name ] = {}
-                        end
+    -- Augment variable declarations with members found in the replacement files
+    UpdateVariableDeclaration( ast_node, variable_name_to_ast )
+end
 
-                        function_count = function_count + 1
-                    end
-                end
-            end
+function PrintFunctionTree( table, deepness )
+    deepness = deepness or 0
 
-            --[[
-            First inline functions overriden by latest replacement files
-            eg: file1 has a function Foo() which itself calls a function Bar(), overriden by file2, we need to replace the call to Bar() by the function body of Bar() in file2
-            ]]--
-            for index = 1, function_count - 1 do
-                local function_name = inversed_sorted_functions[ index ]
-                local function_body_ast = function_name_to_ast[ function_name ]
+    local tab = ""
+    for i = 0, deepness do
+        tab = tab .. "    "
+    end
 
-                for index2 = index + 1, function_count do
-                    local other_function_name = inversed_sorted_functions[ index2 ]
-                    InlineReplacementFunctions( function_name_to_ast[ other_function_name ], function_name, function_body_ast )
-                end
-            end
+    for i = 1, #table do
+        local item = table[ i ]
+        local caller = item.name
+        local called_functions = item.children
 
-            --[[
-            Next, replace the functions in the original ast
-            ]]--
-            for index = 1, function_count do
-                local function_name = inversed_sorted_functions[ index ]
+        print( tab .. caller )
 
-                InlineReplacementFunctions( ast_node, function_name, function_name_to_ast[ function_name ] )
-            end
-        end
-
-        local used_structure_members_by_shader = GetUsedStructureMembersByShader( ast_node )
-
-        -- Augment structure definitions with members found in the replacement files
-        UpdateStructureDefinitions( ast_node, structure_name_to_ast, used_structure_members_by_shader )
-
-        -- Augment variable declarations with members found in the replacement files
-        UpdateVariableDeclaration( ast_node, variable_name_to_ast )
+        PrintFunctionTree( called_functions, deepness + 1 )
     end
 end
 
-function GetSortedFunctions( function_name_to_ast )
-    local sorted_functions = {}
-    local called_functions = {}
+--[[
+    This function returns the hierarchy function call of the complete shader file
 
-    for name, ast in pairs( function_name_to_ast ) do
-        sorted_functions[ name ] = 0
-    end
+    [
+        1 = { name = "VSMain", children = [ 1 = { name = "Function1" }, 2 = { name = "Function2", children = .... } ] }
+        2 = { name = "PSMain", children = [ 1 = { name = "Function3" } ] }
+    ]
+]]--
+function GetFunctionTree( ast_node, function_name_to_ast )
+    local shader_main_names = { "VSMain", "PSMain" }
+    local function_tree = {}
 
-    for name, ast in pairs( function_name_to_ast ) do
-        for ast_function_node, ast_function_index in NodeOfType( ast, "call", true ) do
-            local function_name = ast_function_node[ 1 ]
+    for i, shader_main_name in ipairs( shader_main_names ) do
+        for shader_main_function_node, shader_body_index in NodeOfType( ast_node, "function", true ) do
+            local shader_main_name_node = Function_GetName( shader_main_function_node )
 
-            sorted_functions[ name ] = sorted_functions[ name ] + 1
-            sorted_functions[ function_name ] = sorted_functions[ name ] + 1
+            if shader_main_name_node == shader_main_name then
+                local item = {}
+                local shader_main_body_node = Function_GetBody( shader_main_function_node )
+
+                item.name = shader_main_name
+                item.children = GetCalledFunctionsTable( shader_main_body_node, function_name_to_ast )
+
+                table.insert( function_tree, item )
+            end
         end
     end
 
-    return sorted_functions
+    return function_tree
+end
+
+function GetCalledFunctionsTable( calling_function_node, function_name_to_ast )
+    local called_function_table = {}
+
+    for called_function_node, called_function_index in NodeOfType( calling_function_node, "call", true ) do
+        local called_function_name = called_function_node[ 1 ]
+
+        if string.starts( called_function_name, "__" ) then
+            local item = {}
+            item.name = called_function_name
+
+            if function_name_to_ast[ called_function_name ] ~= nil then
+                item.children = GetCalledFunctionsTable( function_name_to_ast[ called_function_name ], function_name_to_ast )
+                table.insert( called_function_table, item )
+            end
+        end
+    end
+
+    return called_function_table
+end
+
+--[[
+    This function cleans the hierarchy call function tree. It will only keep the first occurence of each function
+    Ex:
+
+    PSMain
+        |-> Function1()
+                |-> Function2()
+        | -> Function3()
+        |       |-> Function1()
+        | -> Function2()
+
+    will become
+
+    PSMain
+        |-> Function1()
+                |-> Function2()
+        | -> Function3()
+]]--
+function CleanFunctionTree( function_tree, already_used_functions )
+    already_used_functions = already_used_functions or {}
+    local children_to_remove = {}
+
+    for i = 1, #function_tree do
+
+        local item = function_tree[ i ]
+        local caller = item.name
+        local called_functions = item.children
+
+        if already_used_functions[ caller ] then
+            table.insert( children_to_remove, i )
+        else
+            already_used_functions[ caller ] = true
+
+            for j = 1, #called_functions do
+                if already_used_functions[ called_functions[ j ].name ] then
+                    table.remove( called_functions, j );
+                else
+                    already_used_functions[ called_functions[ j ].name ] = true
+                    CleanFunctionTree( called_functions[ j ].children, already_used_functions )
+                end
+            end
+        end
+    end
+
+    for i = #children_to_remove, 1, -1 do
+        table.remove( function_tree, children_to_remove[ i ] )
+    end
+
+    return function_tree
+end
+
+--[[
+    This function will return an array of functions sorted by their deepness in the call hierarchy
+    Ex:
+
+    PSMain
+        |-> Function1()
+                |-> Function2()
+        | -> Function3()
+
+    will become
+
+    [ 1 ] = [ PSMain ]
+    [ 2 ] = [ Function1, Function3 ]
+    [ 3 ] = [ Function2 ]
+]]--
+function GetPonderatedFunctionTable( function_tree, ponderated_function_table, deepness )
+    ponderated_function_table = ponderated_function_table or {}
+    deepness = deepness or 1
+
+    if ponderated_function_table[ deepness ] == nil then
+        ponderated_function_table[ deepness ] = {}
+    end
+
+    for i = 1, #function_tree do
+        local item = function_tree[ i ]
+        local caller = item.name
+        local called_functions = item.children
+
+        for j = 1, #called_functions do
+            table.insert( ponderated_function_table[ deepness ], called_functions[ j ].name )
+
+            GetPonderatedFunctionTable( called_functions[ j ].children, ponderated_function_table, deepness + 1 )
+        end
+
+        if string.starts( caller, "__" ) then
+            table.insert( ponderated_function_table[ deepness ], caller )
+        end
+    end
+
+    return ponderated_function_table
+end
+
+--[[
+    This function takes the function hierarchy tree, and outputs a dictionary
+
+    Ex:
+
+    PSMain
+        |-> Function1()
+                |-> Function2()
+        | -> Function3()
+
+    will become
+
+    [ Function1 ] = PSMain
+    [ Function2 ] = Function1
+    [ Function3 ] = PSMain
+
+    It is used in InlineReplacementFunctions to replace a function call by its body only if we are in the correct calling function
+    Subsquent calls will be discarded
+]]--
+function GetCallerCalleeTable( function_tree, caller_callee_table )
+    local result = caller_callee_table or {}
+
+    for i = 1, #function_tree do
+        local item = function_tree[ i ]
+        local caller = item.name
+        local called_functions = item.children
+
+        for j = 1, #called_functions do
+            local called_function_name = called_functions[ j ].name
+
+            if result[ called_function_name ] == nil then
+                result[ called_function_name ] = caller
+            end
+        end
+
+        result = GetCallerCalleeTable( called_functions, result )
+    end
+
+    return result
 end
 
 function GetFunctionNamesFromAst( replacement_file_ast, function_name_to_ast )
@@ -174,45 +357,49 @@ function GetVariableNamesFromAst( replacement_file_ast, variable_name_to_ast )
     return variable_name_to_ast
 end
 
-function InlineReplacementFunctions( ast_node, function_name, function_ast_node )
-    if Function_IsIntrinsic( function_name ) or not string.starts( function_name, "__" )  then
-        return 0
-    end
+function InlineReplacementFunctions( calling_function, function_ast, function_name_to_ast, caller_callee_table )
+    for node_index, node in ipairs( function_ast ) do
+        if node.name then
+            InlineReplacementFunctions( calling_function, node, function_name_to_ast, caller_callee_table )
 
-    for child_index, child_node in ipairs( ast_node ) do
-        if child_node.name then
-            if child_node.name == "call" then
-                if child_node[ 1 ] == function_name then
-                    return child_index
-                end
-            end
+            local function_to_replace = CanFindFunctionToReplaceInAst( node, function_name_to_ast )
 
-            local found_index = InlineReplacementFunctions( child_node, function_name, function_ast_node )
+            if function_to_replace ~= "" then
 
-            if found_index > 0 then
-                local function_body_ast = Function_GetBody( function_ast_node )
+                local replacement_ast = function_name_to_ast[ function_to_replace ]
 
-                if #function_body_ast > 0 then
-                    --local block_node = { name = "block" }
-                    local inserted_node_index = child_index
+                if replacement_ast ~= nil and caller_callee_table[ function_to_replace ] == calling_function then
+                    local replacement_body_ast = Function_GetBody( replacement_ast )
 
-                    table.remove( ast_node, child_index )
+                    if #replacement_body_ast > 0 then
+                        local inserted_node_index = node_index
 
-                    for i, n in ipairs( function_body_ast ) do
-                        table.insert( ast_node, inserted_node_index, n )
+                        table.remove( function_ast, node_index )
 
-                        inserted_node_index = inserted_node_index + 1
+                        for i, n in ipairs( replacement_body_ast ) do
+                            table.insert( function_ast, inserted_node_index, n )
+
+                            inserted_node_index = inserted_node_index + 1
+                        end
+                    else
+                        table.remove( function_ast, node_index )
                     end
-
-                    --ast_node[ child_index ] = block_node
                 else
-                    table.remove( ast_node, child_index )
+                    table.remove( function_ast, node_index )
                 end
             end
-         end
+        end
+    end
+end
+
+function CanFindFunctionToReplaceInAst( ast, function_name_to_ast )
+    for ast_function_node, ast_function_index in NodeOfType( ast, "call", true ) do
+        if function_name_to_ast[ ast_function_node[ 1 ] ] ~= nil then
+            return ast_function_node[ 1 ]
+        end
     end
 
-    return 0
+    return ""
 end
 
 function ReplaceFunctions( ast_node, function_name_to_ast )
@@ -286,7 +473,7 @@ function UpdateStructureDefinitions( ast_node, structure_name_to_ast, used_struc
         for member_index, member_node in ipairs( structure_members ) do
             local member_id = get_structure_member_name( member_node )
             local is_member_redefined = false
-            
+
             if structure_name_to_ast[ structure_name ] ~= nil then
                 for _, redefined_member in ipairs( structure_name_to_ast[ structure_name ] ) do
                     if get_structure_member_name( redefined_member ) == member_id then
@@ -307,17 +494,17 @@ function UpdateStructureDefinitions( ast_node, structure_name_to_ast, used_struc
         end
 
         if structure_name_to_ast[ structure_name ] ~= nil then
-            --[[ 
+            --[[
             It may happen that the same structure member is redefined by different replacement files
             We then need to filter the members to add to the structure, to keep only the latest defined members
             ]]--
             local filtered_structure_members = {}
-            
+
             for field_index, field_node in ipairs( structure_name_to_ast[ structure_name ] ) do
                 local member_id = get_structure_member_name( field_node )
                 filtered_structure_members[ member_id ] = field_node
             end
-            
+
             for field_name, field_node in pairs( filtered_structure_members ) do
                 if used_structure_members_by_shader[ structure_name ][ field_name ] then
                     table.insert( ast_structure_node, field_node )
