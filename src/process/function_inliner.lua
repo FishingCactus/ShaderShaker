@@ -31,7 +31,7 @@ function FunctionInliner:Process( ast_node, replacement_file_names )
 
     local function_tree = self:GetFunctionTree( ast_node )
     function_tree = self:CleanFunctionTree( function_tree )
-    
+
     self.caller_callee_table = self:GetCallerCalleeTable( function_tree )
     local ponderated_function_table = self:GetPonderatedFunctionTable( function_tree )
 
@@ -92,14 +92,12 @@ function FunctionInliner:PrintFunctionTree( table, deepness )
     end
 end
 
---[[
-    This function returns the hierarchy function call of the complete shader file
+-- This function returns the hierarchy function call of the complete shader file
 
-    [
-        1 = { name = "VSMain", children = [ 1 = { name = "Function1" }, 2 = { name = "Function2", children = .... } ] }
-        2 = { name = "PSMain", children = [ 1 = { name = "Function3" } ] }
-    ]
-]]--
+-- [
+--     1 = { name = "VSMain", children = [ 1 = { name = "Function1" }, 2 = { name = "Function2", children = .... } ] }
+--     2 = { name = "PSMain", children = [ 1 = { name = "Function3" } ] }
+-- ]
 function FunctionInliner:GetFunctionTree( ast_node )
     local shader_main_names = { "VSMain", "PSMain" }
     local function_tree = {}
@@ -138,7 +136,7 @@ function FunctionInliner:GetCalledFunctionsTable( calling_function_node )
             else
                 item.children = {}
             end
-            
+
             table.insert( called_function_table, item )
         end
     end
@@ -146,24 +144,22 @@ function FunctionInliner:GetCalledFunctionsTable( calling_function_node )
     return called_function_table
 end
 
---[[
-    This function cleans the hierarchy call function tree. It will only keep the first occurence of each function
-    Ex:
+-- This function cleans the hierarchy call function tree. It will only keep the first occurence of each function
+-- Ex:
 
-    PSMain
-        |-> Function1()
-                |-> Function2()
-        | -> Function3()
-        |       |-> Function1()
-        | -> Function2()
+-- PSMain
+--     |-> Function1()
+--             |-> Function2()
+--     | -> Function3()
+--     |       |-> Function1()
+--     | -> Function2()
 
-    will become
+-- will become
 
-    PSMain
-        |-> Function1()
-                |-> Function2()
-        | -> Function3()
-]]--
+-- PSMain
+--     |-> Function1()
+--             |-> Function2()
+--     | -> Function3()
 function FunctionInliner:CleanFunctionTree( function_tree, already_used_functions )
     already_used_functions = already_used_functions or {}
     local children_to_remove = {}
@@ -197,21 +193,19 @@ function FunctionInliner:CleanFunctionTree( function_tree, already_used_function
     return function_tree
 end
 
---[[
-    This function will return an array of functions sorted by their deepness in the call hierarchy
-    Ex:
+-- This function will return an array of functions sorted by their deepness in the call hierarchy
+-- Ex:
 
-    PSMain
-        |-> Function1()
-                |-> Function2()
-        | -> Function3()
+-- PSMain
+--     |-> Function1()
+--             |-> Function2()
+--     | -> Function3()
 
-    will become
+-- will become
 
-    [ 1 ] = [ PSMain ]
-    [ 2 ] = [ Function1, Function3 ]
-    [ 3 ] = [ Function2 ]
-]]--
+-- [ 1 ] = [ PSMain ]
+-- [ 2 ] = [ Function1, Function3 ]
+-- [ 3 ] = [ Function2 ]
 function FunctionInliner:GetPonderatedFunctionTable( function_tree, ponderated_function_table, deepness )
     ponderated_function_table = ponderated_function_table or {}
     deepness = deepness or 1
@@ -239,25 +233,23 @@ function FunctionInliner:GetPonderatedFunctionTable( function_tree, ponderated_f
     return ponderated_function_table
 end
 
---[[
-    This function takes the function hierarchy tree, and outputs a dictionary
+-- This function takes the function hierarchy tree, and outputs a dictionary
 
-    Ex:
+-- Ex:
 
-    PSMain
-        |-> Function1()
-                |-> Function2()
-        | -> Function3()
+-- PSMain
+--     |-> Function1()
+--             |-> Function2()
+--     | -> Function3()
 
-    will become
+-- will become
 
-    [ Function1 ] = PSMain
-    [ Function2 ] = Function1
-    [ Function3 ] = PSMain
+-- [ Function1 ] = PSMain
+-- [ Function2 ] = Function1
+-- [ Function3 ] = PSMain
 
-    It is used in InlineReplacementFunctions to replace a function call by its body only if we are in the correct calling function
-    Subsquent calls will be discarded
-]]--
+-- It is used in InlineReplacementFunctions to replace a function call by its body only if we are in the correct calling function
+-- Subsquent calls will be discarded
 function FunctionInliner:GetCallerCalleeTable( function_tree, caller_callee_table )
     local result = caller_callee_table or {}
 
@@ -370,8 +362,8 @@ end
 function FunctionInliner:CanFindFunctionToReplaceInAst( ast )
     for ast_function_node, ast_function_index in NodeOfType( ast, "call", true ) do
         local function_name = ast_function_node[ 1 ]
-        
-        if string.starts( function_name, "__" ) then        
+
+        if string.starts( function_name, "__" ) then
             return function_name
         end
     end
