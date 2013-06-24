@@ -87,9 +87,6 @@ newoption
 		configuration { "solaris" }
 			linkoptions { "-Wl,--export-dynamic" }
 
-		configuration { "ios" }
-			deploymenttarget "5.1"
-
 	project "ShaderShaker"
 
 		configuration "Debug"
