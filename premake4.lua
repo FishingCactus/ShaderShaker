@@ -14,126 +14,132 @@ newoption
 -- worry about the /scripts argument and all that.
 --
 
-	solution "ShaderShaker"
-		configurations { "Release", "Debug" }
-		location ( _OPTIONS["to"] )
+    solution "ShaderShaker"
+        configurations { "Release", "Debug", "DebugWithEmbeddedScripts" }
+        location ( _OPTIONS["to"] )
 
-		targetname  "shader_shaker"
-		language    "C++"
-		kind        "ConsoleApp"
-		flags       { "No64BitChecks", "ExtraWarnings" }
-		includedirs { "include", "src/host/lua-5.2.0/src", "contrib", "src/hlsl_parser" }
+        targetname  "shader_shaker"
+        language    "C++"
+        kind        "ConsoleApp"
+        flags       { "No64BitChecks", "ExtraWarnings" }
+        includedirs { "include", "src/host/lua-5.2.0/src", "contrib", "src/hlsl_parser" }
 
-		files
-		{
-			"*.txt", "**.lua",
-			"src/**.h", "src/**.cpp", "src/**.c",
-			"src/host/scripts.cpp"
-		}
+        files
+        {
+            "*.txt", "**.lua",
+            "src/**.h", "src/**.cpp", "src/**.c",
+            "src/host/scripts.cpp"
+        }
 
-		excludes
-		{
-			"src/host/lua-5.2.0/src/lua.c",
-			"src/host/lua-5.2.0/src/luac.c",
-			"src/host/lua-5.2.0/src/print.c",
-			"src/host/lua-5.2.0/**.lua",
-			"src/host/lua-5.2.0/etc/*.c"
-		}
+        excludes
+        {
+            "src/host/lua-5.2.0/src/lua.c",
+            "src/host/lua-5.2.0/src/luac.c",
+            "src/host/lua-5.2.0/src/print.c",
+            "src/host/lua-5.2.0/**.lua",
+            "src/host/lua-5.2.0/etc/*.c"
+        }
 
-		if _OPTIONS[ "ios" ] then
-	        platforms { "ios" }
-		end
+        if _OPTIONS[ "ios" ] then
+            platforms { "ios" }
+        end
 
-		configuration "DebugWithoutEmbeddedScripts"
-			defines     "_DEBUG"
-			flags       { "Symbols" }
+        configuration "Debug"
+            defines     { "_DEBUG" }
+            flags       { "Symbols" }
 
-		configuration "Debug"
-			defines		{ "_DEBUG", "SHADERSHAKER_EMBEDDED_SCRIPTS" }
-			flags       { "Symbols" }
+        configuration "DebugWithEmbeddedScripts"
+            defines     { "_DEBUG", "SHADERSHAKER_EMBEDDED_SCRIPTS" }
+            flags       { "Symbols" }
 
-		configuration "Release"
-			defines     { "NDEBUG", "SHADERSHAKER_EMBEDDED_SCRIPTS" }
-			flags       { "OptimizeSize" }
+        configuration "Release"
+            defines     { "NDEBUG", "SHADERSHAKER_EMBEDDED_SCRIPTS" }
+            flags       { "OptimizeSize" }
 
-		configuration "vs*"
-			defines     { "_CRT_SECURE_NO_WARNINGS" }
+        configuration "vs*"
+            defines     { "_CRT_SECURE_NO_WARNINGS" }
 
-		configuration "vs2005"
-			defines	{"_CRT_SECURE_NO_DEPRECATE" }
+        configuration "vs2005"
+            defines {"_CRT_SECURE_NO_DEPRECATE" }
 
-		configuration "windows"
-			links { "ole32" }
+        configuration "windows"
+            links { "ole32" }
 
-		configuration "linux"
-			defines     { "LUA_USE_POSIX", "LUA_USE_DLOPEN" }
-			links       { "m", "dl" }
+        configuration "linux"
+            defines     { "LUA_USE_POSIX", "LUA_USE_DLOPEN" }
+            links       { "m", "dl" }
 
-		configuration "bsd"
-			defines     { "LUA_USE_POSIX", "LUA_USE_DLOPEN" }
-			links       { "m" }
+        configuration "bsd"
+            defines     { "LUA_USE_POSIX", "LUA_USE_DLOPEN" }
+            links       { "m" }
 
-		configuration "macosx"
-			defines     { "LUA_USE_MACOSX" }
-			links       { "CoreServices.framework" }
+        configuration "macosx"
+            defines     { "LUA_USE_MACOSX" }
+            links       { "CoreServices.framework" }
 
-		configuration { "macosx", "gmake" }
-			buildoptions { "-mmacosx-version-min=10.4" }
-			linkoptions  { "-mmacosx-version-min=10.4" }
+        configuration { "macosx", "gmake" }
+            buildoptions { "-mmacosx-version-min=10.4" }
+            linkoptions  { "-mmacosx-version-min=10.4" }
 
-		configuration { "linux", "bsd", "macosx" }
-			linkoptions { "-rdynamic" }
+        configuration { "linux", "bsd", "macosx" }
+            linkoptions { "-rdynamic" }
 
-		configuration { "solaris" }
-			linkoptions { "-Wl,--export-dynamic" }
+        configuration { "solaris" }
+            linkoptions { "-Wl,--export-dynamic" }
 
-	project "ShaderShaker"
+        configuration { "ios" }
+            deploymenttarget "5.1"
 
-		configuration "Debug"
-			targetdir   "bin/debug"
+    project "ShaderShaker"
 
-		configuration "Release"
-			targetdir   "bin/release"
+        configuration "Debug"
+            targetdir   "bin/debug"
 
-	project "ShaderShakerDll"
-		defines{ "SHADERSHAKER_IN_DLL" }
+        configuration "DebugWithEmbeddedScripts"
+            targetdir   "bin/debug"
 
-		configuration "Debug"
-			kind "SharedLib"
-			targetdir   "bin/debug_dll"
+        configuration "Release"
+            targetdir   "bin/release"
 
-		configuration "Release"
-			kind "SharedLib"
-			targetdir   "bin/release_dll"
+    project "ShaderShakerDll"
+        defines{ "SHADERSHAKER_IN_DLL" }
 
-	project "ShaderShakerLib"
+        configuration "Debug"
+            kind "SharedLib"
+            targetdir   "bin/debug_dll"
 
-		defines{ "SHADERSHAKER_IN_LIB" }
+        configuration "DebugWithEmbeddedScripts"
+            kind "SharedLib"
+            targetdir   "bin/debug_dll"
 
-		configuration "Debug"
-			kind "StaticLib"
-			targetdir   "bin/debug_lib"
+        configuration "Release"
+            kind "SharedLib"
+            targetdir   "bin/release_dll"
 
-		configuration "DebugWithoutEmbeddedScripts"
-			kind "StaticLib"
-			targetdir   "bin/debug_lib"
+    project "ShaderShakerLib"
 
-		configuration "Release"
-			kind "StaticLib"
-			targetdir   "bin/release_lib"
+        defines{ "SHADERSHAKER_IN_LIB" }
 
+        configuration "Debug"
+            kind "StaticLib"
+            targetdir   "bin/debug_lib"
 
+        configuration "DebugWithEmbeddedScripts"
+            kind "StaticLib"
+            targetdir   "bin/debug_lib"
+
+        configuration "Release"
+            kind "StaticLib"
+            targetdir   "bin/release_lib"
 
 --
 -- A more thorough cleanup.
 --
 
-	if _ACTION == "clean" then
-		os.rmdir("bin")
-		os.rmdir("build")
-	end
-
-
+    if _ACTION == "clean" then
+        os.rmdir("bin")
+        os.rmdir("build")
+    end
 
 --
 -- Use the --to=path option to control where the project files get generated. I use
@@ -141,13 +147,11 @@ newoption
 -- in preparation for deployment.
 --
 
-	newoption {
-		trigger = "to",
-		value   = "path",
-		description = "Set the output location for the generated files"
-	}
-
-
+    newoption {
+        trigger = "to",
+        value   = "path",
+        description = "Set the output location for the generated files"
+    }
 
 --
 -- Use the embed action to convert all of the Lua scripts into C strings, which
@@ -155,11 +159,10 @@ newoption
 -- a release build.
 --
 
-	dofile("scripts/embed.lua")
+    dofile("scripts/embed.lua")
 
-	newaction {
-		trigger     = "embed",
-		description = "Embed scripts in scripts.cpp; required before release builds",
-		execute     = doembed
-	}
-
+    newaction {
+        trigger     = "embed",
+        description = "Embed scripts in scripts.cpp; required before release builds",
+        execute     = doembed
+    }
