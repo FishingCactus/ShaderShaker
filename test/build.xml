@@ -1,20 +1,16 @@
 <project name="Shader Shaker" basedir=".">
 
-	<property name="shader_shaker" location="../bin/debug/shader_shaker" />
-	
-	<condition property="executable_exists">
-		<resourceexists>
-            <file file="../bin/debug/shader_shaker" />
-        </resourceexists>
-	</condition>
-	
-	<target name="generate_reference" if="executable_exists">
+	<available property="shader_shaker" file="../bin/debug/shader_shaker.exe"/>
+	<available property="shader_shaker" file="../bin/debug/shader_shaker"/>
+
+	<target name="generate_reference">
+		<fail message="Could not find shader_shaker executable" unless="shader_shaker"/>
 		<apply executable="${shader_shaker}" dir="..">
 			<mapper type="glob" from="*.fx" to="*.reference.ast"/>
 			<arg value="-o"/>
 			<targetfile />
 			<srcfile />
-			
+
 			<fileset dir=".">
 				<include name="**/*.fx" />
 				<exclude name="optim/**/*" />
@@ -33,8 +29,9 @@
 			</fileset>
 		</apply>
 	</target>
-	
-	<target name="check" if="executable_exists">
+
+	<target name="check">
+		<fail message="Could not find shader_shaker executable" unless="shader_shaker"/>
 		<apply executable="${shader_shaker}" force="true" dir="..">
 			<mapper type="glob" from="*.fx" to="*.reference.ast"/>
 			<arg value="-check"/>
