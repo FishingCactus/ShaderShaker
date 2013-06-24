@@ -31,7 +31,8 @@ function FunctionInliner:Process( ast_node, replacement_file_names )
 
     local function_tree = self:GetFunctionTree( ast_node )
     function_tree = self:CleanFunctionTree( function_tree )
-
+    self:PrintFunctionTree( function_tree )
+    
     self.caller_callee_table = self:GetCallerCalleeTable( function_tree )
     local ponderated_function_table = self:GetPonderatedFunctionTable( function_tree )
 
@@ -41,7 +42,7 @@ function FunctionInliner:Process( ast_node, replacement_file_names )
         Don't need to run InlineReplacementFunctions for the deepest functions of the hierarchy
         We know they don't call any other replaceable functions
     ]]--
-    for deepness = max_deepness - 1, 1, -1 do
+    for deepness = max_deepness, 1, -1 do
         local function_table = ponderated_function_table[ deepness ]
 
         for i, function_name in ipairs( function_table ) do
@@ -317,8 +318,13 @@ function FunctionInliner:SetVariableNamesFromAst( replacement_file_ast )
 end
 
 function FunctionInliner:InlineReplacementFunctions( calling_function, function_ast )
-    for node_index, node in ipairs( function_ast ) do
-        if node.name then
+    local node_index_offset = 0
+
+    for node_index = 1, #function_ast do
+        local new_index = node_index + node_index_offset
+        local node = function_ast[ new_index ]
+
+        if node and node.name then
             self:InlineReplacementFunctions( calling_function, node )
 
             local function_to_replace = self:CanFindFunctionToReplaceInAst( node )
@@ -331,20 +337,24 @@ function FunctionInliner:InlineReplacementFunctions( calling_function, function_
                     local replacement_body_ast = Function_GetBody( replacement_ast )
 
                     if #replacement_body_ast > 0 then
-                        local inserted_node_index = node_index
+                        local inserted_node_index = new_index
 
-                        table.remove( function_ast, node_index )
+                        table.remove( function_ast, new_index )
 
                         for i, n in ipairs( replacement_body_ast ) do
                             table.insert( function_ast, inserted_node_index, n )
 
                             inserted_node_index = inserted_node_index + 1
                         end
+                        
+                        node_index_offset = node_index_offset + #replacement_body_ast - 1
                     else
-                        table.remove( function_ast, node_index )
+                        table.remove( function_ast, new_index )
+                        node_index_offset = node_index_offset - 1
                     end
                 else
-                    table.remove( function_ast, node_index )
+                    table.remove( function_ast, new_index )
+                    node_index_offset = node_index_offset - 1
                 end
             end
         end
