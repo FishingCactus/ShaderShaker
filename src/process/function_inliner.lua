@@ -23,10 +23,10 @@ function FunctionInliner:Process( ast_node, replacement_file_names )
         self.function_name_to_ast = GetFunctionNamesFromAst( replace_ast, self.function_name_to_ast )
 
         -- Populate structure_name_to_ast ( key : structure_name, value : structure_ast )
-        self.structure_name_to_ast = self:GetStructureNamesFromAst( replace_ast )
+        self:SetStructureNamesFromAst( replace_ast )
 
         -- Populate variable_name_to_ast ( key : variable_name, value : structure_ast )
-        self.variable_name_to_ast = self:GetVariableNamesFromAst( replace_ast )
+        self:SetVariableNamesFromAst( replace_ast )
     end
 
     local function_tree = self:GetFunctionTree( ast_node )
@@ -272,56 +272,48 @@ function FunctionInliner:GetCallerCalleeTable( function_tree, caller_callee_tabl
     return result
 end
 
-function FunctionInliner:GetStructureNamesFromAst( replacement_file_ast )
-    local result = {}
-
+function FunctionInliner:SetStructureNamesFromAst( replacement_file_ast )
     for ast_structure_node, ast_function_index in NodeOfType( replacement_file_ast, "struct_definition", false ) do
         local name = ast_structure_node[ 1 ]
 
-        if result[ name ] == nil then
-            result[ name ] = {}
+        if self.structure_name_to_ast[ name ] == nil then
+            self.structure_name_to_ast[ name ] = {}
         end
 
         for field_index, field_node in ipairs( ast_structure_node ) do
             if field_node.name ~= nil then
-                table.insert( result[ name ], field_node )
+                table.insert( self.structure_name_to_ast[ name ], field_node )
             end
         end
     end
-
-    return result
 end
 
-function FunctionInliner:GetVariableNamesFromAst( replacement_file_ast )
-    local result = { variable_declarations = {}, texture_declarations = {}, sampler_declarations = {}, function_declarations = {} }
-
+function FunctionInliner:SetVariableNamesFromAst( replacement_file_ast )
     for node, ast_function_index in NodeOfType( replacement_file_ast, "variable_declaration", false ) do
         local variable_name = Variable_GetName( node )
 
-        result.variable_declarations[ variable_name ] = node
+        self.variable_name_to_ast.variable_declarations[ variable_name ] = node
     end
 
     for node, ast_function_index in NodeOfType( replacement_file_ast, "texture_declaration", false ) do
         local variable_name = Texture_GetName( node )
 
-        result.texture_declarations[ variable_name ] = node
+        self.variable_name_to_ast.texture_declarations[ variable_name ] = node
     end
 
     for node, ast_function_index in NodeOfType( replacement_file_ast, "sampler_declaration", false ) do
         local variable_name = Sampler_GetName( node )
 
-        result.sampler_declarations[ variable_name ] = node
+        self.variable_name_to_ast.sampler_declarations[ variable_name ] = node
     end
 
     for node, ast_function_index in NodeOfType( replacement_file_ast, "function", false ) do
         local variable_name = Function_GetName( node )
 
         if not string.starts( variable_name, "__" ) then
-            result.function_declarations[ variable_name ] = node
+            self.variable_name_to_ast.function_declarations[ variable_name ] = node
         end
     end
-
-    return result
 end
 
 function FunctionInliner:InlineReplacementFunctions( calling_function, function_ast )
