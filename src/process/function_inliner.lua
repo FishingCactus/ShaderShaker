@@ -30,9 +30,8 @@ function FunctionInliner:Process( ast_node, replacement_file_names )
     end
 
     local function_tree = self:GetFunctionTree( ast_node )
-
     function_tree = self:CleanFunctionTree( function_tree )
-
+    
     self.caller_callee_table = self:GetCallerCalleeTable( function_tree )
     local ponderated_function_table = self:GetPonderatedFunctionTable( function_tree )
 
@@ -136,8 +135,11 @@ function FunctionInliner:GetCalledFunctionsTable( calling_function_node )
 
             if self.function_name_to_ast[ called_function_name ] ~= nil then
                 item.children = self:GetCalledFunctionsTable( self.function_name_to_ast[ called_function_name ] )
-                table.insert( called_function_table, item )
+            else
+                item.children = {}
             end
+            
+            table.insert( called_function_table, item )
         end
     end
 
@@ -367,8 +369,10 @@ end
 
 function FunctionInliner:CanFindFunctionToReplaceInAst( ast )
     for ast_function_node, ast_function_index in NodeOfType( ast, "call", true ) do
-        if self.function_name_to_ast[ ast_function_node[ 1 ] ] ~= nil then
-            return ast_function_node[ 1 ]
+        local function_name = ast_function_node[ 1 ]
+        
+        if string.starts( function_name, "__" ) then        
+            return function_name
         end
     end
 
