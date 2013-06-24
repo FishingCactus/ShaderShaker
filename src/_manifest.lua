@@ -1,26 +1,26 @@
 
 
 return {
-    
+
     -- Intermediate representation
-    
+
     "ir/ast_to_ir.lua",
-    
+
     -- Printer
-    
+
     "printer/printer_manager.lua", -- Must remain first of printer files
-    
+
     -- Code Generator
-    
+
     "generator/generator_utils.lua",
     "generator/ast_generator.lua",
     "generator/hlsl_generator.lua",
     "generator/glsl_generator.lua",
-    
+
     -- Utilities
-    
+
     "utilities/copy.lua",
-    "utilities/arguments.lua",
+    "utilities/argument_parser.lua",
     "utilities/output.lua",
     "utilities/debug.lua",
     "utilities/reflection.lua",
@@ -29,12 +29,17 @@ return {
     "utilities/tree.lua",
 
     -- Process
-    
-    "process/process.lua",
+
+    "process/ast_processor.lua",
     "process/ast_rewrite_if.lua",
     "process/ast_rewrite_constants.lua",
-    "process/ast_rewrite.lua",
-    "process/function_replacement.lua",
+    "process/ast_rewriter.lua",
+    --"process/function_replacement.lua",
+    "process/function_replacer.lua",
+    "process/function_inliner.lua",
+    "process/optimizer.lua",
+    "process/constants_optimizer.lua",
+    "process/shader_parameter_inliner.lua",
 
     -- Test
 
