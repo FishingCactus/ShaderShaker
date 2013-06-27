@@ -18,11 +18,19 @@ newoption
         configurations { "Release", "Debug", "DebugWithEmbeddedScripts" }
         location ( _OPTIONS["to"] )
 
+        if _OPTIONS[ "lua51" ] then
+            lua_version = "5.1.5"
+            excluded_lua_version = "5.2.0"
+        else
+            lua_version = "5.2.0"
+            excluded_lua_version = "5.1.5"
+        end
+
         targetname  "shader_shaker"
         language    "C++"
         kind        "ConsoleApp"
         flags       { "No64BitChecks", "ExtraWarnings" }
-        includedirs { "include", "src/host/lua-5.2.0/src", "contrib", "src/hlsl_parser" }
+        includedirs { "include", "src/host/lua-" .. lua_version .. "/src", "contrib", "src/hlsl_parser" }
 
         files
         {
@@ -33,11 +41,12 @@ newoption
 
         excludes
         {
-            "src/host/lua-5.2.0/src/lua.c",
-            "src/host/lua-5.2.0/src/luac.c",
-            "src/host/lua-5.2.0/src/print.c",
-            "src/host/lua-5.2.0/**.lua",
-            "src/host/lua-5.2.0/etc/*.c"
+            "src/host/lua-" .. lua_version .. "/src/lua.c",
+            "src/host/lua-" .. lua_version .. "/src/luac.c",
+            "src/host/lua-" .. lua_version .. "/src/print.c",
+            "src/host/lua-" .. lua_version .. "/**.lua",
+            "src/host/lua-" .. lua_version .. "/etc/*.c",
+            "src/host/lua-" .. excluded_lua_version .."/**"
         }
 
         if _OPTIONS[ "ios" ] then
@@ -152,6 +161,19 @@ newoption
         value   = "path",
         description = "Set the output location for the generated files"
     }
+
+--
+-- Use lua 5.1 (instead of 5.2 by default).
+-- This is useful for debugging using decoda (https://github.com/unknownworlds/decoda).
+--
+
+    newoption
+    {
+        trigger = "lua51",
+        description = "Use lua 5.1 (handy for using decoda)"
+    }
+
+
 
 --
 -- Use the embed action to convert all of the Lua scripts into C strings, which

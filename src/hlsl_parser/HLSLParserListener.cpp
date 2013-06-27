@@ -26,12 +26,16 @@ void HLSLParserListener::AddValue( const std::string & value )
 {
     int
         index;
-    
+
     lua_checkstack( State, 3 );
-    
+
     assert( lua_istable( State, -1 ) );
 
-    lua_len( State, -1 );
+    #if LUA_VERSION_NUM >= 502
+        lua_len( State, -1 );
+    #else
+        lua_pushnumber( State, lua_objlen( State, -1 ) );
+    #endif
     index = lua_tointeger( State, -1 );
     lua_pop( State, 1 );
     lua_pushstring( State, value.c_str() );
@@ -41,7 +45,7 @@ void HLSLParserListener::AddValue( const std::string & value )
 void HLSLParserListener::SetKeyValue( const std::string & key, const std::string & value )
 {
     lua_checkstack( State, 3 );
-    
+
     assert( lua_istable( State, -1 ) );
     lua_pushstring( State, key.c_str() );
     lua_pushstring( State, value.c_str() );
@@ -52,12 +56,16 @@ void HLSLParserListener::Assign()
 {
     int
         index;
-        
+
     lua_checkstack( State, 3 );
-    
+
     assert( lua_istable( State, -2) );
-        
-    lua_len( State, -2 );
+
+    #if LUA_VERSION_NUM >= 502
+        lua_len( State, -2 );
+    #else
+        lua_pushnumber( State, lua_objlen( State, -2 ) );
+    #endif
     index = lua_tointeger( State, -1 );
     lua_pop( State, 1 );
     lua_rawseti( State, -2, index + 1 );
