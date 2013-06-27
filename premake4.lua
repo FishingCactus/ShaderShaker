@@ -51,6 +51,11 @@ newoption
 
         if _OPTIONS[ "ios" ] then
             platforms { "ios" }
+
+            if deploymenttarget then
+                deploymenttarget "5.1"
+            end
+
         end
 
         configuration "Debug"
@@ -95,9 +100,6 @@ newoption
 
         configuration { "solaris" }
             linkoptions { "-Wl,--export-dynamic" }
-
-        configuration { "ios" }
-            deploymenttarget "5.1"
 
     project "ShaderShaker"
 
