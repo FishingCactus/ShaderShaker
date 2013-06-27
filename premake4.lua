@@ -20,8 +20,10 @@ newoption
 
         if _OPTIONS[ "lua51" ] then
             lua_version = "5.1.5"
+            excluded_lua_version = "5.2.0"
         else
             lua_version = "5.2.0"
+            excluded_lua_version = "5.1.5"
         end
 
 		targetname  "shader_shaker"
@@ -43,7 +45,8 @@ newoption
 			"src/host/lua-" .. lua_version .. "/src/luac.c",
 			"src/host/lua-" .. lua_version .. "/src/print.c",
 			"src/host/lua-" .. lua_version .. "/**.lua",
-			"src/host/lua-" .. lua_version .. "/etc/*.c"
+			"src/host/lua-" .. lua_version .. "/etc/*.c",
+            "src/host/lua-" .. excluded_lua_version .."/**"
 		}
 
 		if _OPTIONS[ "ios" ] then
