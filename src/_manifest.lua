@@ -34,6 +34,7 @@ return {
     "process/ast_rewrite_if.lua",
     "process/ast_rewrite_constants.lua",
     "process/ast_rewriter.lua",
+    "process/file_checker.lua",
     --"process/function_replacement.lua",
     "process/function_replacer.lua",
     "process/function_inliner.lua",

@@ -31,7 +31,7 @@ function _shaker_shaker_process_files()
 
         if options.check_file then
 
-            FileChecker.Process( options, ast )
+            FileChecker.Process( options.check_file, ast )
 
             return 0
 
