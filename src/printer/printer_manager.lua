@@ -25,7 +25,7 @@ function SelectPrinter( filename, override_name )
         return
     end
 
-    if filename == nil then
+    if filename == "console_output" then
         error( "Language should be specified when outputing to the console" )
     end
 
