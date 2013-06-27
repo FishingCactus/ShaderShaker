@@ -33,6 +33,7 @@ function _shaker_shaker_process_files()
 
             FileChecker.Process( options.check_file, ast )
 
+            collectgarbage()
             return 0
 
         else
@@ -55,5 +56,6 @@ function _shaker_shaker_process_files()
 
     end
 
+    collectgarbage()
     return 0
 end
