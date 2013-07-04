@@ -31,7 +31,7 @@ function FunctionInliner:Process( ast_node, replacement_file_names )
 
     local function_tree = self:GetFunctionTree( ast_node )
     function_tree = self:CleanFunctionTree( function_tree )
-    self:PrintFunctionTree( function_tree )
+    --self:PrintFunctionTree( function_tree )
     
     self.caller_callee_table = self:GetCallerCalleeTable( function_tree )
     local ponderated_function_table = self:GetPonderatedFunctionTable( function_tree )
