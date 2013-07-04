@@ -175,13 +175,16 @@ function FunctionInliner:CleanFunctionTree( function_tree, already_used_function
             table.insert( children_to_remove, i )
         else
             already_used_functions[ caller ] = true
-
-            for j = 1, #called_functions do
+            
+            local j = 1
+            
+            while j <= #called_functions do
                 if already_used_functions[ called_functions[ j ].name ] then
-                    table.remove( called_functions, j );
+                    table.remove( called_functions, j )
                 else
                     already_used_functions[ called_functions[ j ].name ] = true
                     self:CleanFunctionTree( called_functions[ j ].children, already_used_functions )
+                    j = j + 1
                 end
             end
         end
