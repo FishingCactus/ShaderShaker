@@ -1,7 +1,11 @@
 local i
+local options = {}
+
 HLSLGenerator = {
 
-    ["ProcessAst"] = function( ast )
+    ["ProcessAst"] = function( ast, o )
+        options = o or {}
+        
         for _, value in ipairs( ast ) do
 
             if HLSLGenerator[ "process_" .. value.name ] == nil then
@@ -134,15 +138,15 @@ HLSLGenerator = {
         output = node[ 1 ][ 1 ] .. ' ' .. node[ 2 ] .. '\n{\n'
 
         output = output .. prefix .. 'Texture = <' .. node[ 3 ][ 1 ] .. '>;\n'
-
-        for _, field in ipairs( node ) do
-
-            if _ > 3 then
-                output = output .. prefix .. field[ 1 ] .. ' = ' .. field[ 2 ] .. ';\n'
+        
+        if options.export_sampler_filter_semantic then
+            for _, field in ipairs( node ) do
+                if _ > 3 then
+                    output = output .. prefix .. field[ 1 ] .. ' = ' .. field[ 2 ] .. ';\n'
+                end
             end
-
         end
-
+        
         output = output .. '};'
 
         return output;
