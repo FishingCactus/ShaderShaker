@@ -20,7 +20,7 @@ return {
     -- Utilities
 
     "utilities/copy.lua",
-    "utilities/argument_parser.lua",
+    "utilities/cliargs.lua",
     "utilities/output.lua",
     "utilities/debug.lua",
     "utilities/reflection.lua",
@@ -35,7 +35,6 @@ return {
     "process/ast_rewrite_constants.lua",
     "process/ast_rewriter.lua",
     "process/file_checker.lua",
-    --"process/function_replacement.lua",
     "process/function_replacer.lua",
     "process/function_inliner.lua",
     "process/optimizer.lua",

@@ -139,7 +139,7 @@ HLSLGenerator = {
 
         output = output .. prefix .. 'Texture = <' .. node[ 3 ][ 1 ] .. '>;\n'
         
-        if options.export_sampler_filter_semantic then
+        if not options.dnesfs then
             for _, field in ipairs( node ) do
                 if _ > 3 then
                     output = output .. prefix .. field[ 1 ] .. ' = ' .. field[ 2 ] .. ';\n'

@@ -1,5 +1,4 @@
-local
-    files_to_process = {}
+local arguments = {}
 
 function _shader_shaker_main( script_path, argument_table )
 
@@ -14,46 +13,53 @@ function _shader_shaker_main( script_path, argument_table )
         end
     end
 
-    local argument_parser = ArgumentParser:new()
-
-    files_to_process = argument_parser:GetParsedArguments( argument_table )
+    cli:set_name("shader_shaker arguments")
+    cli:add_arg("INPUT", "path to the input file")
+    cli:optarg("REPLACEMENT_FILES", "Path to a replacement file", "", 32 )
+    
+    cli:add_opt("--output=OUTPUT_FILE", "Output file path", "")
+    cli:add_opt("--f=FORCE_LANGUAGE", "Force the output language", "")
+    cli:add_opt("--dp=DEFAULT_PRECISION", "Default precision ( OpenGL only )", "highp")
+    cli:add_opt("--cf=CHECK_FILE", "The file to check with", "" )
+    cli:add_opt("--cr=CONSTANTS_REPLACEMENT", "Constants replacement", "" )
+    
+    cli:add_opt("--ri", "Activate inline replacement", false )
+    cli:add_opt("--o", "Run optimizer", true )
+    cli:add_opt("--dnesfs", "Do Not Export Sampler Filter Semantic ( For XBox 360 )", false )
+    
+    arguments = cli:parse( argument_table )
 end
 
 
 function _shaker_shaker_process_files()
 
-    for i, options in ipairs( files_to_process ) do
+    if arguments.error ~= nil then
+        decoda_output( arguments.error )
+        return
+    end
+    
+    local 
+        ast = AstProcessor.Process( arguments )
+        
+    if arguments.cf ~= "" then
 
-        local
-            ast
+        FileChecker.Process( options.cf, ast )
 
-        ast = AstProcessor.Process( options )
+        collectgarbage()
+        return 0
 
-        if options.check_file then
+    else
+        local ast_copy = DeepCopy( ast )
 
-            FileChecker.Process( options.check_file, ast )
+        SelectPrinter( arguments.o, arguments.f )
 
-            collectgarbage()
-            return 0
-
+        if arguments.o ~= "console_output" then
+            InitializeOutputFile( arguments.o )
         else
-
-            for i, output_file in ipairs( options.output_files ) do
-                local ast_copy = DeepCopy( ast )
-
-                SelectPrinter( output_file, options.force_language )
-
-                if output_file ~= "console_output" then
-                    InitializeOutputFile( output_file )
-                else
-                    InitializeOutputPrint()
-                end
-
-                GetSelectedPrinter().ProcessAst( ast_copy, options )
-
-            end
+            InitializeOutputPrint()
         end
 
+        GetSelectedPrinter().ProcessAst( ast_copy, arguments )
     end
 
     collectgarbage()
