@@ -154,6 +154,14 @@ function Structure_GetMembers( struct_node )
     return types
 end
 
+function StructureMember_GetName( node )
+    return GetNodeNameValue( node, "ID", 1 )
+end
+
+function StructureMember_GetSemantic( node )
+    return GetNodeNameValue( node, "semantic", 1 )
+end
+
 function Structure_GetName( struct_node )
     return struct_node[ 1 ]
 end
