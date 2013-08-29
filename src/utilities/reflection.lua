@@ -1,5 +1,5 @@
 local intrinsic_functions = {
-    "dot", "normalize", "tex2D", "saturate", "reflect", "sin", "cos", "tan", "mul", "length", "exp", "pow", "texCUBE", "fmod", "sign", "abs", "lerp", "min", "step"
+    "dot", "normalize", "tex2D", "saturate", "reflect", "sin", "cos", "tan", "mul", "length", "exp", "pow", "texCUBE", "fmod", "sign", "abs", "lerp", "min", "step", "cross"
 }
 
 function Function_GetNodeFromId( ast_node, function_id )
@@ -82,6 +82,8 @@ function Function_GetCalledFunctions( ast_node, function_name, include_intrinsic
 
     local called_functions = {}
     local function_node = Function_GetNodeFromId( ast_node, function_name )
+    
+    assert( function_node ~= nil, "Called function " .. function_name .. " not found" )
 
     if function_index then
         function_index = function_index + 1
