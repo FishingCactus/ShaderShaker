@@ -2,7 +2,7 @@ local intrinsic_functions = {
     "tex2D", "texCUBE",
     "dot", "normalize", "cross", "saturate", "reflect", "length",
     "sin", "cos", "tan",
-    "mul", "exp", "pow", "fmod", "sign", "abs", "lerp", "min", "max", step"
+    "mul", "exp", "pow", "fmod", "sign", "abs", "lerp", "min", "max", "step"
 }
 
 function Function_GetNodeFromId( ast_node, function_id )
