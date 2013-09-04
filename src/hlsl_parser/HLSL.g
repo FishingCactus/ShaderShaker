@@ -7,21 +7,21 @@ options {
     language = Cpp;
 }
 
-@lexer::traits 
+@lexer::traits
 {
     #include <sstream>
 
     class HLSLLexer; class HLSLParser;
 
-    class HLSLLexerTraits : public antlr3::Traits< HLSLLexer, HLSLParser > 
+    class HLSLLexerTraits : public antlr3::Traits< HLSLLexer, HLSLParser >
     {
         public:
-                                               
+
         static int ConvertToInt32( const std::string & type )
         {
-            int 
+            int
                 return_value;
-        
+
             std::istringstream( type ) >> return_value;
 
             return return_value;
@@ -48,22 +48,22 @@ options {
     {
         return value != 'r' && value != 'g' && value != 'b' && value != 'a';
     }
-    
+
     static bool is_not_xyzw( const char value )
     {
         return value < 'w' || value > 'z';
     }
-    
+
     static bool IsValidSwizzle( const std::string & swizzle )
     {
-        return 
+        return
             swizzle.size() <= 4
-            && ( 
+            && (
                 std::find_if( swizzle.begin(), swizzle.end(), is_not_rgba ) == swizzle.end()
                 || std::find_if( swizzle.begin(), swizzle.end(), is_not_xyzw ) == swizzle.end()
                 );
     }
-    
+
     HLSLParserListener
         * Listener;
     std::set<std::string>
@@ -73,7 +73,7 @@ options {
 translation_unit
 	: global_declaration* technique* EOF
 	;
-	
+
 global_declaration
     : variable_declaration {ast_assign();}
 	| texture_declaration {ast_assign();}
@@ -81,22 +81,22 @@ global_declaration
 	| struct_definition {ast_assign();}
 	| function_declaration {ast_assign();}
 	;
-	
+
 technique
     : {ast_push("technique");} TECHNIQUE Name=ID {ast_addvalue($Name.text);} LCURLY pass* RCURLY {ast_assign();}
     ;
-    
+
 pass
     : {ast_push("pass");} PASS Name=ID {ast_addvalue($Name.text);} LCURLY shader_definition* RCURLY {ast_assign();}
     ;
 
 shader_definition
-    : {ast_push("shader_call");} Type=( VERTEX_SHADER|PIXEL_SHADER ) {ast_addvalue($Type.text);} 
-    ASSIGN COMPILE ShaderType=ID {ast_addvalue($ShaderType.text);} 
-    FunctionName=ID {ast_addvalue($FunctionName.text);} 
+    : {ast_push("shader_call");} Type=( VERTEX_SHADER|PIXEL_SHADER ) {ast_addvalue($Type.text);}
+    ASSIGN COMPILE ShaderType=ID {ast_addvalue($ShaderType.text);}
+    FunctionName=ID {ast_addvalue($FunctionName.text);}
     LPAREN shader_argument_list RPAREN SEMI {ast_assign();}
     ;
-    
+
 shader_argument_list
     : ( {ast_push("argument_expression_list");}shader_argument {ast_assign();}( COMMA shader_argument {ast_assign();} )* {ast_assign();} )?
     ;
@@ -121,11 +121,11 @@ statement
     | jump_statement
     | SEMI
     ;
-  
+
 assignment_statement
-    :  {ast_push();} lvalue_expression{ast_assign();} assignment_operator{ast_setname($assignment_operator.text + "_statement");} expression{ast_assign();}  SEMI 
+    :  {ast_push();} lvalue_expression{ast_assign();} assignment_operator{ast_setname($assignment_operator.text + "_statement");} expression{ast_assign();}  SEMI
     ;
-    
+
 pre_modify_statement
     : pre_modify_expression SEMI {ast_setname( "pre_modify_statement" );}
     ;
@@ -143,21 +143,21 @@ post_modify_expression
     ;
 
 self_modify_operator
-    : PLUSPLUS 
-    | MINUSMINUS 
+    : PLUSPLUS
+    | MINUSMINUS
     ;
-  
+
 block_statement
     : {ast_push("block");}LCURLY (statement{ast_assign();})* RCURLY
     ;
-  
+
 expression_statement
     : {ast_push("expression_statement");} expression SEMI{ast_assign();}
     ;
-    
+
 if_statement
-    : IF LPAREN {ast_push("if");ast_push("if_block");} expression {ast_assign();} RPAREN statement{ast_assign();ast_assign();}  
-        ( ELSE IF LPAREN {ast_push("else_if_block");}expression {ast_assign();} RPAREN statement {ast_assign();ast_assign();} )* 
+    : IF LPAREN {ast_push("if");ast_push("if_block");} expression {ast_assign();} RPAREN statement{ast_assign();ast_assign();}
+        ( ELSE IF LPAREN {ast_push("else_if_block");}expression {ast_assign();} RPAREN statement {ast_assign();ast_assign();} )*
         ( ELSE {ast_push("else_block");} statement {ast_assign();ast_assign();} )?
     ;
 
@@ -167,33 +167,33 @@ iteration_statement
         equality_expression{ast_assign();} SEMI modify_expression{ast_assign();} RPAREN statement{ast_assign();}
     | DO {ast_push("do_while");}statement{ast_assign();} WHILE LPAREN expression{ast_assign();} RPAREN SEMI
     ;
-  
+
 modify_expression
     : (lvalue_expression assignment_operator ) =>
         lvalue_expression assignment_operator expression
     | pre_modify_expression
     | post_modify_expression
     ;
-    
+
 jump_statement
     : BREAK SEMI {ast_push("break");}
     | CONTINUE SEMI  {ast_push("continue");}
-    | RETURN {ast_push("return");} ( expression {ast_assign();} )? SEMI 
+    | RETURN {ast_push("return");} ( expression {ast_assign();} )? SEMI
     | DISCARD SEMI  {ast_push("discard");}
     ;
-   
+
 lvalue_expression
-    : variable_expression ( postfix_suffix )? 
+    : variable_expression ( postfix_suffix )?
     ;
 
 variable_expression
-    : {ast_push("variable");} ID{ast_addvalue($ID.text);}( LBRACKET {ast_push("index");}expression {ast_assign();ast_assign();}RBRACKET )? 
+    : {ast_push("variable");} ID{ast_addvalue($ID.text);}( LBRACKET {ast_push("index");}expression {ast_assign();ast_assign();}RBRACKET )?
     ;
 
 expression
-    : conditional_expression 
+    : conditional_expression
     ;
-  
+
 conditional_expression
     : logical_or_expression ( { ast_push("inline_if");ast_swap();ast_assign();} QUESTION expression{ast_assign();} COLON conditional_expression {ast_assign();} )?
     ;
@@ -249,18 +249,18 @@ unary_expression
     ;
 
 postfix_expression
-    : primary_expression ( postfix_suffix )? 
+    : primary_expression ( postfix_suffix )?
     ;
-  
+
 postfix_suffix
     : DOT swizzle { ast_push("swizzle");ast_swap();ast_assign();ast_addvalue($swizzle.text);}
     | DOT { ast_push("postfix");ast_swap();ast_assign();} primary_expression {ast_assign();} ( postfix_suffix )?
     ;
-  
+
 swizzle
     : ID { IsValidSwizzle( $ID.text ) }?
     ;
-  
+
 assignment_operator
     : ASSIGN
     | MUL_ASSIGN
@@ -273,7 +273,7 @@ assignment_operator
     | BITWISE_SHIFTL_ASSIGN
     | BITWISE_SHIFTR_ASSIGN
     ;
-  
+
 primary_expression
     : constructor
     | call_expression
@@ -281,43 +281,43 @@ primary_expression
     | literal_value
     | LPAREN expression RPAREN
     ;
-    
-constructor 
+
+constructor
     : {ast_push("constructor");}type{ast_assign();} LPAREN argument_expression_list RPAREN
     ;
-  
+
 call_expression
     : {ast_push("call");}ID{ast_addvalue($ID.text);} LPAREN argument_expression_list RPAREN
     ;
 
 argument_expression_list
-    : ( {ast_push("argument_expression_list");}expression{ast_assign();} ( COMMA expression {ast_assign();} )* {ast_assign();} )? 
+    : ( {ast_push("argument_expression_list");}expression{ast_assign();} ( COMMA expression {ast_assign();} )* {ast_assign();} )?
     ;
-  
+
 // Function
 
-function_declaration 
-    : { ast_push("function"); } storage_class* ( PRECISE )? 
-        ( type { ast_assign(); }| VOID_TOKEN {ast_push("type");ast_addvalue("void");ast_assign();} ) 
-        ID{ ast_push("ID"); ast_addvalue($ID.text); ast_assign();} 
-        LPAREN ( {ast_push("argument_list");} argument_list {ast_assign();})? RPAREN 
+function_declaration
+    : { ast_push("function"); } storage_class* ( PRECISE )?
+        ( type { ast_assign(); }| VOID_TOKEN {ast_push("type");ast_addvalue("void");ast_assign();} )
+        ID{ ast_push("ID"); ast_addvalue($ID.text); ast_assign();}
+        LPAREN ( {ast_push("argument_list");} argument_list {ast_assign();})? RPAREN
         ( COLON semantic )?
     LCURLY
         {ast_push("function_body");}( statement {ast_assign();} )*{ast_assign();}
     RCURLY
 	;
-	
+
 argument_list
-    : argument {ast_assign();} ( COMMA argument {ast_assign();} )* 
+    : argument {ast_assign();} ( COMMA argument {ast_assign();} )*
     ;
-    
+
 argument
-    : {ast_push("argument");} input_modifier? ( type_modifier {ast_push("modifier"); ast_addvalue($type_modifier.text); ast_assign();})? type{ast_assign();} 
-        Name=ID{ast_push("ID");ast_addvalue($ID.text);ast_assign();} 
-        ( COLON semantic )? 
+    : {ast_push("argument");} input_modifier? ( type_modifier {ast_push("modifier"); ast_addvalue($type_modifier.text); ast_assign();})? type{ast_assign();}
+        Name=ID{ast_push("ID");ast_addvalue($ID.text);ast_assign();}
+        ( COLON semantic )?
         ( INTERPOLATION_MODIFIER )? ( ASSIGN initial_value {ast_assign();} )?
     ;
-    
+
 input_modifier
     : modifier=( IN_TOKEN | OUT_TOKEN | INOUT | UNIFORM ) {ast_push("input_modifier");ast_addvalue($modifier.text);ast_assign();}
     ;
@@ -325,7 +325,7 @@ input_modifier
 // Texture & sampler
 
 texture_type
-    : 
+    :
     TEXTURE
     | TEXTURE1D
     | TEXTURE1DARRAY
@@ -334,35 +334,35 @@ texture_type
     | TEXTURE3D
     | TEXTURECUBE
     ;
-    
+
 texture_declaration
-    : t=texture_type ID 
+    : t=texture_type ID
     {ast_push("texture_declaration");ast_push("type");ast_addvalue($t.text);ast_assign();ast_addvalue($ID.text);}
     ( COLON semantic ) ?
     ( { ast_push( "annotations" ); } annotations {ast_assign();} ) ?
     SEMI
     ;
-    
+
 sampler_declaration
-    : {ast_push("sampler_declaration");}t=SAMPLER_TYPE{ast_push("type");ast_addvalue($t.text);ast_assign();} 
+    : {ast_push("sampler_declaration");}t=SAMPLER_TYPE{ast_push("type");ast_addvalue($t.text);ast_assign();}
         Name=ID{ast_addvalue($Name.text);} ( ASSIGN SAMPLER_TYPE )? LCURLY (sampler_body{ast_assign();})* RCURLY SEMI
     ;
-    
+
 sampler_body
     : TEXTURE ASSIGN LT_TOKEN ID GT_TOKEN SEMI { ast_push("texture");ast_addvalue($ID.text);}
     | Name=ID ASSIGN Value=ID SEMI  { ast_push("parameter");ast_addvalue($Name.text);ast_addvalue($Value.text);}
     ;
-    
+
 // Variables
 
 variable_declaration
-    : {ast_push("variable_declaration");} 
-        {ast_push("storage");}(storage_class {ast_addvalue($storage_class.text);} )*{ast_assign();} 
+    : {ast_push("variable_declaration");}
+        {ast_push("storage");}(storage_class {ast_addvalue($storage_class.text);} )*{ast_assign();}
         {ast_push("modifier");} ( type_modifier {ast_addvalue($type_modifier.text);} )* {ast_assign();}
         type{ast_assign();}
         variable_declaration_body{ast_assign();} ( COMMA variable_declaration_body{ast_assign();} )* SEMI
 	;
-	
+
 variable_declaration_body
     : {ast_push("variable");}ID{ast_addvalue($ID.text);}( LBRACKET INT{ast_push("size"); ast_addvalue($INT.text); ast_assign(); } RBRACKET )?
         ( COLON semantic ) ?
@@ -371,7 +371,7 @@ variable_declaration_body
         ( { ast_push( "annotations" ); } annotations {ast_assign();} ) ?
         ( ASSIGN initial_value {ast_assign();} ) ?
     ;
-	 
+
 storage_class
     : EXTERN
     | NOINTERPOLATION
@@ -382,7 +382,7 @@ storage_class
     | UNIFORM
     | VOLATILE
     ;
-    
+
 type_modifier
     : 'const'
     | 'row_major'
@@ -391,7 +391,7 @@ type_modifier
 
 packoffset
     :;
-    
+
 register_rule
     :;
 
@@ -401,43 +401,43 @@ annotations
 
 annotation_entry
     :
-    Type=( STRING_TYPE | SCALAR_TYPE ) ID {ast_push("entry");ast_addvalue($Type.text); ast_addvalue($ID.text); } 
+    Type=( STRING_TYPE | SCALAR_TYPE ) ID {ast_push("entry");ast_addvalue($Type.text); ast_addvalue($ID.text); }
     ASSIGN ( STRING { ast_addvalue($STRING.text); } | literal_value {ast_assign();} ) SEMI {ast_assign();}
     ;
 
 initial_value
-    : 
+    :
     expression
     | LCURLY {ast_push( "initial_value_table");}expression {ast_assign();} ( COMMA expression {ast_assign();} )* RCURLY
     ;
-    
+
 type
     : ( intrinsic_type | user_defined_type | SAMPLER_TYPE ) { ast_push("type"); ast_addvalue($type.text); }
     ;
-   
-intrinsic_type  
+
+intrinsic_type
     : MATRIX_TYPE
     | VECTOR_TYPE
     | SCALAR_TYPE
     ;
-    
+
 user_defined_type // :TODO: validates that it's a valid type
-    : ID  { TypeTable.find( $ID.text) != TypeTable.end() }? => 
+    : ID  { TypeTable.find( $ID.text) != TypeTable.end() }? =>
     ;
-    
+
 struct_definition
-    : STRUCT {ast_push("struct_definition");} Name=ID { TypeTable.insert( $Name.text ); ast_addvalue( $Name.text ); } 
+    : STRUCT {ast_push("struct_definition");} Name=ID { TypeTable.insert( $Name.text ); ast_addvalue( $Name.text ); }
     LCURLY
-        ( {ast_push("field");} INTERPOLATION_MODIFIER? type{ast_assign();} MemberName=ID{ast_push("ID");ast_addvalue($MemberName.text);ast_assign();} 
-            ( COLON semantic )? SEMI {ast_assign();} )+ 
+        ( {ast_push("field");} INTERPOLATION_MODIFIER? type{ast_assign();} MemberName=ID{ast_push("ID");ast_addvalue($MemberName.text);ast_assign();}
+            ( COLON semantic )? SEMI {ast_assign();} )+
     RCURLY SEMI
     ;
 
 constant_expression
     : (ID) => variable_expression
-    | literal_value 
+    | literal_value
     ;
-    
+
 literal_value
     :  value=( FLOAT | INT | TRUE_TOKEN | FALSE_TOKEN )  { ast_push("literal"); ast_addvalue($value.text); }
     ;
@@ -466,7 +466,7 @@ SEMANTIC
     | 'BLENDINDICES' ('0'..'8')?
     | 'BLENDWEIGHT' ('0'..'8')?
     ;
-  
+
 SEMI:               ';';
 COMMA:              ',';
 COLON:              ':';
@@ -494,7 +494,7 @@ TECHNIQUE:          'technique';
 PASS:               'pass';
 VERTEX_SHADER:      'VertexShader';
 PIXEL_SHADER:       'PixelShader';
-COMPILE:            'compile'; 
+COMPILE:            'compile';
 LBRACKET:           '[';
 RBRACKET:           ']';
 LPAREN:             '(';
@@ -549,7 +549,7 @@ TEXTURE2DARRAY:     T 'exture2DArray';
 TEXTURE3D:          T 'exture3D';
 TEXTURECUBE:        T 'extureCube';
 
-    
+
 SAMPLER_TYPE
     : 'sampler'
     | 'sampler1D'
@@ -559,23 +559,23 @@ SAMPLER_TYPE
     | 'sampler_state'
     | 'SamplerState'
     ;
-    
-INTERPOLATION_MODIFIER  
+
+INTERPOLATION_MODIFIER
     : 'linear'
     | 'centroid'
     | 'nointerpolation'
     | 'noperspective'
     | 'sample'
     ;
-    
+
 MATRIX_TYPE
     : VECTOR_TYPE 'x' INDEX
     ;
-    
+
 VECTOR_TYPE
     : SCALAR_TYPE INDEX
     ;
-    
+
 SCALAR_TYPE
     : 'bool'
     | 'int'
@@ -586,30 +586,30 @@ SCALAR_TYPE
 STRING_TYPE
     : 'string'
     ;
-    
+
 ID  :	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
     ;
 
 INT :	'0'..'9'+
     ;
-    
-FLOAT 
+
+FLOAT
     : FLOAT_NUMBER 'f'?
     ;
-    
-fragment 
+
+fragment
 INDEX
     :  '1' | '2' | '3' | '4'
     ;
-    
+
 fragment
 FLOAT_NUMBER
-    :   ('-')?('0'..'9')+ '.' ('0'..'9')* EXPONENT? 
+    :   ('-')?('0'..'9')+ '.' ('0'..'9')* EXPONENT?
     |   ('-')?'.' ('0'..'9')+ EXPONENT?
     |   ('-')?('0'..'9')+ EXPONENT
     ;
 
-fragment 
+fragment
     T
     : 't' | 'T'
     ;
@@ -644,4 +644,4 @@ OCTAL_ESC
     |   '\\' ('0'..'7') ('0'..'7')
     |   '\\' ('0'..'7')
     ;
-    
+
