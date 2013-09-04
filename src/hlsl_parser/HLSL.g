@@ -170,7 +170,7 @@ iteration_statement
 
 modify_expression
     : (lvalue_expression assignment_operator ) =>
-        lvalue_expression assignment_operator expression
+        {ast_push();} lvalue_expression{ast_assign();} assignment_operator {ast_setname($assignment_operator.text + "_statement");} expression {ast_assign();}
     | pre_modify_expression
     | post_modify_expression
     ;
