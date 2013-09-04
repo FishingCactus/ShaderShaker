@@ -1249,9 +1249,15 @@ GLSLGenerator = {
     end,
 
     ["process_initial_value_table"] = function( function_node )
-
         return ""
+    end,
+    
+    [ "process_pre_modify" ] = function( node )
+        return node[1] .. GLSLGenerator.ProcessNode( node[2] )
+    end,
 
+    [ "process_post_modify" ] = function( node )
+        return GLSLGenerator.ProcessNode( node[1] ) .. node[2]
     end,
 
     [ "process_post_modify_statement" ] = function( node )
