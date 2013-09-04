@@ -1010,6 +1010,14 @@ GLSLGenerator = {
     [ "process_+=_statement" ] = function( node )
         return prefix() .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' += ' .. GLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
     end,
+    
+    [ "process_/=_expression" ] = function( node )
+        return prefix() .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' /= ' .. GLSLGenerator.ProcessNode( node[ 2 ] )
+    end,
+
+    [ "process_+=_expression" ] = function( node )
+        return prefix() .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' += ' .. GLSLGenerator.ProcessNode( node[ 2 ] )
+    end,
 
     ["process_swizzle"] = function( node )
         return GLSLGenerator.ProcessNode( node[ 1 ] ) .. '.' .. node[ 2 ]
@@ -1021,6 +1029,14 @@ GLSLGenerator = {
 
     [ "process_-=_statement" ] = function( node )
         return prefix() .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' -= ' .. GLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
+    end,
+    
+    [ "process_*=_expression" ] = function( node )
+        return prefix() .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' *= ' .. GLSLGenerator.ProcessNode( node[ 2 ] )
+    end,
+
+    [ "process_-=_expression" ] = function( node )
+        return prefix() .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' -= ' .. GLSLGenerator.ProcessNode( node[ 2 ] )
     end,
 
     [ "process_!" ] = function( node )

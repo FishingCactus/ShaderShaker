@@ -524,6 +524,32 @@ HLSLGenerator = {
         return prefix .. HLSLGenerator.ProcessNode( node[ 1 ] ) .. ' /= ' .. HLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
     end,
 
+    [ "process_=_expression" ] = function( node )
+        local prefix = string.rep([[    ]], i )
+
+        return prefix .. HLSLGenerator.ProcessNode( node[ 1 ] ) .. ' = ' .. HLSLGenerator.ProcessNode( node[ 2 ] )
+    end,
+    [ "process_-=_expression" ] = function( node )
+        local prefix = string.rep([[    ]], i )
+
+        return prefix .. HLSLGenerator.ProcessNode( node[ 1 ] ) .. ' -= ' .. HLSLGenerator.ProcessNode( node[ 2 ] )
+    end,
+    [ "process_*=_expression" ] = function( node )
+        local prefix = string.rep([[    ]], i )
+
+        return prefix .. HLSLGenerator.ProcessNode( node[ 1 ] ) .. ' *= ' .. HLSLGenerator.ProcessNode( node[ 2 ] )
+    end,
+        [ "process_+=_expression" ] = function( node )
+        local prefix = string.rep([[    ]], i )
+
+        return prefix .. HLSLGenerator.ProcessNode( node[ 1 ] ) .. ' += ' .. HLSLGenerator.ProcessNode( node[ 2 ] )
+    end,
+    [ "process_/=_expression" ] = function( node )
+        local prefix = string.rep([[    ]], i )
+
+        return prefix .. HLSLGenerator.ProcessNode( node[ 1 ] ) .. ' /= ' .. HLSLGenerator.ProcessNode( node[ 2 ] )
+    end,
+
     [ "process_pre_modify" ] = function( node )
         return node[1] .. HLSLGenerator.ProcessNode( node[2] )
     end,
