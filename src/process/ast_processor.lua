@@ -17,7 +17,7 @@ function AstProcessor.Process( options )
     end
 
     if options.optimize then
-        Optimizer.Process( ast_node )
+        Optimizer.Process( ast_node, options )
     end
 
     return ast_node

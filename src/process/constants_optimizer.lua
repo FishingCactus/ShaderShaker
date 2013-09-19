@@ -64,26 +64,20 @@ function ConstantsOptimizer:ReplaceConstants( node, constants )
         return
     end
 
-    for node_index, child_node in ipairs( node ) do
-        if child_node.name == "if" then
-            for if_node_index, if_child_node in ipairs( child_node ) do
-                if if_child_node.name == "if_block" or if_child_node.name == "else_if_block" then
-                    local variable_node = if_child_node[ 1 ]
-
-                    if variable_node.name == "unary_!" then
-                        variable_node  = variable_node[ 1 ]
-                    end
-
-                    if constants[ variable_node[ 1 ] ] then
-                        variable_node[ 1 ] = constants[ variable_node[ 1 ] ].value
-                        variable_node.name = "literal"
-                    end
-
-                    self:ReplaceConstants( child_node, constants )
-                end
+    if node.name == "variable_declaration" then
+        for child_index, child_node in pairs( node ) do
+            if child_node.name == "variable" and self.constants_replacement[ child_node[ 1 ] ] then
+                node[ child_index ] = nil
             end
-        else
-            self:ReplaceConstants( child_node, constants )
+        end
+    else
+        for _, child_node in pairs( node ) do
+            if child_node.name == "variable" and self.constants_replacement[ child_node[ 1 ] ] then
+                child_node[ 1 ] = constants[ child_node[ 1 ] ].value
+                child_node.name = "literal"
+            else
+                self:ReplaceConstants( child_node, constants )
+            end
         end
     end
 end
