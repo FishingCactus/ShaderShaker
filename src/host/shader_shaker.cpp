@@ -13,6 +13,7 @@ extern "C"
 #include <vector>
 #include <algorithm>
 #include <cstring>
+#include <cstdio>
 #include "HLSLConverter.h"
 #include "ShaderShaker.h"
 
@@ -24,11 +25,16 @@ struct ShaderShakerContext
 
 // Embedded scripts ( found in scripts.cpp )
 extern const char* builtin_scripts[];
-void ( *log_print_callback )( const char * );
+void ( *log_print_callback )( const char * ) = NULL;
 
 static bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv );
 
 #if !defined( SHADERSHAKER_IN_DLL ) && !defined( SHADERSHAKER_IN_LIB ) && !defined( SHADERSHAKER_AS_SOURCE )
+
+    static void log( const char * msg )
+    {
+        printf( msg );
+    }
 
     int main(int argc, const char** argv)
     {
@@ -36,6 +42,8 @@ static bool load_builtin_scripts(lua_State* L, int argc, const char* const * arg
             * context;
         bool
             result;
+
+        ShaderShakerSetLogCallback( log );
 
         context = ShaderShakerCreateContext( argc, argv );
 
