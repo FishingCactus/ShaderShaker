@@ -13,7 +13,10 @@ options {
 
     class HLSLLexer; class HLSLParser;
 
-    class HLSLLexerTraits : public antlr3::Traits< HLSLLexer, HLSLParser >
+    template<class ImplTraits>
+    class HLSLUserTraits : public antlr3::CustomTraitsBase<ImplTraits> {};
+
+    class HLSLLexerTraits : public antlr3::Traits< HLSLLexer, HLSLParser, HLSLUserTraits >
     {
         public:
 
@@ -29,6 +32,53 @@ options {
     };
 
     typedef HLSLLexerTraits HLSLParserTraits;
+
+    extern void ( *read_file_content_callback )( void * content, size_t & size, const char * );
+
+    ANTLR_BEGIN_NAMESPACE()
+
+    template<>
+    class FileUtils< TraitsBase< HLSLUserTraits > > : public FileUtils< TraitsBase< CustomTraitsBase > >
+    {
+    public:
+        typedef TraitsBase< HLSLUserTraits > ImplTraits;
+
+        template<typename InputStreamType>
+        static ANTLR_UINT32 AntlrRead8Bit(InputStreamType* input, const ANTLR_UINT8* fileName)
+        {
+            if ( read_file_content_callback )
+            {
+                size_t
+                    length;
+                void
+                    * content;
+
+                read_file_content_callback( NULL, length, ( const char * ) fileName );
+
+                if ( !length )
+                {
+                    return ANTLR_FAIL;
+                }
+
+                content = InputStreamType::AllocPolicyType::alloc( length );
+                read_file_content_callback( content, length, ( const char * ) fileName );
+
+                input->set_data( (unsigned char*) content );
+                input->set_sizeBuf( length );
+
+                input->set_isAllocated( true );
+
+                return  ANTLR_SUCCESS;
+            }
+            else
+            {
+                return FileUtils< TraitsBase< CustomTraitsBase > >::AntlrRead8Bit( input, fileName );
+            }
+        }
+    };
+
+    ANTLR_END_NAMESPACE()
+
     using std::string;
 }
 

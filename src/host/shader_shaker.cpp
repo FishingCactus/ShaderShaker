@@ -26,6 +26,7 @@ struct ShaderShakerContext
 // Embedded scripts ( found in scripts.cpp )
 extern const char* builtin_scripts[];
 void ( *log_print_callback )( const char * ) = NULL;
+void ( *read_file_content_callback )( void * content, size_t & size, const char * ) = NULL;
 
 static bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv );
 
@@ -69,6 +70,11 @@ static bool load_builtin_scripts(lua_State* L, int argc, const char* const * arg
 void ShaderShakerSetLogCallback( void ( *log_print )( const char * ) )
 {
     log_print_callback = log_print;
+}
+
+void ShaderShakerSetReadFileContentCallback( void ( *read_file_content )( void * content, size_t & size, const char * ) )
+{
+    read_file_content_callback = read_file_content;
 }
 
 ShaderShakerContext * ShaderShakerCreateContext( int argc, const char* const * argv )

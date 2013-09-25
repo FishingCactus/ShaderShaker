@@ -5,31 +5,6 @@ options {
     language = Cpp;
 }
 
-@lexer::traits 
-{
-    #include <sstream>
-
-    class HLSLLexer; class HLSLParser;
-
-    class HLSLLexerTraits : public antlr3::Traits< HLSLLexer, HLSLParser > 
-    {
-        public:
-                                               
-        static int ConvertToInt32( const std::string & type )
-        {
-            int 
-                return_value;
-        
-            std::istringstream( type ) >> return_value;
-
-            return return_value;
-        }
-    };
-
-    typedef HLSLLexerTraits HLSLParserTraits;
-    using std::string;
-}
-
 @parser::includes
 {
     #include "HLSLLexer.hpp"
@@ -46,20 +21,20 @@ options {
     {
         return value != 'r' && value != 'g' && value != 'b' && value != 'a';
     }
-    
+
     static bool is_not_xyzw( const char value )
     {
         return value < 'x' || value > 'w';
     }
-    
+
     static bool IsValidSwizzle( const std::string & swizzle )
     {
-        return 
+        return
             swizzle.size() <= 4
             && std::find_if( swizzle.begin(), swizzle.end(), is_not_rgba ) == swizzle.end()
-            && std::find_if( swizzle.begin(), swizzle.end(), is_not_xyzw ) == swizzle.end();     
+            && std::find_if( swizzle.begin(), swizzle.end(), is_not_xyzw ) == swizzle.end();
     }
-    
+
     HLSLParserListener
         * Listener;
     std::set<std::string>
@@ -69,7 +44,7 @@ options {
 translation_unit
 	: global_declaration* technique* EOF
 	;
-	
+
 global_declaration
 	: variable_declaration
 	| texture_declaration
@@ -77,11 +52,11 @@ global_declaration
 	| struct_definition
 	| function_declaration
 	;
-	
+
 technique
     : TECHNIQUE Name=ID LCURLY pass* RCURLY
     ;
-    
+
 pass
     : PASS Name=ID LCURLY shader_definition* RCURLY
     ;
@@ -89,11 +64,11 @@ pass
 shader_definition
     : ( VERTEX_SHADER|PIXEL_SHADER ) ASSIGN COMPILE ID ID LPAREN shader_argument_list? RPAREN SEMI
     ;
-    
+
 shader_argument_list
     : constant_expression ( COMMA constant_expression )*
     ;
-	
+
 // Statements
 
 statement
@@ -108,40 +83,40 @@ statement
     | jump_statement
     | SEMI
     ;
-  
+
 assignment_statement
-    :  lvalue_expression assignment_operator expression SEMI 
+    :  lvalue_expression assignment_operator expression SEMI
     ;
-    
+
 pre_modify_statement
-    : pre_modify_expression SEMI 
+    : pre_modify_expression SEMI
     ;
 
 pre_modify_expression
-    : self_modify_operator lvalue_expression 
+    : self_modify_operator lvalue_expression
     ;
 
 post_modify_statement
-    : post_modify_expression SEMI 
+    : post_modify_expression SEMI
     ;
 
 post_modify_expression
-    : lvalue_expression self_modify_operator 
+    : lvalue_expression self_modify_operator
     ;
 
 self_modify_operator
-    : PLUSPLUS 
-    | MINUSMINUS 
+    : PLUSPLUS
+    | MINUSMINUS
     ;
-  
+
 block_statement
     : LCURLY (statement)* RCURLY
     ;
-  
+
 expression_statement
     : expression SEMI
     ;
-    
+
 if_statement
     : IF LPAREN expression RPAREN statement ( ELSE IF LPAREN expression RPAREN statement )* ( ELSE statement )?
     ;
@@ -152,33 +127,33 @@ iteration_statement
         equality_expression SEMI modify_expression RPAREN statement
     | DO statement WHILE LPAREN expression RPAREN SEMI
     ;
-  
+
 modify_expression
     : (lvalue_expression assignment_operator ) =>
         lvalue_expression assignment_operator expression
     | pre_modify_expression
     | post_modify_expression
     ;
-    
+
 jump_statement
     : BREAK SEMI
     | CONTINUE SEMI
     | RETURN ( expression )? SEMI
     | DISCARD SEMI
     ;
-   
+
 lvalue_expression
-    : variable_expression ( postfix_suffix )? 
+    : variable_expression ( postfix_suffix )?
     ;
 
 variable_expression
-    : ID ( LBRACKET expression RBRACKET )? 
+    : ID ( LBRACKET expression RBRACKET )?
     ;
 
 expression
-    : conditional_expression 
+    : conditional_expression
     ;
-  
+
 conditional_expression
     : logical_or_expression ( QUESTION expression COLON conditional_expression )?
     ;
@@ -234,17 +209,17 @@ unary_expression
     ;
 
 postfix_expression
-    : primary_expression ( postfix_suffix )? 
+    : primary_expression ( postfix_suffix )?
     ;
-  
+
 postfix_suffix
     : ( DOT swizzle )
     | ( DOT primary_expression )+ ;
-  
+
 swizzle
     : ID { IsValidSwizzle( $ID.text ) }?
     ;
-  
+
 assignment_operator
     : ASSIGN
     | MUL_ASSIGN
@@ -257,7 +232,7 @@ assignment_operator
     | BITWISE_SHIFTL_ASSIGN
     | BITWISE_SHIFTR_ASSIGN
     ;
-  
+
 primary_expression
     : constructor
     | call_expression
@@ -265,36 +240,36 @@ primary_expression
     | literal_value
     | LPAREN expression RPAREN
     ;
-    
-constructor 
+
+constructor
     : type LPAREN argument_expression_list RPAREN
     ;
-  
+
 call_expression
     : ID LPAREN argument_expression_list RPAREN
     ;
 
 argument_expression_list
-    : ( expression ( COMMA expression )* )? 
+    : ( expression ( COMMA expression )* )?
     ;
-  
+
 // Function
 
-function_declaration 
+function_declaration
     : storage_class* ( PRECISE )? ReturnValue=( type | VOID_TOKEN ) Name=ID LPAREN (argument_list)? RPAREN ( COLON SEMANTIC )?
     LCURLY
         statement*
     RCURLY
 	;
-	
+
 argument_list
-    : argument ( COMMA argument )* 
+    : argument ( COMMA argument )*
     ;
-    
+
 argument
     : input_modifier? type Name=ID ( COLON SEMANTIC )? ( INTERPOLATION_MODIFIER )? ( ASSIGN initial_value )?
     ;
-    
+
 input_modifier
     : IN
     | OUT
@@ -306,23 +281,23 @@ input_modifier
 
 texture_declaration
     : TEXTURE_TYPE ID SEMI;
-    
+
 sampler_declaration
     : SAMPLER_TYPE Name=ID ( ASSIGN SAMPLER_TYPE )? LCURLY sampler_body* RCURLY SEMI
     ;
-    
+
 sampler_body
     : 'Texture' ASSIGN '<' ID '>' SEMI
-    | ID ASSIGN ID SEMI  
+    | ID ASSIGN ID SEMI
     ;
-    
+
 // Variables
 
 variable_declaration
-    : storage_class* type_modifier* type 
+    : storage_class* type_modifier* type
         variable_declaration_body ( COMMA variable_declaration_body )* SEMI
 	;
-	
+
 variable_declaration_body
     : ID ( LBRACKET INT RBRACKET )?
         ( COLON SEMANTIC ) ?
@@ -331,7 +306,7 @@ variable_declaration_body
         annotations ?
         ( ASSIGN initial_value ) ?
     ;
-	 
+
 storage_class
     : EXTERN
     | NOINTERPOLATION
@@ -342,7 +317,7 @@ storage_class
     | UNIFORM
     | VOLATILE
     ;
-    
+
 type_modifier
     : 'const'
     | 'row_major'
@@ -351,38 +326,38 @@ type_modifier
 
 packoffset
     :;
-    
+
 register_rule
     :;
 
 annotations
     :;
-        
+
 initial_value
-    : 
+    :
     expression
     | LCURLY expression ( COMMA expression )* RCURLY
     ;
-    
+
 type
-    : intrinsic_type 
+    : intrinsic_type
     | user_defined_type
     ;
-   
-intrinsic_type 
+
+intrinsic_type
     : MATRIX_TYPE
     | VECTOR_TYPE
     | SCALAR_TYPE
     ;
-    
+
 user_defined_type // :TODO: validates that it's a valid type
-    : ID  { TypeTable.find( $ID.text) != TypeTable.end() }? => 
+    : ID  { TypeTable.find( $ID.text) != TypeTable.end() }? =>
     ;
-    
+
 struct_definition
-    : 'struct' Name=ID { TypeTable.insert( $Name.text ); } 
+    : 'struct' Name=ID { TypeTable.insert( $Name.text ); }
     LCURLY
-        ( INTERPOLATION_MODIFIER? intrinsic_type MemberName=ID  ( COLON SEMANTIC )? SEMI )+ 
+        ( INTERPOLATION_MODIFIER? intrinsic_type MemberName=ID  ( COLON SEMANTIC )? SEMI )+
     RCURLY SEMI
     ;
 
@@ -403,7 +378,7 @@ SEMANTIC
     | 'TEXCOORD' ('0'..'8')?
     | 'VPOS'
     ;
-  
+
 SEMI:               ';';
 COMMA:              ',';
 COLON:              ':';
@@ -431,7 +406,7 @@ TECHNIQUE:          'technique';
 PASS:               'pass';
 VERTEX_SHADER:      'VertexShader';
 PIXEL_SHADER:       'PixelShader';
-COMPILE:            'compile'; 
+COMPILE:            'compile';
 LBRACKET:           '[';
 RBRACKET:           ']';
 LPAREN:             '(';
@@ -483,7 +458,7 @@ TEXTURE_TYPE
     | 'texture3D'
     | 'textureCube'
     ;
-    
+
 SAMPLER_TYPE
     : 'sampler'
     | 'sampler1D'
@@ -493,48 +468,48 @@ SAMPLER_TYPE
     | 'sampler_state'
     | 'SamplerState'
     ;
-    
-INTERPOLATION_MODIFIER  
+
+INTERPOLATION_MODIFIER
     : 'linear'
     | 'centroid'
     | 'nointerpolation'
     | 'noperspective'
     | 'sample'
     ;
-    
+
 MATRIX_TYPE
     : VECTOR_TYPE 'x' INDEX
     ;
-    
+
 VECTOR_TYPE
     : SCALAR_TYPE INDEX
     ;
-    
+
 SCALAR_TYPE
     : 'bool'
     | 'int'
     | 'float'
     | 'double'
     ;
-    
+
 ID  :	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
     ;
 
 INT :	'0'..'9'+
     ;
-    
-FLOAT 
+
+FLOAT
     : FLOAT_NUMBER 'f'?
     ;
-    
-fragment 
+
+fragment
 INDEX
     :  '1' | '2' | '3' | '4'
     ;
-    
+
 fragment
 FLOAT_NUMBER
-    :   ('-')?('0'..'9')+ '.' ('0'..'9')* EXPONENT? 
+    :   ('-')?('0'..'9')+ '.' ('0'..'9')* EXPONENT?
     |   ('-')?'.' ('0'..'9')+ EXPONENT?
     |   ('-')?('0'..'9')+ EXPONENT
     ;
@@ -569,4 +544,4 @@ OCTAL_ESC
     |   '\\' ('0'..'7') ('0'..'7')
     |   '\\' ('0'..'7')
     ;
-    
+
