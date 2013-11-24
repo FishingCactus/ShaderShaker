@@ -27,6 +27,8 @@ function _shaker_shaker_process_files()
         local
             ast
 
+        print( "Processing " .. options.input_file )
+
         ast = AstProcessor.Process( options )
 
         if options.check_file then
