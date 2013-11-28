@@ -33,6 +33,7 @@ return {
     "process/ast_processor.lua",
     "process/ast_rewrite_if.lua",
     "process/ast_rewrite_constants.lua",
+    "process/ast_rewrite_comparison.lua",
     "process/ast_rewriter.lua",
     "process/file_checker.lua",
     --"process/function_replacement.lua",

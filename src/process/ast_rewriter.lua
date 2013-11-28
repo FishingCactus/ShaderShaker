@@ -18,6 +18,10 @@ function AstRewriter:Process( parent_node )
         [ '+' ] = ast_rewrite_addition_rules,
         [ '&&' ] = ast_rewrite_boolean_and_rules,
         [ '||' ] = ast_rewrite_boolean_or_rules,
+        [ '<' ] = ast_rewrite_less_rules,
+        [ '<=' ] = ast_rewrite_less_than_rules,
+        [ '>' ] = ast_rewrite_greater_rules,
+        [ '>=' ] = ast_rewrite_greater_than_rules,
     }
 
     local rewrite_node = function( node, parent, index )
