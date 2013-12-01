@@ -8,7 +8,7 @@
         variable
         {
             "scalar_float_with_value",
-            literal{"0.5f"}
+            float_literal{"0.5f"}
         }
     },
     struct_definition
@@ -93,7 +93,7 @@
                 variable
                 {
                     "d",
-                    literal{"1.0"}
+                    float_literal{"1.0"}
                 }
             },
             variable_declaration
@@ -104,7 +104,7 @@
                 variable
                 {
                     "e",
-                    literal{"2.0"}
+                    float_literal{"2.0"}
                 }
             },
             variable_declaration
@@ -115,7 +115,7 @@
                 variable
                 {
                     "f",
-                    literal{"3.0"}
+                    float_literal{"3.0"}
                 }
             },
             variable_declaration
@@ -128,109 +128,7 @@
                     "g",
                     +
                     {
-                        literal{"40"},
-                        variable{"scalar_float_with_value"}
-                    }
-                }
-            },
-            =_statement
-            {
-                swizzle
-                {
-                    postfix
-                    {
-                        variable{"output"},
-                        variable{"Position"}
-                    },
-                    "x"
-                },
-                +
-                {
-                    variable{"d"},
-                    variable{"e"}
-                }
-            },
-            return{variable{"Output"}}
-        }
-    },
-    function
-    {
-        type{"VS_OUTPUT"},
-        ID{"RenderSceneVS1ltlfla"},
-        argument_list
-        {
-            argument
-            {
-                type{"float4"},
-                ID{"vPos"},
-                semantic{"POSITION"}
-            },
-            argument
-            {
-                type{"float3"},
-                ID{"vNormal"},
-                semantic{"NORMAL"}
-            },
-            argument
-            {
-                type{"float2"},
-                ID{"vTexCoord0"},
-                semantic{"TEXCOORD"}
-            }
-        },
-        function_body
-        {
-            variable_declaration
-            {
-                storage{},
-                modifier{},
-                type{"VS_OUTPUT"},
-                variable{"Output"}
-            },
-            variable_declaration
-            {
-                storage{},
-                modifier{"const"},
-                type{"float"},
-                variable
-                {
-                    "d",
-                    literal{"1.0"}
-                }
-            },
-            variable_declaration
-            {
-                storage{},
-                modifier{"const"},
-                type{"float"},
-                variable
-                {
-                    "e",
-                    literal{"2.0"}
-                }
-            },
-            variable_declaration
-            {
-                storage{},
-                modifier{"const"},
-                type{"float"},
-                variable
-                {
-                    "f",
-                    literal{"3.0"}
-                }
-            },
-            variable_declaration
-            {
-                storage{},
-                modifier{"const"},
-                type{"float"},
-                variable
-                {
-                    "g",
-                    +
-                    {
-                        literal{"40"},
+                        int_literal{"40"},
                         variable{"scalar_float_with_value"}
                     }
                 }
@@ -265,7 +163,13 @@
             {
                 "VertexShader",
                 "vs_3_0",
-                "RenderSceneVS1ltlfla"
+                "RenderSceneVS",
+                argument_expression_list
+                {
+                    int_literal{"1"},
+                    bool_literal{"true"},
+                    bool_literal{"false"}
+                }
             }
         }
     }

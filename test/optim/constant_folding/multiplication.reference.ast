@@ -17,7 +17,7 @@
                 ID{"b"}
             }
         },
-        function_body{return{literal{"0.0f"}}}
+        function_body{return{float_literal{"0.0f"}}}
     },
     function
     {
@@ -36,7 +36,7 @@
                 ID{"b"}
             }
         },
-        function_body{return{literal{"0.0f"}}}
+        function_body{return{float_literal{"0.0f"}}}
     },
     function
     {
@@ -55,7 +55,7 @@
                 ID{"b"}
             }
         },
-        function_body{return{literal{"0.0f"}}}
+        function_body{return{float_literal{"0.0f"}}}
     },
     function
     {

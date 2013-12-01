@@ -52,24 +52,7 @@
                 *
                 {
                     variable{"toto"},
-                    literal{"1.5f"}
-                }
-            }
-        }
-    },
-    function
-    {
-        type{"float2"},
-        ID{"HelloWorldftc"},
-        argument_list{},
-        function_body
-        {
-            return
-            {
-                *
-                {
-                    variable{"toto"},
-                    literal{"1.5f"}
+                    float_literal{"1.5f"}
                 }
             }
         }
@@ -124,8 +107,8 @@
                             variable{"input"},
                             variable{"Position"}
                         },
-                        literal{"0"},
-                        literal{"1"}
+                        int_literal{"0"},
+                        int_literal{"1"}
                     }
                 }
             },
@@ -174,70 +157,6 @@
     },
     function
     {
-        type{"VS_TEXTURED_OUTPUT"},
-        ID{"vsflft0l1l2l*aca"},
-        argument_list
-        {
-            argument
-            {
-                type{"VS_TEXTURED_INPUT"},
-                ID{"input"}
-            }
-        },
-        function_body
-        {
-            variable_declaration
-            {
-                storage{},
-                modifier{},
-                type{"VS_TEXTURED_OUTPUT"},
-                variable{"output"}
-            },
-            =_statement
-            {
-                postfix
-                {
-                    variable{"output"},
-                    variable{"Position"}
-                },
-                constructor
-                {
-                    type{"float4"},
-                    argument_expression_list
-                    {
-                        postfix
-                        {
-                            variable{"input"},
-                            variable{"Position"}
-                        },
-                        literal{"0"},
-                        literal{"1"}
-                    }
-                }
-            },
-            =_statement
-            {
-                postfix
-                {
-                    variable{"output"},
-                    variable{"TextureCoordinate"}
-                },
-                *
-                {
-                    postfix
-                    {
-                        variable{"input"},
-                        variable{"TextureCoordinate"}
-                    },
-                    variable{"toto"}
-                }
-            },
-            nop{},
-            return{variable{"output"}}
-        }
-    },
-    function
-    {
         type{"float4"},
         ID{"pixel_shader_common"},
         argument_list
@@ -267,45 +186,10 @@
                     "result",
                     initial_value_table
                     {
-                        literal{"0.0f"},
-                        literal{"0.0f"},
-                        literal{"0.0f"},
-                        literal{"0.0f"}
-                    }
-                }
-            },
-            return{variable{"result"}}
-        }
-    },
-    function
-    {
-        type{"float4"},
-        ID{"pixel_shader_commontl"},
-        argument_list
-        {
-            argument
-            {
-                type{"float2"},
-                ID{"texture_coordinate"},
-                semantic{"TEXCOORD0"}
-            }
-        },
-        function_body
-        {
-            variable_declaration
-            {
-                storage{},
-                modifier{},
-                type{"float4"},
-                variable
-                {
-                    "result",
-                    initial_value_table
-                    {
-                        literal{"0.0f"},
-                        literal{"0.0f"},
-                        literal{"0.0f"},
-                        literal{"0.0f"}
+                        float_literal{"0.0f"},
+                        float_literal{"0.0f"},
+                        float_literal{"0.0f"},
+                        float_literal{"0.0f"}
                     }
                 }
             },
@@ -401,49 +285,6 @@
             }
         }
     },
-    function
-    {
-        type{"float4"},
-        ID{"ps_with_watertla"},
-        argument_list
-        {
-            argument
-            {
-                type{"float2"},
-                ID{"texture_coordinate"},
-                semantic{"TEXCOORD0"}
-            },
-            argument
-            {
-                type{"float2"},
-                ID{"vpos"},
-                semantic{"VPOS"}
-            }
-        },
-        semantic{"COLOR0"},
-        function_body
-        {
-            variable_declaration
-            {
-                storage{},
-                modifier{},
-                type{"float4"},
-                variable{"color_multiplier"}
-            },
-            return
-            {
-                *
-                {
-                    variable{"color_multiplier"},
-                    call
-                    {
-                        "pixel_shader_commontl",
-                        argument_expression_list{variable{"texture_coordinate"}}
-                    }
-                }
-            }
-        }
-    },
     technique
     {
         "DefaultWithShadowMapAndWater",
@@ -454,13 +295,31 @@
             {
                 "VertexShader",
                 "vs_3_0",
-                "vsflft0l1l2l*aca"
+                "vs",
+                argument_expression_list
+                {
+                    bool_literal{"false"},
+                    constructor
+                    {
+                        type{"float2"},
+                        argument_expression_list
+                        {
+                            float_literal{"0.5f"},
+                            *
+                            {
+                                float_literal{"1.5"},
+                                float_literal{"2.0f"}
+                            }
+                        }
+                    }
+                }
             },
             shader_call
             {
                 "PixelShader",
                 "ps_3_0",
-                "ps_with_watertla"
+                "ps_with_water",
+                argument_expression_list{bool_literal{"true"}}
             }
         }
     }

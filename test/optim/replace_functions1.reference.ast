@@ -78,7 +78,7 @@
                         variable{"x"},
                         variable{"y"},
                         variable{"z"},
-                        literal{"0.0f"}
+                        float_literal{"0.0f"}
                     }
                 }
             }
@@ -122,7 +122,7 @@
                             variable{"z"}
                         }
                     },
-                    literal{"10.0f"}
+                    float_literal{"10.0f"}
                 }
             }
         }
@@ -165,7 +165,7 @@
                             variable{"z"}
                         }
                     },
-                    literal{"2.0f"}
+                    float_literal{"2.0f"}
                 }
             }
         }

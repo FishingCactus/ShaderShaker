@@ -16,13 +16,13 @@
                     variable
                     {
                         "index",
-                        literal{"0"}
+                        int_literal{"0"}
                     }
                 },
                 <
                 {
                     variable{"index"},
-                    literal{"10"}
+                    int_literal{"10"}
                 },
                 pre_modify
                 {
@@ -38,7 +38,7 @@
                             >
                             {
                                 variable{"index"},
-                                literal{"5"}
+                                int_literal{"5"}
                             },
                             block{break{}}
                         }

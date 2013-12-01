@@ -32,7 +32,7 @@
                 variable
                 {
                     "d",
-                    literal{"1.0"}
+                    float_literal{"1.0"}
                 }
             },
             variable_declaration
@@ -43,7 +43,7 @@
                 variable
                 {
                     "e",
-                    literal{"2.0"}
+                    float_literal{"2.0"}
                 }
             },
             variable_declaration
@@ -54,7 +54,7 @@
                 variable
                 {
                     "f",
-                    literal{"3.0"}
+                    float_literal{"3.0"}
                 }
             },
             return
@@ -83,12 +83,12 @@
                                 },
                                 variable{"f"}
                             },
-                            literal{"0.5"}
+                            float_literal{"0.5"}
                         }
                     },
                     *
                     {
-                        literal{"2.0"},
+                        float_literal{"2.0"},
                         variable{"e"}
                     }
                 }

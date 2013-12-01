@@ -45,7 +45,7 @@
                     -=_statement
                     {
                         variable{"a"},
-                        literal{"1.0"}
+                        float_literal{"1.0"}
                     },
                     =_statement
                     {
@@ -53,7 +53,7 @@
                         <
                         {
                             variable{"a"},
-                            literal{"0.0"}
+                            float_literal{"0.0"}
                         }
                     }
                 },
@@ -75,7 +75,7 @@
                     }
                 }
             },
-            return{literal{"0"}}
+            return{int_literal{"0"}}
         }
     }
 }

@@ -26,13 +26,13 @@
                         variable
                         {
                             "foo",
-                            index{literal{"3"}}
+                            index{int_literal{"3"}}
                         },
                         "xyz"
                     }
                 }
             },
-            return{literal{"false"}}
+            return{bool_literal{"false"}}
         }
     }
 }
