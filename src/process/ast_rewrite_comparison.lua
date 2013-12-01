@@ -1,7 +1,11 @@
 
 local function if_argument_literal( node )
-    return node[ 1 ].name == "literal" and node[ 2 ].name == "literal"
-        and tonumber( node[ 1 ][ 1 ] ) ~= nil and tonumber( node[ 2 ][ 1 ] ) ~= nil
+    local name_1 = node[ 1 ].name
+    local name_2 = node[ 2 ].name
+    return ( name_1 == "int_literal" or  name_1 == "float_literal" )
+        and ( name_2 == "int_literal" or name_2 == "float_literal" )
+        and tonumber( node[ 1 ][ 1 ] ) ~= nil
+        and tonumber( node[ 2 ][ 1 ] ) ~= nil
 end
 
 local function replace_by_result( operator )
@@ -12,7 +16,7 @@ local function replace_by_result( operator )
 
         local value = assert( ls( 'return ' .. node[ 1 ][ 1 ] .. operator .. node[ 2 ][ 1 ] ) )()
 
-        parent[ index ] = { name = 'literal', [ 1 ] = tostring( value ) }
+        parent[ index ] = { name = "bool_literal", [ 1 ] = tostring( value ) }
     end
 end
 
