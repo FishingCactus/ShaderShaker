@@ -96,7 +96,7 @@
                 variable
                 {
                     "d",
-                    literal{"1.0"}
+                    float_literal{"1.0"}
                 }
             },
             variable_declaration
@@ -107,7 +107,7 @@
                 variable
                 {
                     "e",
-                    literal{"2.0"}
+                    float_literal{"2.0"}
                 }
             },
             variable_declaration
@@ -118,108 +118,7 @@
                 variable
                 {
                     "f",
-                    literal{"3.0"}
-                }
-            },
-            =_statement
-            {
-                swizzle
-                {
-                    postfix
-                    {
-                        variable{"output"},
-                        variable{"Position"}
-                    },
-                    "x"
-                },
-                +
-                {
-                    variable{"d"},
-                    variable{"e"}
-                }
-            },
-            return{variable{"Output"}}
-        }
-    },
-    function
-    {
-        type{"VS_OUTPUT"},
-        ID{"RenderSceneVS3ltltla"},
-        argument_list
-        {
-            argument
-            {
-                type{"float4"},
-                ID{"vPos"},
-                semantic{"POSITION"}
-            },
-            argument
-            {
-                type{"float3"},
-                ID{"vNormal"},
-                semantic{"NORMAL"}
-            },
-            argument
-            {
-                type{"float2"},
-                ID{"vTexCoord0"},
-                semantic{"TEXCOORD"}
-            },
-            argument
-            {
-                input_modifier{"in"},
-                modifier{"const"},
-                type{"float2"},
-                ID{"vpos"}
-            },
-            argument
-            {
-                input_modifier{"out"},
-                modifier{"const"},
-                type{"float3"},
-                ID{"world_space_view_vector"}
-            }
-        },
-        function_body
-        {
-            variable_declaration
-            {
-                storage{},
-                modifier{},
-                type{"VS_OUTPUT"},
-                variable{"Output"}
-            },
-            variable_declaration
-            {
-                storage{},
-                modifier{"const"},
-                type{"float"},
-                variable
-                {
-                    "d",
-                    literal{"1.0"}
-                }
-            },
-            variable_declaration
-            {
-                storage{},
-                modifier{"const"},
-                type{"float"},
-                variable
-                {
-                    "e",
-                    literal{"2.0"}
-                }
-            },
-            variable_declaration
-            {
-                storage{},
-                modifier{"const"},
-                type{"float"},
-                variable
-                {
-                    "f",
-                    literal{"3.0"}
+                    float_literal{"3.0"}
                 }
             },
             =_statement
@@ -310,7 +209,13 @@
             {
                 "VertexShader",
                 "vs_3_0",
-                "RenderSceneVS3ltltla"
+                "RenderSceneVS",
+                argument_expression_list
+                {
+                    int_literal{"3"},
+                    bool_literal{"true"},
+                    bool_literal{"true"}
+                }
             },
             shader_call
             {

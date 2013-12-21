@@ -783,7 +783,7 @@ GLSLGenerator = {
 
             local left = node[ 1 ][ 1 ]
             local right = node[ 2 ][ 1 ]
-            
+
             local left_of_postfix_is_output = left == "output"
 
             for i, variable in ipairs( variables_table ) do
@@ -796,7 +796,7 @@ GLSLGenerator = {
                                     if structure.is_output then
                                         local output = ""
                                         local replacement
-                                        
+
                                         --[[
                                             This check if to prevent to get a replacement when the postfix is named input whereas the structure type is an output type
                                             For example, in the pixel shader, we may want to access input.Position, with input of type VS_OUTPUT
@@ -808,7 +808,7 @@ GLSLGenerator = {
                                         else
                                             replacement = GLSL_Helper_GetShaderOutputReplacement( structure.shader_type, field.semantic, field.name )
                                         end
-                                        
+
                                         if replacement == field.name then
                                             for l, varying_member in ipairs( techniques[ current_technique ].VaryingMembersTable ) do
                                                 if varying_member.semantic == field.semantic then
@@ -817,7 +817,7 @@ GLSLGenerator = {
                                                 end
                                             end
                                         end
-                                        
+
                                         --[[
                                             This function will force the creation of a varying even if the checks above will replace the postfix by a built-in GL variable
                                             Typically, we may need in the pixel shader to use VS_OUTPUT.Position, which would have been translated to gl_Position in the vertex shader just before
@@ -887,7 +887,7 @@ GLSLGenerator = {
 
     end,
 
-    ["process_literal"] = function( node )
+    ["process_float_literal"] = function( node )
         if node == nil or node[ 1 ] == nil then
             return ""
         end
@@ -899,6 +899,22 @@ GLSLGenerator = {
         end
 
         return output
+    end,
+
+    ["process_int_literal"] = function( node )
+        if node == nil or node[ 1 ] == nil then
+            return ""
+        end
+
+        return node[ 1 ]
+    end,
+
+    ["process_bool_literal"] = function( node )
+        if node == nil or node[ 1 ] == nil then
+            return ""
+        end
+
+        return node[ 1 ]
     end,
 
     ["process_variable"] = function( node )
@@ -1010,7 +1026,7 @@ GLSLGenerator = {
     [ "process_+=_statement" ] = function( node )
         return prefix() .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' += ' .. GLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
     end,
-    
+
     [ "process_/=_expression" ] = function( node )
         return prefix() .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' /= ' .. GLSLGenerator.ProcessNode( node[ 2 ] )
     end,
@@ -1030,7 +1046,7 @@ GLSLGenerator = {
     [ "process_-=_statement" ] = function( node )
         return prefix() .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' -= ' .. GLSLGenerator.ProcessNode( node[ 2 ] ) .. ';'
     end,
-    
+
     [ "process_*=_expression" ] = function( node )
         return prefix() .. GLSLGenerator.ProcessNode( node[ 1 ] ) .. ' *= ' .. GLSLGenerator.ProcessNode( node[ 2 ] )
     end,
@@ -1251,7 +1267,7 @@ GLSLGenerator = {
     ["process_initial_value_table"] = function( function_node )
         return ""
     end,
-    
+
     [ "process_pre_modify" ] = function( node )
         return node[1] .. GLSLGenerator.ProcessNode( node[2] )
     end,

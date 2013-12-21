@@ -17,7 +17,7 @@
                 ID{"b"}
             }
         },
-        function_body{return{literal{"false"}}}
+        function_body{return{bool_literal{"false"}}}
     },
     function
     {
@@ -36,7 +36,7 @@
                 ID{"b"}
             }
         },
-        function_body{return{literal{"false"}}}
+        function_body{return{bool_literal{"false"}}}
     },
     function
     {
@@ -55,7 +55,7 @@
                 ID{"b"}
             }
         },
-        function_body{return{literal{"false"}}}
+        function_body{return{bool_literal{"false"}}}
     },
     function
     {
@@ -248,7 +248,7 @@
                 ID{"b"}
             }
         },
-        function_body{return{literal{"true"}}}
+        function_body{return{bool_literal{"true"}}}
     },
     function
     {
@@ -267,7 +267,7 @@
                 ID{"b"}
             }
         },
-        function_body{return{literal{"true"}}}
+        function_body{return{bool_literal{"true"}}}
     },
     function
     {
@@ -286,6 +286,6 @@
                 ID{"b"}
             }
         },
-        function_body{return{literal{"true"}}}
+        function_body{return{bool_literal{"true"}}}
     }
 }

@@ -12,7 +12,7 @@
                 ID{"a"}
             }
         },
-        function_body{block{return{literal{"1.0f"}}}}
+        function_body{block{return{float_literal{"1.0f"}}}}
     },
     function
     {
@@ -38,9 +38,9 @@
                 if_block
                 {
                     variable{"a"},
-                    block{return{literal{"1.0f"}}}
+                    block{return{float_literal{"1.0f"}}}
                 },
-                else_block{block{return{literal{"2.0f"}}}}
+                else_block{block{return{float_literal{"2.0f"}}}}
             }
         }
     },
@@ -68,14 +68,14 @@
                 if_block
                 {
                     variable{"a"},
-                    block{return{literal{"1.0f"}}}
+                    block{return{float_literal{"1.0f"}}}
                 },
                 else_if_block
                 {
                     variable{"b"},
-                    block{return{literal{"2.0f"}}}
+                    block{return{float_literal{"2.0f"}}}
                 },
-                else_block{block{return{literal{"3.0f"}}}}
+                else_block{block{return{float_literal{"3.0f"}}}}
             }
         }
     },
@@ -98,9 +98,9 @@
                 if_block
                 {
                     variable{"a"},
-                    block{return{literal{"2.0f"}}}
+                    block{return{float_literal{"2.0f"}}}
                 },
-                else_block{block{return{literal{"3.0f"}}}}
+                else_block{block{return{float_literal{"3.0f"}}}}
             }
         }
     },
@@ -128,14 +128,14 @@
                 if_block
                 {
                     variable{"a"},
-                    block{return{literal{"1.0f"}}}
+                    block{return{float_literal{"1.0f"}}}
                 },
                 else_if_block
                 {
                     variable{"b"},
-                    block{return{literal{"3.0f"}}}
+                    block{return{float_literal{"3.0f"}}}
                 },
-                else_block{block{return{literal{"4.0f"}}}}
+                else_block{block{return{float_literal{"4.0f"}}}}
             }
         }
     },
@@ -163,14 +163,14 @@
                 if_block
                 {
                     variable{"a"},
-                    block{return{literal{"1.0f"}}}
+                    block{return{float_literal{"1.0f"}}}
                 },
                 else_if_block
                 {
                     variable{"b"},
-                    block{return{literal{"2.0f"}}}
+                    block{return{float_literal{"2.0f"}}}
                 },
-                else_block{block{return{literal{"4.0f"}}}}
+                else_block{block{return{float_literal{"4.0f"}}}}
             }
         }
     }

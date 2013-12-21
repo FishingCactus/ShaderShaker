@@ -70,8 +70,8 @@
                             variable{"input"},
                             variable{"Position"}
                         },
-                        literal{"0"},
-                        literal{"1"}
+                        int_literal{"0"},
+                        int_literal{"1"}
                     }
                 }
             },

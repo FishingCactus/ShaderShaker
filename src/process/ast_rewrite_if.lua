@@ -1,7 +1,7 @@
 
 local function if_block_( value )
 	return function( node )
-        return node[ 1 ].name == "literal" and node[ 1 ][ 1 ] == value
+        return node[ 1 ].name == "bool_literal" and node[ 1 ][ 1 ] == value
 	end
 end
 
@@ -34,7 +34,7 @@ local function discard_if( node, parent, index )
         table.remove( parent )
         parent.name = "block"
         parent[ 1 ] = node[ 2 ][ 1 ];
-    else 
+    else
         assert( parent[ 2 ].name == "else_if_block" )
 
         table.remove( parent, 1 )

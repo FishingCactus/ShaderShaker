@@ -5,7 +5,7 @@ HLSLGenerator = {
 
     ["ProcessAst"] = function( ast, o )
         options = o or {}
-        
+
         for _, value in ipairs( ast ) do
 
             if HLSLGenerator[ "process_" .. value.name ] == nil then
@@ -138,7 +138,7 @@ HLSLGenerator = {
         output = node[ 1 ][ 1 ] .. ' ' .. node[ 2 ] .. '\n{\n'
 
         output = output .. prefix .. 'Texture = <' .. node[ 3 ][ 1 ] .. '>;\n'
-        
+
         if options.export_sampler_filter_semantic then
             for _, field in ipairs( node ) do
                 if _ > 3 then
@@ -146,7 +146,7 @@ HLSLGenerator = {
                 end
             end
         end
-        
+
         output = output .. '};'
 
         return output;
@@ -338,7 +338,15 @@ HLSLGenerator = {
         return output
     end,
 
-    ["process_literal"] = function( node )
+    ["process_bool_literal"] = function( node )
+        return node[ 1 ]
+    end,
+
+    ["process_float_literal"] = function( node )
+        return node[ 1 ]
+    end,
+
+    ["process_int_literal"] = function( node )
         return node[ 1 ]
     end,
 

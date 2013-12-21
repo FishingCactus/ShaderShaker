@@ -28,7 +28,7 @@
                         variable{"a"},
                         variable{"x"}
                     },
-                    return{literal{"false"}}
+                    return{bool_literal{"false"}}
                 }
             },
             if
@@ -48,7 +48,7 @@
                             variable{"x"}
                         }
                     },
-                    block{return{literal{"true"}}}
+                    block{return{bool_literal{"true"}}}
                 }
             },
             if
@@ -62,7 +62,7 @@
                             variable{"a"},
                             variable{"x"}
                         },
-                        literal{"10.0f"}
+                        float_literal{"10.0f"}
                     },
                     block
                     {
@@ -75,7 +75,7 @@
                                     variable{"x"},
                                     variable{"a"}
                                 },
-                                literal{"23.35f"}
+                                float_literal{"23.35f"}
                             }
                         }
                     }
@@ -91,7 +91,7 @@
                                 variable{"a"},
                                 variable{"x"}
                             },
-                            literal{"5.0f"}
+                            float_literal{"5.0f"}
                         }
                     },
                     block
@@ -99,7 +99,7 @@
                         =_statement
                         {
                             variable{"a"},
-                            literal{"1.0"}
+                            float_literal{"1.0"}
                         },
                         return
                         {
@@ -123,7 +123,7 @@
                     }
                 }
             },
-            return{literal{"false"}}
+            return{bool_literal{"false"}}
         }
     }
 }

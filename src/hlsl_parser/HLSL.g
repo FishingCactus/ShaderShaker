@@ -489,7 +489,9 @@ constant_expression
     ;
 
 literal_value
-    :  value=( FLOAT | INT | TRUE_TOKEN | FALSE_TOKEN )  { ast_push("literal"); ast_addvalue($value.text); }
+    :  value= FLOAT  { ast_push("float_literal"); ast_addvalue($value.text); }
+    | value= INT  { ast_push("int_literal"); ast_addvalue($value.text); }
+    | value= ( TRUE_TOKEN | FALSE_TOKEN )  { ast_push("bool_literal"); ast_addvalue($value.text); }
     ;
 
 semantic
