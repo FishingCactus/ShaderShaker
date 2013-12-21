@@ -1,10 +1,14 @@
 <project name="Shader Shaker" basedir=".">
 
-	<available property="shader_shaker" file="../bin/debug/shader_shaker.exe"/>
-	<available property="shader_shaker" file="../bin/debug/shader_shaker"/>
+	<condition property="extension" value=".exe" else="">
+		<os family="windows"/>
+	</condition>
 
-	<target name="generate_reference">
-		<fail message="Could not find shader_shaker executable" unless="shader_shaker"/>
+	<property name="shader_shaker" location="../bin/debug/shader_shaker${extension}"/>
+	<available property="shader_shaker_is_available" file="../bin/debug/shader_shaker${extension}"/>
+
+	<target name="generate_reference" >
+		<fail message="Could not find shader_shaker executable" unless="shader_shaker_is_available"/>
 		<apply executable="${shader_shaker}" dir="..">
 			<mapper type="glob" from="*.fx" to="*.reference.ast"/>
 			<arg value="-o"/>
@@ -32,7 +36,7 @@
 
 	<target name="check">
 		<fail message="Could not find shader_shaker executable" unless="shader_shaker"/>
-		<apply executable="${shader_shaker}" force="true" dir="..">
+		<apply executable="${shader_shaker}" force="true" dir=".." verbose='true'>
 			<mapper type="glob" from="*.fx" to="*.reference.ast"/>
 			<arg value="-check"/>
 			<targetfile/>
@@ -44,7 +48,7 @@
 			</fileset>
 		</apply>
 
-		<apply executable="${shader_shaker}" force="true" dir="..">
+		<apply executable="${shader_shaker}" force="true" dir=".." verbose='true'>
 			<mapper type="glob" from="*.fx" to="*.reference.ast"/>
 			<arg value="-optimization true"/>
 			<arg value="-check"/>
