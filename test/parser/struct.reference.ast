@@ -21,5 +21,12 @@
             ID{"TextureUV"},
             semantic{"TEXCOORD0"}
         }
+    },
+    variable_declaration
+    {
+        storage{},
+        modifier{},
+        type{"VS_OUTPUT"},
+        variable{"some_struct"}
     }
 }
