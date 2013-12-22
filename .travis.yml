@@ -8,4 +8,6 @@ compiler:
   - clang
 # Change this to your needs
 before_script: pushd src/hlsl_parser/ && ./generate_parser.sh && popd
-script:  premake4 embed && premake4 gmake && make
+script:  premake4 embed && premake4 gmake && make && cd test && ant check
+
+
