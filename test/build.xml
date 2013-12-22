@@ -4,8 +4,20 @@
 		<os family="windows"/>
 	</condition>
 
-	<property name="shader_shaker" location="../bin/debug/shader_shaker${extension}"/>
-	<available property="shader_shaker_is_available" file="../bin/debug/shader_shaker${extension}"/>
+	<property name="shader_shaker_d" location="../bin/debug/shader_shaker${extension}"/>
+	<property name="shader_shaker_r" location="../bin/release/shader_shaker${extension}"/>
+	<available property="shader_shaker_r_is_available" file="${shader_shaker_r}"/>
+
+	<condition property="shader_shaker" value="${shader_shaker_d}" else="${shader_shaker_r}">
+		<available property="shader_shaker_d_is_available" file="${shader_shaker_d}"/>
+	</condition>
+
+	<condition property="shader_shaker_is_available">
+		<or>
+			<available file="${shader_shaker_d}"/>
+			<available file="${shader_shaker_r}"/>
+		</or>
+	</condition>
 
 	<target name="generate_reference" >
 		<fail message="Could not find shader_shaker executable" unless="shader_shaker_is_available"/>
