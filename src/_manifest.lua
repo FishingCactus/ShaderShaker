@@ -30,6 +30,8 @@ return {
 
     -- Process
 
+    "process/semantic/function_collector.lua",
+
     "process/ast_processor.lua",
     "process/ast_rewrite_if.lua",
     "process/ast_rewrite_constants.lua",
