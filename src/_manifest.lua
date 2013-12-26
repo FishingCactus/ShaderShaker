@@ -2,6 +2,18 @@
 
 return {
 
+    -- Utilities
+
+    "utilities/copy.lua",
+    "utilities/argument_parser.lua",
+    "utilities/output.lua",
+    "utilities/debug.lua",
+    "utilities/iterator.lua",
+    "utilities/reflection.lua",
+    "utilities/glsl_helper.lua",
+    "utilities/string.lua",
+    "utilities/tree.lua",
+
     -- Intermediate representation
 
     "ir/ast_to_ir.lua",
@@ -16,17 +28,6 @@ return {
     "generator/ast_generator.lua",
     "generator/hlsl_generator.lua",
     "generator/glsl_generator.lua",
-
-    -- Utilities
-
-    "utilities/copy.lua",
-    "utilities/argument_parser.lua",
-    "utilities/output.lua",
-    "utilities/debug.lua",
-    "utilities/reflection.lua",
-    "utilities/glsl_helper.lua",
-    "utilities/string.lua",
-    "utilities/tree.lua",
 
     -- Process
 
