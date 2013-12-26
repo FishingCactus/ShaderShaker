@@ -157,7 +157,7 @@ bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv )
     int i;
     for (i = 0; builtin_scripts[i]; ++i)
     {
-        if (luaL_dostring(L, builtin_scripts[i]) != 0 )
+        if ( luaL_dostring(L, builtin_scripts[i]) != 0 )
         {
             if ( log_print_callback )
             {
@@ -176,7 +176,7 @@ bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv )
     for ( int i = 1; i < argc; i++ )
     {
         const char
-        * argument;
+            * argument;
 
         argument = argv[ i ];
 
@@ -204,15 +204,15 @@ bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv )
 bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv )
 {
     char
-    source_path[ 1024 ],
-    filename[ 1024 ];
+        source_path[ 1024 ],
+        filename[ 1024 ];
 
-    strcpy( source_path,  "" );
+    source_path[ 0 ] = 0;
 
     for ( int i = 1; i < argc; i++ )
     {
         const char
-        * argument;
+            * argument;
 
         argument = argv[ i ];
 
@@ -246,7 +246,7 @@ bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv )
     for ( int i = 1; i < argc; i++ )
     {
         const char
-        * argument;
+            * argument;
 
         argument = argv[ i ];
 
