@@ -90,19 +90,22 @@ end
 
 function CreateSemanticTableFromAst( ast )
 
-    local input_map, output_map
+    local input_map, output_map, function_map
 
     input_map = {}
     output_map = {}
+    function_map = {}
 
     local ast_function_node, ast_function_index
     for ast_function_node, ast_function_index in NodeOfType( ast, "function", false ) do
         local function_name = ast_function_node[ 2 ][ 1 ]
         local input, output = ExtractSemanticFromFunction( ast_function_node )
 
+        function_map[ function_name ] = { input = input, output = output }
+
         FillSemanticMap( input_map, function_name, input )
         FillSemanticMap( output_map, function_name, output );
     end
 
-    return input_map, output_map
+    return input_map, output_map, function_map
 end

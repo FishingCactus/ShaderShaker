@@ -32,6 +32,7 @@ return {
     -- Process
 
     "process/semantic/function_collector.lua",
+    "process/semantic/shader_generator.lua",
 
     "process/ast_processor.lua",
     "process/ast_rewrite_if.lua",
