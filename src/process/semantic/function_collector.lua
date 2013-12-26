@@ -31,9 +31,6 @@ local function ExtractSemanticFromArgument( input, output, argument )
     local modifier = arg:GetModifier()
     local semantic = arg:GetSemantic()
 
-        print( modifier )
-        print( semantic )
-
     if argument[ 1 ].name == "input_modifier" and IsSemantic( argument[ 4 ].name ) then
 
         if modifier == 'in' then
