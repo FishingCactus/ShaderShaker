@@ -41,7 +41,7 @@ function GenerateShader( output_semantic, semantic_data )
     output_node_table = {}
 
     for _, semantic in ipairs( output_semantic ) do
-        local node = { name = "return", produced_by = {} }
+        local node = GraphNode.new{ semantic = { semantic }, name = "return" }
         node_table[ semantic ] = node
         output_node_table[ semantic ] = node;
     end
@@ -66,11 +66,11 @@ function GenerateShader( output_semantic, semantic_data )
         used_function_table:insert( function_name )
 
         local semantic_to_close_table = Set.new( GetDifference( function_data.output, function_data.input ) )
-        local node = { name = function_name, produced_by = {} }
+        local node = GraphNode.new{ semantic = { function_data.output }, name = function_name, data = function_data }
 
         for _, semantic in ipairs( function_data.output ) do
             --Create dependency with semantic user
-            table.insert( node_table[ semantic ].produced_by, node );
+            node_table[ semantic ]:AddTarget( node )
         end
 
         for semantic in pairs( semantic_to_close_table ) do
