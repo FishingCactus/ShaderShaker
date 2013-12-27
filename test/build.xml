@@ -23,8 +23,7 @@
 		<fail message="Could not find shader_shaker executable" unless="shader_shaker_is_available"/>
 		<apply executable="${shader_shaker}" dir="..">
 			<mapper type="glob" from="*.fx" to="*.reference.ast"/>
-			<arg value="-optimization"/>
-			<arg value="false"/>
+			<arg value="--optimize=false"/>
 			<arg value="-o"/>
 			<targetfile />
 			<srcfile />
@@ -51,10 +50,8 @@
 		<fail message="Could not find shader_shaker executable" unless="shader_shaker"/>
 		<apply executable="${shader_shaker}" force="true" dir=".." verbose='true'>
 			<mapper type="glob" from="*.fx" to="*.reference.ast"/>
-			<arg value="-optimization"/>
-			<arg value="false"/>
-			<arg value="-check"/>
-			<targetfile/>
+			<arg value="--optimize=false"/>
+			<targetfile prefix="--check="/>
 			<srcfile/>
 
 			<fileset dir=".">
@@ -65,8 +62,7 @@
 
 		<apply executable="${shader_shaker}" force="true" dir=".." verbose='true'>
 			<mapper type="glob" from="*.fx" to="*.reference.ast"/>
-			<arg value="-check"/>
-			<targetfile/>
+			<targetfile prefix="--check="/>
 			<srcfile/>
 
 			<fileset dir=".">

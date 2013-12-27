@@ -4,7 +4,7 @@ function AstProcessor.Process( options )
 
     local ast_node = GenerateAstFromFileName( options.INPUT )
 
-    if #options.REPLACEMENT_FILES > 0 then
+    if #options.REPLACEMENT_FILES > 0 and options.REPLACEMENT_FILES[ 1 ] ~= "" then
         local function_replacer
 
         if options.ri then

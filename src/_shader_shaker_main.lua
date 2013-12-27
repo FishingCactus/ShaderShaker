@@ -17,7 +17,7 @@ function _shader_shaker_main( script_path, argument_table )
     cli:add_arg("INPUT", "path to the input file")
     cli:optarg("REPLACEMENT_FILES", "Path to a replacement file", nil, 32 )
 
-    cli:add_opt("-o,--output=OUTPUT_FILE", "Output file path", "")
+    cli:add_opt("-o,--output=OUTPUT_FILE", "Output file path", "console_output")
     cli:add_opt("-f,--format=FORCE_LANGUAGE", "Force the output language", "")
     cli:add_opt("-dp,--default_precision=DEFAULT_PRECISION", "Default precision ( OpenGL only )", "highp")
     cli:add_opt("-c,--check=CHECK_FILE", "The file to check with", "" )
@@ -45,7 +45,7 @@ function _shaker_shaker_process_files()
 
     if arguments.check ~= "" then
 
-        FileChecker.Process( options.check, ast )
+        FileChecker.Process( arguments.check, ast )
 
         collectgarbage()
         return 0
