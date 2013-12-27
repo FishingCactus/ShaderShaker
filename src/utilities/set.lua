@@ -1,8 +1,11 @@
 Set = {}
+Set.mt = {}
+Set.mt.__index = Set
 
 function Set.new (t)
     local set = {}
     for _, l in ipairs(t) do set[l] = true end
+    setmetatable(set, Set.mt)
     return set
 end
 

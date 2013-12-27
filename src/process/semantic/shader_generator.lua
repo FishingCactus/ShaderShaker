@@ -23,9 +23,8 @@ local function GetMatchingFunction( semantic, semantic_data, used_function_table
         if output_table ~= nil then
 
             for _, function_name in ipairs( output_table ) do
-                print( function_name )
 
-                if not Set.contains( used_function_table, function_name ) then
+                if not used_function_table:contains( function_name ) then
                     return function_name, data.map.func[ function_name ]
                 end
             end
@@ -53,7 +52,7 @@ function GenerateShader( output_semantic, semantic_data )
 
     while true do
 
-        local current_semantic = Set.pop( open_semantic_table )
+        local current_semantic = open_semantic_table:pop()
 
         if current_semantic == nil then break end
 
@@ -64,7 +63,7 @@ function GenerateShader( output_semantic, semantic_data )
             return
         end
 
-        Set.insert( used_function_table, function_name )
+        used_function_table:insert( function_name )
 
         local semantic_to_close_table = Set.new( GetDifference( function_data.output, function_data.input ) )
         local node = { name = function_name, produced_by = {} }
@@ -76,7 +75,7 @@ function GenerateShader( output_semantic, semantic_data )
 
         for semantic in pairs( semantic_to_close_table ) do
 
-            Set.insert( closed_semantic_table, semantic )
+            closed_semantic_table:insert( semantic )
             node_table[ semantic ] = nil
         end
 
@@ -85,7 +84,7 @@ function GenerateShader( output_semantic, semantic_data )
         for _, semantic in ipairs( function_data.input ) do
             -- Update function node that waits for an input
             node_table[ semantic ] = node
-            Set.insert( open_semantic_table, semantic )
+            open_semantic_table:insert( semantic )
         end
 
         print( "Open : " .. Set.tostring( open_semantic_table ) )
