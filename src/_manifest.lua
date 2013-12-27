@@ -13,6 +13,7 @@ return {
     "utilities/glsl_helper.lua",
     "utilities/string.lua",
     "utilities/set.lua",
+    "utilities/graph.lua",
     "utilities/tree.lua",
 
     -- Intermediate representation
