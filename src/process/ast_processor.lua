@@ -2,18 +2,18 @@ AstProcessor = {}
 
 function AstProcessor.Process( options )
 
-    local ast_node = GenerateAstFromFileName( options.input_file )
+    local ast_node = GenerateAstFromFileName( options.INPUT )
 
-    if #options.replacement_files > 0 then
+    if #options.REPLACEMENT_FILES > 0 then
         local function_replacer
 
-        if options.inline_replacement_functions then
+        if options.ri then
             function_replacer = FunctionInliner:new()
         else
             function_replacer = FunctionReplacer:new()
         end
 
-        function_replacer:Process( ast_node, options.replacement_files )
+        function_replacer:Process( ast_node, options.REPLACEMENT_FILES )
     end
 
     if options.optimize then

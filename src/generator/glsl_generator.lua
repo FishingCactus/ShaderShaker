@@ -365,7 +365,7 @@ GLSLGenerator = {
         local output = ""
 
         for varying_member_name, varying_member in pairs( techniques[ current_technique ].UsedVaryingMembersTable ) do
-            output = output .. prefix() .. GLSL_Helper_GetVarying( varying_member, options.default_precision )
+            output = output .. prefix() .. GLSL_Helper_GetVarying( varying_member, options.dp )
         end
 
         return output
@@ -409,7 +409,7 @@ GLSLGenerator = {
 
         for i, constant in ipairs( constants_table ) do
             if techniques[ current_technique ][ current_function.shader_type ].uniforms[ constant.name ] then
-                output = output .. prefix() .. GLSL_Helper_GetUniformFromConstant( constant, options.default_precision )
+                output = output .. prefix() .. GLSL_Helper_GetUniformFromConstant( constant, options.dp )
             end
         end
 
@@ -666,7 +666,7 @@ GLSLGenerator = {
         local ID = GetNodeNameValue( argument, "ID" )
         local semantic = GetNodeNameValue( argument, "semantic" )
 
-        return input_modifier .. " " .. modifier .. " " .. GLSL_Helper_PrefixIntrinsicWithPrecision( GLSL_Helper_ConvertIntrinsic( type ), options.default_precision ) .. " " .. ID
+        return input_modifier .. " " .. modifier .. " " .. GLSL_Helper_PrefixIntrinsicWithPrecision( GLSL_Helper_ConvertIntrinsic( type ), options.dp ) .. " " .. ID
     end,
 
     [ "process_function_body" ] = function( node )
@@ -710,7 +710,7 @@ GLSLGenerator = {
             output = output .. table.concat( node[2], ' ' ) .. ' ';
         end
 
-        output = output .. GLSL_Helper_PrefixIntrinsicWithPrecision( GLSL_Helper_ConvertIntrinsic( node[3][1] ), options.default_precision ) .. ' '
+        output = output .. GLSL_Helper_PrefixIntrinsicWithPrecision( GLSL_Helper_ConvertIntrinsic( node[3][1] ), options.dp ) .. ' '
 
         index = 4
         prefix_index = prefix_index + 1
@@ -1194,7 +1194,7 @@ GLSLGenerator = {
             current_function.root_shader_type = previous_function.root_shader_type
         end
 
-        output = GLSL_Helper_PrefixIntrinsicWithPrecision( GLSL_Helper_ConvertIntrinsic( function_node[ 1 ][ 1 ] ), options.default_precision ) .. ' ' .. function_name
+        output = GLSL_Helper_PrefixIntrinsicWithPrecision( GLSL_Helper_ConvertIntrinsic( function_node[ 1 ][ 1 ] ), options.dp ) .. ' ' .. function_name
 
         if function_node[ 3 ].name == "argument_list" then
             function_body_index = 4
