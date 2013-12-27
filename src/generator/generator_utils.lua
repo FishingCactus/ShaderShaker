@@ -141,6 +141,10 @@ local function _GetInverseNodeOfType( node, type_name, recursive )
 end
 
 function InverseNodeOfType( node, type_name, recursive )
+
+    assert( node )
+    assert( type( type_name ) == "string" )
+
     if recursive == nil then
         recursive = true;
     end

@@ -32,6 +32,13 @@ local function GetMatchingFunction( semantic, semantic_data, used_function_table
     end
 end
 
+local function TreeToString( node )
+
+    for current_node in node:WalkNodes() do
+        print( current_node.Data.name .. " with " .. table.tostring( current_node.Data.semantic ) )
+    end
+end
+
 function GenerateShader( output_semantic, semantic_data )
 
     local open_semantic_table, closed_semantic_table, used_function_table
@@ -91,5 +98,7 @@ function GenerateShader( output_semantic, semantic_data )
         print( "Closed : " .. Set.tostring( closed_semantic_table ) )
 
     end
+
+    print( TreeToString( output_node_table[ output_semantic[ 1 ] ] ) )
 
 end

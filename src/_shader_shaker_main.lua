@@ -1,10 +1,14 @@
 local arguments = {}
 
+require "profiler"
+
 function _shader_shaker_main( script_path, argument_table )
 
     -- if running off the disk (in debug mode), load everything
     -- listed in _manifest.lua; the list divisions make sure
     -- everything gets initialized in the proper order.
+
+    profiler.start( "test.log" )
 
     if script_path then
         local scripts  = dofile(script_path .. "/_manifest.lua")
@@ -15,7 +19,7 @@ function _shader_shaker_main( script_path, argument_table )
 
     cli:set_name("shader_shaker arguments")
     cli:add_arg("INPUT", "path to the input file")
-    cli:optarg("REPLACEMENT_FILES", "Path to a replacement file", nil, 32 )
+    cli:optarg("SEMANTIC_CHUNK", "Path to a chunk file", nil, 32 )
 
     cli:add_opt("-o,--output=OUTPUT_FILE", "Output file path", "console_output")
     cli:add_opt("-f,--format=FORCE_LANGUAGE", "Force the output language", "")
@@ -23,6 +27,7 @@ function _shader_shaker_main( script_path, argument_table )
     cli:add_opt("-c,--check=CHECK_FILE", "The file to check with", "" )
     cli:add_opt("-cr,--constants_replacement=CONSTANTS_REPLACEMENT", "Constants replacement", "" )
 
+    cli:add_opt("-s,--semantic", "Run in semantic mode", false )
     cli:add_opt("--ri", "Activate inline replacement", false )
     cli:add_opt("-O,--optimize", "Run optimizer", true )
     cli:add_opt("--dnesfs", "Do Not Export Sampler Filter Semantic ( For XBox 360 )", false )
@@ -34,7 +39,7 @@ end
 function _shaker_shaker_process_files()
 
     if arguments.error ~= nil then
-        decoda_output( arguments.error )
+        if decoda_output then decoda_output( arguments.error ) end
         return
     end
 
@@ -65,5 +70,6 @@ function _shaker_shaker_process_files()
     end
 
     collectgarbage()
+    profiler.stop()
     return 0
 end
