@@ -20,26 +20,43 @@ local function GetMatchingFunction( semantic, semantic_data, used_function_table
 
         local output_table = data.map.output[ semantic ]
 
-        if output_table ~= nil and used_function_table ~= output_table[ 1 ] then
-            return output_table[ 1 ], data.map.func[ output_table[ 1 ] ]
+        if output_table ~= nil then
+
+            for _, function_name in ipairs( output_table ) do
+                print( function_name )
+
+                if not Set.contains( used_function_table, function_name ) then
+                    return function_name, data.map.func[ function_name ]
+                end
+            end
         end
     end
-
-    return
-
 end
 
 function GenerateShader( output_semantic, semantic_data )
 
-    local open_semantic_table, closed_semantic_table, used_function_table;
+    local open_semantic_table, closed_semantic_table, used_function_table
+    local node_table, output_node_table
 
-    open_semantic_table = ShallowCopy( output_semantic )
-    closed_semantic_table = {}
-    used_function_table= {}
+    node_table = {}
+    output_node_table = {}
 
-    while #open_semantic_table do
+    for _, semantic in ipairs( output_semantic ) do
+        local node = { name = "return", produced_by = {} }
+        node_table[ semantic ] = node
+        output_node_table[ semantic ] = node;
+    end
 
-        local current_semantic = table.remove( open_semantic_table, 1 )
+    open_semantic_table = Set.new( output_semantic )
+    closed_semantic_table = Set.new{}
+    used_function_table= Set.new{}
+
+    while true do
+
+        local current_semantic = Set.pop( open_semantic_table )
+
+        if current_semantic == nil then break end
+
         local function_name, function_data = GetMatchingFunction( current_semantic, semantic_data, used_function_table )
 
         if function_name == nil then
@@ -47,20 +64,32 @@ function GenerateShader( output_semantic, semantic_data )
             return
         end
 
-        used_function_table[ function_name ] = true
+        Set.insert( used_function_table, function_name )
 
-        local semantic_to_close_table = GetDifference( function_data.output, function_data.input )
+        local semantic_to_close_table = Set.new( GetDifference( function_data.output, function_data.input ) )
+        local node = { name = function_name, produced_by = {} }
 
-        for _, semantic in ipairs( semantic_to_close_table ) do
-            table.insert( closed_semantic_table, semantic )
+        for _, semantic in ipairs( function_data.output ) do
+            --Create dependency with semantic user
+            table.insert( node_table[ semantic ].produced_by, node );
         end
+
+        for semantic in pairs( semantic_to_close_table ) do
+
+            Set.insert( closed_semantic_table, semantic )
+            node_table[ semantic ] = nil
+        end
+
+        open_semantic_table = Set.new( GetDifference( open_semantic_table, semantic_to_close_table ) )
 
         for _, semantic in ipairs( function_data.input ) do
-            table.insert( open_semantic_table, semantic )
+            -- Update function node that waits for an input
+            node_table[ semantic ] = node
+            Set.insert( open_semantic_table, semantic )
         end
 
-        print( "Open : " .. table.tostring( open_semantic_table ) )
-        print( "Closed : " .. table.tostring( closed_semantic_table ) )
+        print( "Open : " .. Set.tostring( open_semantic_table ) )
+        print( "Closed : " .. Set.tostring( closed_semantic_table ) )
 
     end
 
