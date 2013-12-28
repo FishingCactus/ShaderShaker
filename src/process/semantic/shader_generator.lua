@@ -34,7 +34,7 @@ end
 
 local function TreeToString( node )
 
-    for current_node in node:WalkNodes() do
+    for current_node in node:WalkNodesDepthFirst() do
         print( current_node.Data.name .. " with " .. table.tostring( current_node.Data.semantic ) )
     end
 end
@@ -66,32 +66,35 @@ function GenerateShader( output_semantic, semantic_data )
         local function_name, function_data = GetMatchingFunction( current_semantic, semantic_data, used_function_table )
 
         if function_name == nil then
-            print( "Unable to find a function for semantic " .. current_semantic .. ", aborting" )
-            return
-        end
+            -- no function found to generate semantic, should come from input
+            local node = GraphNode.new{ semantic = { current_semantic }, name = "input" }
+            node_table[ current_semantic ]:AddTarget( node )
+            node_table[ current_semantic ] = node
+        else
 
-        used_function_table:insert( function_name )
+            used_function_table:insert( function_name )
 
-        local semantic_to_close_table = Set.new( GetDifference( function_data.output, function_data.input ) )
-        local node = GraphNode.new{ semantic = { function_data.output }, name = function_name, data = function_data }
+            local semantic_to_close_table = Set.new( GetDifference( function_data.output, function_data.input ) )
+            local node = GraphNode.new{ semantic = { function_data.output }, name = function_name, data = function_data }
 
-        for _, semantic in ipairs( function_data.output ) do
-            --Create dependency with semantic user
-            node_table[ semantic ]:AddTarget( node )
-        end
+            for _, semantic in ipairs( function_data.output ) do
+                --Create dependency with semantic user
+                node_table[ semantic ]:AddTarget( node )
+            end
 
-        for semantic in pairs( semantic_to_close_table ) do
+            for semantic in pairs( semantic_to_close_table ) do
 
-            closed_semantic_table:insert( semantic )
-            node_table[ semantic ] = nil
-        end
+                closed_semantic_table:insert( semantic )
+                node_table[ semantic ] = nil
+            end
 
-        open_semantic_table = Set.new( GetDifference( open_semantic_table, semantic_to_close_table ) )
+            open_semantic_table = Set.new( GetDifference( open_semantic_table, semantic_to_close_table ) )
 
-        for _, semantic in ipairs( function_data.input ) do
-            -- Update function node that waits for an input
-            node_table[ semantic ] = node
-            open_semantic_table:insert( semantic )
+            for _, semantic in ipairs( function_data.input ) do
+                -- Update function node that waits for an input
+                node_table[ semantic ] = node
+                open_semantic_table:insert( semantic )
+            end
         end
 
         print( "Open : " .. Set.tostring( open_semantic_table ) )

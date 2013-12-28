@@ -17,7 +17,7 @@ function AstProcessor.Process( options )
 
         local map_data = { }
 
-        for _, file in ipairs( agument_table ) do
+        for _, file in ipairs( argument_table ) do
             local ast_node = GenerateAstFromFileName( file )
             local input_map, output_map, function_map = CreateSemanticTableFromAst( ast_node )
 
