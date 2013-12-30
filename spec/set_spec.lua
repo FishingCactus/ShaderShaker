@@ -1,6 +1,6 @@
 dofile "src/utilities/set.lua"
 
-describe("busted", function()
+describe("Set", function()
     local default_empty_set
     local default_filled_set
 
