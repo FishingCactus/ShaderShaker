@@ -108,3 +108,67 @@ function GraphNode:WalkNodesDepthFirst()
         return nil
     end
 end
+
+local function StackContains( stack, node )
+
+    for _, item in ipairs( stack ) do
+        if item == node then
+            return true
+        end
+    end
+
+    return false
+end
+
+function GraphNode:DetectCycles()
+
+    local index = 1
+    local index_table = {}
+    local lowlink_table = {}
+    local stack = {}
+    local cycle_table = {}
+
+    function strongconnect( node )
+        -- Set the depth index for v to the smallest unused index
+        index_table[ node ] = index
+        lowlink_table[ node ] = index
+        index = index + 1
+        table.insert( stack, 1, node )
+
+        -- Consider successors of v
+        for next_node in pairs( node.To ) do
+
+            if index_table[ next_node ] == nil then
+                -- Successor w has not yet been visited; recurse on it
+                strongconnect( next_node )
+                lowlink_table[ node ] = math.min(lowlink_table[ node ], lowlink_table[ next_node ] )
+            elseif StackContains( stack, next_node ) then
+                -- Successor w is in stack S and hence in the current SCC
+                lowlink_table[ node ] = math.min(lowlink_table[ node ], index_table[ next_node ] )
+            end
+        end
+
+        -- If v is a root node, pop the stack and generate an SCC
+        if lowlink_table[ node ] == index_table[ node ] then
+            local cycle = {}
+            local next_node
+
+            repeat
+                next_node = table.remove( stack, 1 )
+                table.insert( cycle, next_node )
+            until next_node == node
+
+            if #cycle > 1 then
+                table.insert( cycle_table, cycle )
+            end
+        end
+    end
+
+    for node in self:WalkNodes() do
+        if index_table[ node ] == nil then
+            strongconnect( node )
+        end
+    end
+
+    return cycle_table
+end
