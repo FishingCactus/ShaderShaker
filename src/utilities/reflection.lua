@@ -5,6 +5,34 @@ local intrinsic_functions = {
     "mul", "exp", "pow", "fmod", "sign", "abs", "lerp", "min", "max", "step"
 }
 
+function GetNodeNameValue( node, node_name, child_node_value_index )
+    if child_node_value_index == nil then
+        child_node_value_index = 1
+    end
+
+    for idx, child_node in ipairs( node ) do
+        if child_node.name == node_name then
+            return child_node[ child_node_value_index ]
+        end
+    end
+
+    return ""
+end
+
+local GetNodeNameValue = GetNodeNameValue
+
+function GetNodeFromName( node, node_name )
+    for idx, child_node in ipairs( node ) do
+        if child_node.name == node_name then
+            return child_node
+        end
+    end
+
+    return nil
+end
+
+local GetNodeFromName = GetNodeFromName
+
 function Function_GetNodeFromId( ast_node, function_id )
     for child_node in NodeOfType( ast_node, 'function' ) do
         if child_node[ 2 ][ 1 ] == function_id then
@@ -43,6 +71,11 @@ end
 
 function Function_GetSemantic( function_node )
     return GetNodeNameValue( function_node, "semantic" )
+end
+
+function Function_GetSemanticOrUserSemantic( function_node )
+    return GetNodeNameValue( function_node, "semantic" )
+        or GetNodeNameValue( function_node, "user_semantic" )
 end
 
 function Function_GetArguments( function_node )
@@ -253,30 +286,6 @@ end
 
 function Call_GetName( node )
     return node[ 1 ]
-end
-
-function GetNodeNameValue( node, node_name, child_node_value_index )
-    if child_node_value_index == nil then
-        child_node_value_index = 1
-    end
-
-    for idx, child_node in ipairs( node ) do
-        if child_node.name == node_name then
-            return child_node[ child_node_value_index ]
-        end
-    end
-
-    return ""
-end
-
-function GetNodeFromName( node, node_name )
-    for idx, child_node in ipairs( node ) do
-        if child_node.name == node_name then
-            return child_node
-        end
-    end
-
-    return nil
 end
 
 function GetFunctionNamesFromAst( replacement_file_ast, function_name_to_ast )

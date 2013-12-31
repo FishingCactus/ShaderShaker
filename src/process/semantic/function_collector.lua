@@ -21,9 +21,11 @@ local function ArgumentAdapter( argument_node )
     }
 end
 
-local function IsSemantic( tag )
+function IsSemantic( tag )
     return tag == 'semantic' or tag == 'user_semantic'
 end
+
+local IsSemantic = IsSemantic
 
 local function ExtractSemanticFromArgument( input, output, argument )
     local arg = ArgumentAdapter( argument )
