@@ -16,7 +16,7 @@ end
 
 function SelectPrinter( filename, override_name )
 
-    if override_name ~= nil then
+    if override_name ~= "" then
         if PrinterTable[ override_name ] == nil then
             error( "Invalid language name" )
         end
