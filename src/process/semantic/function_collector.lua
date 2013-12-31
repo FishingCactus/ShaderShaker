@@ -1,4 +1,4 @@
-local function ArgumentAdapter( argument_node )
+function ArgumentAdapter( argument_node )
     return {
         Node = argument_node,
         GetModifier = function( self )
@@ -17,6 +17,10 @@ local function ArgumentAdapter( argument_node )
             end
 
             return nil
+        end,
+        GetType = function( self )
+
+            return Argument_GetType( self.Node )
         end
     }
 end
@@ -46,7 +50,7 @@ local function ExtractSemanticFromArgument( input, output, argument )
 
         return true
     elseif IsSemantic( argument[ 3 ].name ) then
-        table.insert( output, semantic )
+        table.insert( input, semantic )
     else
         return false
     end
@@ -58,10 +62,14 @@ local function ExtractSemanticFromFunction( function_node )
 
     assert( function_node[ 1 ].name == 'type' )
 
-    if function_node[ 1 ][ 1 ] ~= 'void' then
+    local return_type = Function_GetReturnType( function_node )
 
-        if IsSemantic( function_node[ 4 ].name ) then
-            table.insert( output, function_node[ 4 ][ 1 ] )
+    if return_type ~= 'void' then
+
+        local semantic = Function_GetSemanticOrUserSemantic( function_node )
+
+        if semantic ~= nil then
+            table.insert( output, semantic[ 1 ] )
         else
             print( 'missing semantic, should be internal function returning' )
             return {}, {}
@@ -97,10 +105,10 @@ function CreateSemanticTableFromAst( ast )
 
     local ast_function_node, ast_function_index
     for ast_function_node, ast_function_index in NodeOfType( ast, "function", false ) do
-        local function_name = ast_function_node[ 2 ][ 1 ]
+        local function_name = Function_GetName( ast_function_node )
         local input, output = ExtractSemanticFromFunction( ast_function_node )
 
-        function_map[ function_name ] = { input = input, output = output }
+        function_map[ function_name ] = { input = input, output = output, ast_node = ast_function_node }
 
         FillSemanticMap( input_map, function_name, input )
         FillSemanticMap( output_map, function_name, output );

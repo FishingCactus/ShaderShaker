@@ -20,10 +20,10 @@ function AstProcessor.Process( options )
         local map_data = { }
 
         for _, file in ipairs( argument_table ) do
-            local ast_node = GenerateAstFromFileName( file )
-            local input_map, output_map, function_map = CreateSemanticTableFromAst( ast_node )
+            local file_ast_node = GenerateAstFromFileName( file )
+            local input_map, output_map, function_map = CreateSemanticTableFromAst( file_ast_node )
 
-            data = { file = options.input_file, ast = ast_node, map = { input = input_map, output = output_map, func = function_map } }
+            data = { file = options.input_file, ast = file_ast_node, map = { input = input_map, output = output_map, func = function_map } }
             table.insert( map_data, data )
         end
 
