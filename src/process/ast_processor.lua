@@ -15,6 +15,8 @@ function AstProcessor.Process( options )
 
         argument_table = argument_table or {}
 
+        table.insert( argument_table, 1, options.INPUT )
+
         local map_data = { }
 
         for _, file in ipairs( argument_table ) do
