@@ -71,7 +71,7 @@ newoption
             flags       { "OptimizeSize" }
 
         configuration "vs*"
-            defines     { "_CRT_SECURE_NO_WARNINGS" }
+            defines     { "_CRT_SECURE_NO_WARNINGS", "/Z7" }
 
         configuration "vs2005"
             defines {"_CRT_SECURE_NO_DEPRECATE" }
