@@ -306,7 +306,7 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
      Cfunc:
       luaD_checkstack(L, LUA_MINSTACK);  /* ensure minimum stack size */
       ci = next_ci(L);  /* now 'enter' new function */
-      ci->nresults = nresults;
+      ci->nresults = (short)nresults;
       ci->func = restorestack(L, funcr);
       ci->top = L->top + LUA_MINSTACK;
       lua_assert(ci->top <= L->stack_last);
@@ -330,7 +330,7 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
         setnilvalue(L->top++);  /* complete missing arguments */
       base = (!p->is_vararg) ? func + 1 : adjust_varargs(L, p, n);
       ci = next_ci(L);  /* now 'enter' new function */
-      ci->nresults = nresults;
+      ci->nresults = (short)nresults;
       ci->func = func;
       ci->u.l.base = base;
       ci->top = base + p->maxstacksize;
@@ -462,7 +462,7 @@ static int recover (lua_State *L, int status) {
   luaD_shrinkstack(L);
   L->errfunc = ci->u.c.old_errfunc;
   ci->callstatus |= CIST_STAT;  /* call has error status */
-  ci->u.c.status = status;  /* (here it is) */
+  ci->u.c.status = (lu_byte)status;  /* (here it is) */
   return 1;  /* continue running the coroutine */
 }
 
