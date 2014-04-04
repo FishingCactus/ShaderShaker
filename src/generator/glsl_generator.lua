@@ -916,6 +916,14 @@ GLSLGenerator = {
 
         return node[ 1 ]
     end,
+    
+    ["process_literal"] = function( node )
+        if node == nil or node[ 1 ] == nil then
+            return ""
+        end
+
+        return node[ 1 ]
+    end,
 
     ["process_variable"] = function( node )
         local set = false

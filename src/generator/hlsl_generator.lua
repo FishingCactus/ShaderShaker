@@ -338,6 +338,10 @@ HLSLGenerator = {
         return output
     end,
 
+    ["process_literal"] = function( node )
+        return node[ 1 ]
+    end,
+
     ["process_bool_literal"] = function( node )
         return node[ 1 ]
     end,
