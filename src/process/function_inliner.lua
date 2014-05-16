@@ -33,7 +33,7 @@ function FunctionInliner:Process( ast_node, replacement_file_names )
     -- self:PrintFunctionTree( function_tree )
     function_tree = self:CleanFunctionTree( function_tree )
     -- self:PrintFunctionTree( function_tree )
-
+    
     self.caller_callee_table = self:GetCallerCalleeTable( function_tree )
     local ponderated_function_table = self:GetPonderatedFunctionTable( function_tree )
 
@@ -70,7 +70,7 @@ function FunctionInliner:Process( ast_node, replacement_file_names )
 
     -- Augment structure definitions with members found in the replacement files
     self:UpdateStructureDefinitions( ast_node, used_structure_members_by_shader )
-
+    
     -- Update TEXCOORD semantic numbers ( TEXCOORD0 - TEXCOORD2 - TEXCOORD5 becomes : TEXCOORD0 - TEXCOORD1 - TEXCOORD2 )
     self:UpdateStructureTexCoordSemantics( ast_node )
 
@@ -179,9 +179,9 @@ function FunctionInliner:CleanFunctionTree( function_tree, already_used_function
             table.insert( children_to_remove, i )
         else
             already_used_functions[ caller ] = true
-
+            
             local j = 1
-
+            
             while j <= #called_functions do
                 if already_used_functions[ called_functions[ j ].name ] then
                     table.remove( called_functions, j )
@@ -353,7 +353,7 @@ function FunctionInliner:InlineReplacementFunctions( calling_function, function_
 
                             inserted_node_index = inserted_node_index + 1
                         end
-
+                        
                         node_index_offset = node_index_offset + #replacement_body_ast - 1
                     else
                         table.remove( function_ast, new_index )
@@ -472,93 +472,114 @@ function FunctionInliner:GetUsedStructureMembersByShader( ast_node )
 end
 
 function FunctionInliner:UpdateStructureTexCoordSemantics( ast_node )
+    local diffusetexcoord_name = "DiffuseTexCoord"
+    local diffusetexcoord_name_length = string.len( diffusetexcoord_name )
     local textcoordsemantic_name = "TEXCOORD"
     local textcoordsemantic_name_length = string.len( textcoordsemantic_name )
-
+    
     local vs_input_members = {}
 
     for ast_structure_node, index in NodeOfType( ast_node, "struct_definition", false ) do
         local structure_name  = ast_structure_node[ 1 ]
         local structure_members = Structure_GetMembers( ast_structure_node )
-
+        
         local texcoord_members = {}
         local last_index = 0
 
+        -- First pass : get all DiffuseTexCoord members
+        for member_index, member_node in ipairs( structure_members ) do
+            local member_id = StructureMember_GetName( member_node )
+            
+            if string.starts( member_id, diffusetexcoord_name ) then
+                local diffuse_tex_coord_index = tonumber( string.sub( member_id, diffusetexcoord_name_length + 1 ) )
+                
+                texcoord_members[ member_id ] = diffuse_tex_coord_index
+                if last_index < diffuse_tex_coord_index then
+                    last_index = diffuse_tex_coord_index
+                end
+            end
+        end
+        
+        last_index = last_index + 1
+        
+        -- Second pass : get other TEXCOORD members
         for member_index, member_node in ipairs( structure_members ) do
             local member_id = StructureMember_GetName( member_node )
             local member_semantic = StructureMember_GetSemantic( member_node )
-
-            if string.starts( member_semantic, textcoordsemantic_name ) then
+            
+            if string.starts( member_semantic, textcoordsemantic_name ) and not string.starts( member_id, diffusetexcoord_name ) then
+                local texcoord_index = tonumber( string.sub( member_semantic, textcoordsemantic_name_length + 1 ) )
+                
                 texcoord_members[ member_id ] = last_index
                 last_index = last_index + 1
             end
         end
-
+        
         -- Next, update AST
         for member_index, member_node in ipairs( structure_members ) do
             local member_id = StructureMember_GetName( member_node )
             local member_semantic = StructureMember_GetSemantic( member_node )
-
+            
             if string.starts( member_semantic, textcoordsemantic_name ) then
                 GetNodeFromName( member_node, "semantic" )[ 1 ] = textcoordsemantic_name .. texcoord_members[ member_id ]
             end
         end
-
-        -- Finally, sort the members
+        
+        -- Finally, sort the members        
         local ordered_members = {}
-
+        
         local function get_member_weight( member_semantic )
             local weight = 0
-
+            
             if string.starts( member_semantic, textcoordsemantic_name ) then
                 local texcoord_index = tonumber( string.sub( member_semantic, textcoordsemantic_name_length + 1 ) )
-
+                
                 weight = 1 + texcoord_index
             end
-
+            
             return weight
         end
-
+        
         local function table_comparator(a,b)
             return a[1] < b[1]
         end
-
+        
         for member_index, member_node in ipairs( structure_members ) do
             local member_semantic = StructureMember_GetSemantic( member_node )
-            local member_weight = get_member_weight( member_semantic )
-
+            local member_weight = get_member_weight( member_semantic )            
+            
             local new_node = nil
-
+            
             for i, node in ipairs( ordered_members ) do
                 if node[ 1 ] == member_weight then
                     new_node = node
                 end
             end
-
+            
             if new_node == nil then
                 new_node = {}
                 new_node[ 1 ] = member_weight
                 new_node[ 2 ] = {}
                 table.insert( ordered_members, new_node )
             end
-
+            
             table.insert( new_node[ 2 ], member_node )
         end
-
+        
         table.sort( ordered_members, table_comparator )
-
+        
         for k in pairs ( ast_structure_node ) do
             if k == "name" or k > 1 then
                 ast_structure_node[k] = nil
             end
         end
-
+        
         for i, node in ipairs( ordered_members ) do
             for j, member_node in ipairs( node[ 2 ] ) do
                 table.insert( ast_structure_node, member_node )
             end
         end
-
+        
         ast_structure_node.name = "struct_definition"
     end
 end
