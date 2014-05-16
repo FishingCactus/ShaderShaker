@@ -472,8 +472,8 @@ function FunctionInliner:GetUsedStructureMembersByShader( ast_node )
 end
 
 function FunctionInliner:UpdateStructureTexCoordSemantics( ast_node )
-    local diffusetexcoord_name = "DiffuseTexCoord"
-    local diffusetexcoord_name_length = string.len( diffusetexcoord_name )
+    local texturecoordinate_name = "TextureCoordinate"
+    local texturecoordinate_name_length = string.len( texturecoordinate_name )
     local textcoordsemantic_name = "TEXCOORD"
     local textcoordsemantic_name_length = string.len( textcoordsemantic_name )
     
@@ -490,8 +490,8 @@ function FunctionInliner:UpdateStructureTexCoordSemantics( ast_node )
         for member_index, member_node in ipairs( structure_members ) do
             local member_id = StructureMember_GetName( member_node )
             
-            if string.starts( member_id, diffusetexcoord_name ) then
-                local diffuse_tex_coord_index = tonumber( string.sub( member_id, diffusetexcoord_name_length + 1 ) )
+            if string.starts( member_id, texturecoordinate_name ) then
+                local diffuse_tex_coord_index = tonumber( string.sub( member_id, texturecoordinate_name_length + 1 ) )
                 
                 texcoord_members[ member_id ] = diffuse_tex_coord_index
                 if last_index < diffuse_tex_coord_index then
@@ -507,7 +507,7 @@ function FunctionInliner:UpdateStructureTexCoordSemantics( ast_node )
             local member_id = StructureMember_GetName( member_node )
             local member_semantic = StructureMember_GetSemantic( member_node )
             
-            if string.starts( member_semantic, textcoordsemantic_name ) and not string.starts( member_id, diffusetexcoord_name ) then
+            if string.starts( member_semantic, textcoordsemantic_name ) and not string.starts( member_id, texturecoordinate_name ) then
                 local texcoord_index = tonumber( string.sub( member_semantic, textcoordsemantic_name_length + 1 ) )
                 
                 texcoord_members[ member_id ] = last_index
