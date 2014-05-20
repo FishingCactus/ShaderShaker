@@ -4,6 +4,13 @@ newoption
     description = "generates ios project without native target"
 }
 
+newoption
+{
+    trigger = "x64",
+    description = "generates 64bit architecture project"
+}
+
+
 --
 -- ShaderShaker build configuration script (heavily inspired by Premake's one)
 --
@@ -15,6 +22,11 @@ newoption
 --
 
     solution "ShaderShaker"
+
+        if _OPTIONS[ "x64" ] then
+            platforms{ "x64" }
+        end
+
         configurations { "Release", "Debug", "DebugWithEmbeddedScripts" }
         location ( _OPTIONS["to"] )
 
