@@ -2,7 +2,7 @@ ANTLR_BEGIN_NAMESPACE()
 
 template<class ImplTraits>
 TokenSource<ImplTraits>::TokenSource()
-	:m_eofToken( ImplTraits::CommonTokenType::TOKEN_EOF), 
+	:m_eofToken( ImplTraits::CommonTokenType::TOKEN_EOF),
 	m_skipToken( ImplTraits::CommonTokenType::TOKEN_INVALID)
 {
 }
@@ -109,7 +109,7 @@ typename TokenSource<ImplTraits>::TokenType*	TokenSource<ImplTraits>::nextTokenS
                 //
                 state->set_failed(true);
                 lexer->get_rec()->reportError();
-                lexer->recover(); 
+                lexer->recover();
             }
             else
             {
@@ -251,12 +251,12 @@ typename TokenSource<ImplTraits>::CommonTokenType*	TokenSource<ImplTraits>::next
 		{
 			// There were no more streams on the input stack
 			// so this EOF is the 'real' logical EOF for
-			// the input stream. So we just exit the loop and 
+			// the input stream. So we just exit the loop and
 			// return the EOF we have found.
 			//
 			break;
 		}
-		
+
 	}
 
 	// return whatever token we have, which may be EOF
@@ -287,7 +287,7 @@ TokenStream<ImplTraits>::TokenStream(TokenSourceType* source, DebugEventListener
 }
 
 template<class ImplTraits>
-CommonTokenStream<ImplTraits>::CommonTokenStream(ANTLR_UINT32 , TokenSourceType* source, 
+CommonTokenStream<ImplTraits>::CommonTokenStream(ANTLR_UINT32 , TokenSourceType* source,
 													DebugEventListenerType* debugger)
 					: CommonTokenStream<ImplTraits>::BaseType( source, debugger )
 {
@@ -435,7 +435,7 @@ const typename TokenStream<ImplTraits>::TokenType*  TokenStream<ImplTraits>::_LT
 		i = cts->skipOffTokenChannels(i+1); /* leave p on valid token    */
 		n++;
 	}
-	
+
 	if( ( i >= cached_size ) && ( (cached_size % ImplTraits::TOKEN_FILL_BUFFER_INCREMENT) == 0 ) )
 	{
 		cts->fillBuffer();
@@ -492,7 +492,7 @@ const typename CommonTokenStream<ImplTraits>::TokenType* CommonTokenStream<ImplT
     {
         return NULL;
     }
-	
+
 	// Here the token must be in the input vector. Rather then incut
 	// function call penalty, we jsut return the pointer directly
 	// from the vector
@@ -510,7 +510,7 @@ const typename CommonTokenStream<ImplTraits>::TokenType*   CommonTokenStream<Imp
 template<class ImplTraits>
 const typename CommonTokenStream<ImplTraits>::TokenType* CommonTokenStream<ImplTraits>::get(ANTLR_MARKER i)
 {
-	return this->getToken( static_cast<ANTLR_MARKER>(i), 
+	return this->getToken( static_cast<ANTLR_MARKER>(i),
 							BoolForwarder<ImplTraits::TOKENS_ACCESSED_FROM_OWNING_RULE>() );
 }
 
@@ -519,20 +519,20 @@ const typename CommonTokenStream<ImplTraits>::TokenType* CommonTokenStream<ImplT
 															BoolForwarder<true>  /*tokens_accessed_from_owning_rule*/  )
 {
 	typename TokensType::iterator iter = m_tokens.find(tok_idx);
-	if( iter == m_tokens.end() )
-	{
-		TokenAccessException ex;
-		throw ex;
-	}
+	// if( iter == m_tokens.end() )
+	// {
+	// 	TokenAccessException ex;
+	// 	throw ex;
+	// }
 	const TokenType& tok = iter->second;
-    return  &tok; 
+    return  &tok;
 }
 
 template<class ImplTraits>
 const typename CommonTokenStream<ImplTraits>::TokenType* CommonTokenStream<ImplTraits>::getToken( ANTLR_MARKER tok_idx, BoolForwarder<false>  /*tokens_accessed_from_owning_rule*/   )
 {
 	TokenType& tok = m_tokens.at( static_cast<ANTLR_UINT32>(tok_idx) );
-    return  &tok; 
+    return  &tok;
 }
 
 template<class ImplTraits>
@@ -608,7 +608,7 @@ TokenStream<ImplTraits>::toStringTT(const TokenType* start, const TokenType* sto
 {
 	if	(start != NULL && stop != NULL)
 	{
-		return	this->toStringSS( start->get_tokenIndex(), 
+		return	this->toStringSS( start->get_tokenIndex(),
 								  stop->get_tokenIndex());
 	}
 	else
@@ -660,7 +660,7 @@ typename CommonTokenStream<ImplTraits>::TokensType*  CommonTokenStream<ImplTrait
 }
 
 template<class ImplTraits>
-void CommonTokenStream<ImplTraits>::getTokenRange(ANTLR_UINT32 start, ANTLR_UINT32 stop, 
+void CommonTokenStream<ImplTraits>::getTokenRange(ANTLR_UINT32 start, ANTLR_UINT32 stop,
 																	TokensListType& tokenRange)
 {
 	return this->getTokensSet(start, stop, NULL, tokenRange);
@@ -707,13 +707,13 @@ CommonTokenStream<ImplTraits>::getTokensSet(ANTLR_UINT32 start, ANTLR_UINT32 sto
 			filteredList.push_back(tok);
 		}
 	}
-    
+
     return ;
 }
 
 template<class ImplTraits>
 void
-CommonTokenStream<ImplTraits>::getTokensList(ANTLR_UINT32 start, ANTLR_UINT32 stop, 
+CommonTokenStream<ImplTraits>::getTokensList(ANTLR_UINT32 start, ANTLR_UINT32 stop,
 													const IntListType& list, TokensListType& newlist)
 {
     BitsetType*		bitSet;
@@ -724,7 +724,7 @@ CommonTokenStream<ImplTraits>::getTokensList(ANTLR_UINT32 start, ANTLR_UINT32 st
 }
 
 template<class ImplTraits>
-void 
+void
 CommonTokenStream<ImplTraits>::getTokensType(ANTLR_UINT32 start, ANTLR_UINT32 stop, ANTLR_UINT32 type,
                                                   TokensListType& newlist   )
 {
@@ -743,14 +743,14 @@ void CommonTokenStream<ImplTraits>::fillBufferExt()
 }
 
 template<class ImplTraits>
-bool CommonTokenStream<ImplTraits>::hasReachedFillbufferTarget( ANTLR_UINT32 cnt, 
+bool CommonTokenStream<ImplTraits>::hasReachedFillbufferTarget( ANTLR_UINT32 cnt,
 																BoolForwarder<true> )
 {
 	return ( cnt >= ImplTraits::TOKEN_FILL_BUFFER_INCREMENT );
 }
 
 template<class ImplTraits>
-bool CommonTokenStream<ImplTraits>::hasReachedFillbufferTarget( ANTLR_UINT32, 
+bool CommonTokenStream<ImplTraits>::hasReachedFillbufferTarget( ANTLR_UINT32,
 																BoolForwarder<false>  )
 {
 	return false;
@@ -758,12 +758,12 @@ bool CommonTokenStream<ImplTraits>::hasReachedFillbufferTarget( ANTLR_UINT32,
 
 
 template<class ImplTraits>
-void CommonTokenStream<ImplTraits>::fillBuffer() 
+void CommonTokenStream<ImplTraits>::fillBuffer()
 {
     ANTLR_UINT32 index;
     TokenType* tok;
     bool discard;
-    
+
     /* Start at index 0 of course
      */
 	ANTLR_UINT32 cached_p = (m_p < 0) ? 0 : m_p;
@@ -824,7 +824,7 @@ void CommonTokenStream<ImplTraits>::fillBuffer()
 			cnt++;
         }
 
-		if( !this->hasReachedFillbufferTarget( cnt, 
+		if( !this->hasReachedFillbufferTarget( cnt,
 						BoolForwarder<ImplTraits::TOKENS_ACCESSED_FROM_OWNING_RULE>()  ) )
 			tok = this->get_tokenSource()->nextToken();
 		else
@@ -873,7 +873,7 @@ ANTLR_UINT32  CommonTokenStream<ImplTraits>::skipOffTokenChannelsReverse(ANTLR_I
     while (x >= 0)
     {
         const TokenType* tok =  this->getToken(x);
-        
+
         if( tok->get_channel() != m_channel )
         {
             x--;
@@ -893,7 +893,7 @@ void CommonTokenStream<ImplTraits>::discardTokens( ANTLR_MARKER start, ANTLR_MAR
 }
 
 template<class ImplTraits>
-void CommonTokenStream<ImplTraits>::discardTokens( ANTLR_MARKER start, ANTLR_MARKER stop, 
+void CommonTokenStream<ImplTraits>::discardTokens( ANTLR_MARKER start, ANTLR_MARKER stop,
 											BoolForwarder<true>  /*tokens_accessed_from_owning_rule */ )
 {
 	typename TokensType::iterator iter1 = m_tokens.lower_bound(start);
@@ -902,7 +902,7 @@ void CommonTokenStream<ImplTraits>::discardTokens( ANTLR_MARKER start, ANTLR_MAR
 }
 
 template<class ImplTraits>
-void CommonTokenStream<ImplTraits>::discardTokens( ANTLR_MARKER start, ANTLR_MARKER stop, 
+void CommonTokenStream<ImplTraits>::discardTokens( ANTLR_MARKER start, ANTLR_MARKER stop,
 											BoolForwarder<false>  /*tokens_accessed_from_owning_rule*/ )
 {
 	m_tokens.erase( m_tokens.begin() + start, m_tokens.begin() + stop );

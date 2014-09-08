@@ -44,7 +44,7 @@ ANTLR_BEGIN_NAMESPACE()
 class DefaultAllocPolicy
 {
 public:
-	//limitation of c++. unable to write a typedef 
+	//limitation of c++. unable to write a typedef
 	template <class TYPE>
 	class AllocatorType : public std::allocator<TYPE>
 	{
@@ -69,11 +69,11 @@ public:
 	class VectorType : public std::vector< TYPE, AllocatorType<TYPE> >
 	{
 	};
-	
+
 	template<class TYPE>
 	class ListType : public std::deque< TYPE, AllocatorType<TYPE> >
 	{
-	};	
+	};
 
 	template<class TYPE>
 	class StackType : public std::deque< TYPE, AllocatorType<TYPE> >
@@ -85,7 +85,7 @@ public:
 		TYPE& top() { return this->back(); }
 		const TYPE& peek() const { return this->back(); }
 		const TYPE& top() const { return this->back(); }
-	};	
+	};
 
 
 	template<class TYPE>
@@ -99,26 +99,26 @@ public:
 	};
 
 	template<class KeyType, class ValueType>
-	class UnOrderedMapType : public std::map< KeyType, ValueType, std::less<KeyType>, 
+	class UnOrderedMapType : public std::map< KeyType, ValueType, std::less<KeyType>,
 										AllocatorType<std::pair<KeyType, ValueType> > >
 	{
 	};
 
 	template<class KeyType, class ValueType>
-	class OrderedMapType : public std::map< KeyType, ValueType, std::less<KeyType>, 
+	class OrderedMapType : public std::map< KeyType, ValueType, std::less<KeyType>,
 										AllocatorType<std::pair<KeyType, ValueType> > >
 	{
 	};
 
-	static void* operator new (std::size_t bytes) 
-	{ 
+	static void* operator new (std::size_t bytes)
+	{
 		void* p = alloc(bytes);
 		return p;
 	}
 	static void* operator new (std::size_t , void* p) { return p; }
 	static void* operator new[]( std::size_t bytes)
 	{
-		void* p = alloc(bytes); 
+		void* p = alloc(bytes);
 		return p;
 	}
 	static void operator delete(void* p)
@@ -134,15 +134,15 @@ public:
 
 	static void* alloc( std::size_t bytes )
 	{
-		void* p = malloc(bytes); 
-		if( p== NULL )
-			throw std::bad_alloc();
+		void* p = malloc(bytes);
+		// if( p== NULL )
+		// 	throw std::bad_alloc();
 		return p;
 	}
 
 	static void* alloc0( std::size_t bytes )
 	{
-		void* p = DefaultAllocPolicy::alloc(bytes); 
+		void* p = DefaultAllocPolicy::alloc(bytes);
 		memset(p, 0, bytes );
 		return p;
 	}
@@ -151,7 +151,7 @@ public:
 	{
 		return ::free(p);
 	}
-	
+
 	static void* realloc(void *ptr, size_t size)
 	{
 		return ::realloc( ptr, size );

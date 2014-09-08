@@ -10,18 +10,18 @@ InputStream<ImplTraits>::InputStream(const ANTLR_UINT8* fileName, ANTLR_UINT32 e
     //
     this->createFileStream(fileName);
 
-    // We have the data in memory now so we can deal with it according to 
+    // We have the data in memory now so we can deal with it according to
     // the encoding scheme we were given by the user.
     //
     m_encoding = encoding;
 
-    // Now we need to work out the endian type and install any 
+    // Now we need to work out the endian type and install any
     // API functions that differ from 8Bit
     //
     this->setupInputStream();
 
     // Now we can set up the file name
-    //	
+    //
     BaseType::m_streamName	= (const char* )fileName;
     m_fileName		= BaseType::m_streamName;
 }
@@ -34,23 +34,23 @@ InputStream<ImplTraits>::InputStream(const ANTLR_UINT8* data, ANTLR_UINT32 encod
     // default 8Bit stream accordingly.
     //
     this->createStringStream(data);
-    
+
     // Size (in bytes) of the given 'string'
     //
     m_sizeBuf		= size;
 
-    // We have the data in memory now so we can deal with it according to 
+    // We have the data in memory now so we can deal with it according to
     // the encoding scheme we were given by the user.
     //
     m_encoding = encoding;
 
-    // Now we need to work out the endian type and install any 
+    // Now we need to work out the endian type and install any
     // API functions that differ from 8Bit
     //
     this->setupInputStream();
 
     // Now we can set up the file name
-    //	
+    //
     BaseType::m_streamName	= (name == NULL ) ? "" : (const char*)name;
     m_fileName		= BaseType::m_streamName;
 
@@ -59,11 +59,11 @@ InputStream<ImplTraits>::InputStream(const ANTLR_UINT8* data, ANTLR_UINT32 encod
 template<class ImplTraits>
 void InputStream<ImplTraits>::createStringStream(const ANTLR_UINT8* data)
 {
-	if	(data == NULL)
-	{
-		ParseNullStringException ex;
-		throw ex;
-	}
+	// if	(data == NULL)
+	// {
+	// 	ParseNullStringException ex;
+	// 	throw ex;
+	// }
 
 	// Structure was allocated correctly, now we can install the pointer
 	//
@@ -79,11 +79,11 @@ void InputStream<ImplTraits>::createStringStream(const ANTLR_UINT8* data)
 template<class ImplTraits>
 void InputStream<ImplTraits>::createFileStream(const ANTLR_UINT8* fileName)
 {
-	if	(fileName == NULL)
-	{
-		ParseFileAbsentException ex;
-		throw ex;
-	}
+	// if	(fileName == NULL)
+	// {
+	// 	ParseFileAbsentException ex;
+	// 	throw ex;
+	// }
 
 	// Structure was allocated correctly, now we can read the file.
 	//
@@ -99,11 +99,11 @@ template<class ImplTraits>
 void InputStream<ImplTraits>::genericSetupStream()
 {
 	this->set_charByteSize(1);
-	
+
     /* Set up the input stream brand new
      */
     this->reset();
-    
+
     /* Install default line separator character (it can be replaced
      * by the grammar programmer later)
      */
@@ -286,7 +286,7 @@ ANTLR_INLINE void	InputStream<ImplTraits>::reset()
     m_charPositionInLine	= -1;
     m_currentLine		= m_data;
     m_markDepth		= 0;		/* Reset markers	    */
-    
+
     /* Clear out up the markers table if it is there
      */
 	m_markers.clear();
@@ -298,11 +298,11 @@ void    InputStream<ImplTraits>::reuse(ANTLR_UINT8* inString, ANTLR_UINT32 size,
 	m_isAllocated	= false;
     m_data		= inString;
     m_sizeBuf	= size;
-    
+
     // Now we can set up the file name. As we are reusing the stream, there may already
     // be a string that we can reuse for holding the filename.
     //
-	if	( BaseType::m_streamName.empty() ) 
+	if	( BaseType::m_streamName.empty() )
 	{
 		BaseType::m_streamName	= ((name == NULL) ? "-memory-" : (const char *)name);
 		m_fileName		= BaseType::m_streamName;
@@ -446,7 +446,7 @@ void InputStream<ImplTraits>::setupInputStream()
     // running on.
     //
     ANTLR_UINT16 bomTest = 0xFEFF;
-    
+
     // What endianess is the machine we are running on? If the incoming
     // encoding endianess is the same as this machine's natural byte order
     // then we can use more efficient API calls.
@@ -613,7 +613,7 @@ void InputStream<ImplTraits>::setupInputStream()
             this->setupIntStream( isBigEndian, isBigEndian );
 			this->set_charByteSize(1);
             break;
-    }    
+    }
 }
 
 ANTLR_END_NAMESPACE()
