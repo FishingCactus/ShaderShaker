@@ -1,7 +1,7 @@
 local intrinsic_functions = {
     "tex2D", "texCUBE",
     "dot", "normalize", "cross", "saturate", "reflect", "length",
-    "sin", "cos", "tan",
+    "sin", "cos", "tan", "asin", "acos", "atan",
     "mul", "exp", "pow", "fmod", "sign", "abs", "lerp", "min", "max", "step"
 }
 
