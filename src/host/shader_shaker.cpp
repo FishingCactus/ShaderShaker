@@ -184,7 +184,7 @@ bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv )
         lua_rawseti( L, -2, i );
     }
 
-    if (lua_pcall(L, 2, 1, 0) != 0)
+    if (lua_pcall(L, 2, 0, 0) != 0)
     {
         if ( log_print_callback )
         {
@@ -194,7 +194,7 @@ bool load_builtin_scripts(lua_State* L, int argc, const char* const * argv )
     }
     else
     {
-        return lua_tonumber(L, -1) == 0;
+        return true;
     }
 }
 #else
