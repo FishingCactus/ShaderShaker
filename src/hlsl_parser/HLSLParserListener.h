@@ -5,12 +5,12 @@ struct Parameter;
 struct SamplerParameter;
 #include <string>
 
-#if !defined( SHADERSHAKER_AS_SOURCE )
+#if defined( SHADERSHAKER_FORCE_EXTERN_C ) || !defined( SHADERSHAKER_AS_SOURCE )
 extern "C"
 {
 #endif
     #include <lua.h>
-#if !defined( SHADERSHAKER_AS_SOURCE )
+#if defined( SHADERSHAKER_FORCE_EXTERN_C ) || !defined( SHADERSHAKER_AS_SOURCE )
 }
 #endif
 
