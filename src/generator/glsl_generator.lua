@@ -723,8 +723,15 @@ GLSLGenerator = {
 
             output = output .. node[ index ][ 1 ]
 
-            if node[ index ][2] ~= nil then
-                output = output .. '=' .. GLSLGenerator.ProcessNode( node[ index ][ 2 ] )
+            local subindex = 2
+
+            if node[ index ][ subindex ] ~= nil and node[ index ][ subindex ].name == "size" then
+                output = output .. "[" .. node[ index ][ subindex ][ 1 ] .. "]"
+                subindex = subindex + 1
+            end
+
+            if node[ index ][ subindex ] ~= nil and node[ index ][ subindex ].name == "initial_value_table" then
+                output = output .. '=' .. GLSLGenerator.ProcessNode( node[ index ][ subindex ] )
             end
 
             index = index + 1
@@ -916,7 +923,7 @@ GLSLGenerator = {
 
         return node[ 1 ]
     end,
-    
+
     ["process_literal"] = function( node )
         if node == nil or node[ 1 ] == nil then
             return ""
