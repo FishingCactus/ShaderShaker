@@ -16,7 +16,7 @@ function FunctionReplacer:Process( ast_node, replacement_file_names )
         self.function_name_to_ast = GetFunctionNamesFromAst( replace_ast )
     end
 
-    local replaced_functions = ReplaceFunctions( ast_node )
+    local replaced_functions = self:ReplaceFunctions( ast_node )
 
     -- Some replaced functions may need additional functions. Add them to the AST
     for function_name, function_ast in pairs( self.function_name_to_ast ) do
@@ -26,7 +26,7 @@ function FunctionReplacer:Process( ast_node, replacement_file_names )
     end
 end
 
-local function ReplaceFunctions( ast_node )
+function FunctionReplacer:ReplaceFunctions( ast_node )
     local replaced_functions = {}
 
     for ast_function_node, ast_function_index in NodeOfType( ast_node, "function", false ) do
