@@ -730,7 +730,7 @@ GLSLGenerator = {
                 subindex = subindex + 1
             end
 
-            if node[ index ][ subindex ] ~= nil and node[ index ][ subindex ].name == "initial_value_table" then
+            if node[ index ][ subindex ] ~= nil then
                 output = output .. '=' .. GLSLGenerator.ProcessNode( node[ index ][ subindex ] )
             end
 
