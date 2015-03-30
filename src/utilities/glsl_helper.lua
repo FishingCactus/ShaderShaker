@@ -17,6 +17,7 @@ local
         float4 = "vec4",
         float4x4 = "mat4",
         float4x3 = "mat4",
+        samplerCUBE = "samplerCube",
         tex2D = "texture2D",
         texCUBE = "textureCube",
         fmod = "mod",
