@@ -154,7 +154,7 @@ GLSLGenerator = {
             local name = Sampler_GetName( node )
             local texture = Sampler_GetTexture( node )
 
-            samplers_table[ name ] = Sampler_GetType( node )
+            samplers_table[ name ] = GLSL_Helper_ConvertIntrinsic( Sampler_GetType( node ) )
 
             sampler_to_texture[ name ] = texture
             texture_to_sampler[ texture ] = name
