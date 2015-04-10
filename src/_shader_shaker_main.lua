@@ -1,5 +1,5 @@
 local
-    files_to_process = {}
+    options = {}
 
 function _shader_shaker_main( script_path, argument_table )
 
@@ -16,46 +16,41 @@ function _shader_shaker_main( script_path, argument_table )
 
     local argument_parser = ArgumentParser:new()
 
-    files_to_process = argument_parser:GetParsedArguments( argument_table )
+    options = argument_parser:GetParsedArguments( argument_table )
 end
 
 
 function _shaker_shaker_process_files()
+    local
+        ast
 
-    for i, options in ipairs( files_to_process ) do
+    print( "Processing " .. options.input_file )
 
-        local
-            ast
+    ast = AstProcessor.Process( options )
 
-        print( "Processing " .. options.input_file )
+    if options.check_file then
 
-        ast = AstProcessor.Process( options )
+        FileChecker.Process( options.check_file, ast )
 
-        if options.check_file then
+        collectgarbage()
+        return 0
 
-            FileChecker.Process( options.check_file, ast )
+    else
 
-            collectgarbage()
-            return 0
+        for i, output_file in ipairs( options.output_files ) do
+            local ast_copy = DeepCopy( ast )
 
-        else
+            SelectPrinter( output_file, options.force_language )
 
-            for i, output_file in ipairs( options.output_files ) do
-                local ast_copy = DeepCopy( ast )
-
-                SelectPrinter( output_file, options.force_language )
-
-                if output_file ~= "console_output" then
-                    InitializeOutputFile( output_file )
-                else
-                    InitializeOutputPrint()
-                end
-
-                GetSelectedPrinter().ProcessAst( ast_copy, options )
-
+            if output_file ~= "console_output" then
+                InitializeOutputFile( output_file, options )
+            else
+                InitializeOutputPrint( options )
             end
-        end
 
+            GetSelectedPrinter().ProcessAst( ast_copy, options )
+
+        end
     end
 
     collectgarbage()

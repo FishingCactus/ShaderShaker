@@ -11,8 +11,8 @@ end
 
 function ArgumentParser:GetParsedArguments( arguments )
 
-    local result = {}
-    local arg_item = { output_files = {}, constants_replacement = {}, optimize = true, export_sampler_filter_semantic = true, default_precision = "", replacement_files = {}, inline_replacement_functions = false }
+    --local result = {}
+    local arg_item = { output_files = {}, constants_replacement = {}, dx11_compat = false, optimize = true, export_sampler_filter_semantic = true, default_precision = "", replacement_files = {}, inline_replacement_functions = false }
     local previous_argument = ""
 
     for i, argument in ipairs( arguments ) do
@@ -85,8 +85,10 @@ function ArgumentParser:GetParsedArguments( arguments )
                 if #arg_item.output_files == 0 then
                     table.insert( arg_item.output_files, 'console_output' )
                 end
-                table.insert( result, arg_item )
-                arg_item = {}
+                --table.insert( result, arg_item )
+                --arg_item = {}
+                
+                break
             end
 
             previous_argument = ""
@@ -94,6 +96,6 @@ function ArgumentParser:GetParsedArguments( arguments )
         end
     end
 
-    return result
+    return arg_item
 
 end
