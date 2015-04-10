@@ -14,6 +14,8 @@ return {
 
     "generator/generator_utils.lua",
     "generator/ast_generator.lua",
+    "generator/hlsl9_generator.lua",
+    "generator/hlsl11_generator.lua",
     "generator/hlsl_generator.lua",
     "generator/glsl_generator.lua",
 

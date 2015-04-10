@@ -12,7 +12,7 @@ end
 function ArgumentParser:GetParsedArguments( arguments )
 
     --local result = {}
-    local arg_item = { output_files = {}, constants_replacement = {}, dx11_compat = false, optimize = true, export_sampler_filter_semantic = true, default_precision = "", replacement_files = {}, inline_replacement_functions = false }
+    local arg_item = { output_files = {}, constants_replacement = {}, hlsl_version = "9", optimize = true, export_sampler_filter_semantic = true, default_precision = "", replacement_files = {}, inline_replacement_functions = false }
     local previous_argument = ""
 
     for i, argument in ipairs( arguments ) do
@@ -52,6 +52,8 @@ function ArgumentParser:GetParsedArguments( arguments )
                 previous_argument = 'default_precision'
             elseif arg_option == 'export_sampler_filter_semantic' then
                 previous_argument = 'export_sampler_filter_semantic'
+            elseif arg_option == 'hlsl_version' then
+                previous_argument = 'hlsl_version'
             else
                 previous_argument = 'UNSUPPORTED_ARGUMENT'
             end
@@ -78,6 +80,8 @@ function ArgumentParser:GetParsedArguments( arguments )
                 arg_item.default_precision = argument
             elseif previous_argument == 'export_sampler_filter_semantic' then
                 arg_item.export_sampler_filter_semantic = toboolean( argument )
+            elseif previous_argument == 'hlsl_version' then
+                arg_item.hlsl_version = argument
             elseif previous_argument == 'check' then
                 arg_item.check_file = argument
             elseif previous_argument ~= "UNSUPPORTED_ARGUMENT" then
