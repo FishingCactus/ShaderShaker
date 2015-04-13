@@ -7,8 +7,6 @@ HLSLGenerator11 = {
 
         output = sampler_conversion_table[node[ 1 ][ 1 ]] .. ' ' .. node[ 2 ] .. '\n{\n'
 
-        --output = output .. prefix .. 'Texture = <' .. node[ 3 ][ 1 ] .. '>;\n'
-        
         if options.export_sampler_filter_semantic then
             local has_semantic = false
             for _, field in ipairs( node ) do
@@ -31,7 +29,12 @@ HLSLGenerator11 = {
     ["process_struct_definition"] = function( node )
         output = 'struct ' .. node[ 1 ] .. '\n{\n'
         
-        local change_color_output_semantic = node[ 1 ] == "PS_OUTPUT"    
+        local change_semantic_table = {
+            ["POSITION"] = "SV_Position",
+            ["COLOR"] = "SV_Target"
+        }
+        
+        local change_color_output_semantic = node[ 1 ] == "PS_OUTPUT"
 
         for index, field in ipairs( node ) do
 
@@ -42,9 +45,14 @@ HLSLGenerator11 = {
                 if field[3] ~= nil then
                     local semantic = field[3][1]
                     
-                    if change_color_output_semantic and string.starts( field[3][1], "COLOR" ) then
-                        local semantic_number = field[3][1]:sub(6)
-                        semantic = "SV_Target" .. semantic_number
+                    for key,value in pairs( change_semantic_table ) do
+                        if string.starts(semantic,key) then
+                            local semantic_str_len = string.len(key)
+                            local semantic_no_number = semantic:sub(0,semantic_str_len)
+                            local semantic_end_text = semantic:sub(semantic_str_len + 1)
+                            semantic = change_semantic_table[semantic_no_number] .. semantic_end_text
+                            break
+                        end
                     end
                     output = output .. ' : ' .. semantic
                 end
