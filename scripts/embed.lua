@@ -78,8 +78,6 @@
 		-- load the manifest of script files
 		scripts = dofile("src/_manifest.lua")
 
-		table.insert(scripts, "generator/hlsl11_generator.lua")
-
 		-- main script always goes at the end
 		table.insert(scripts, "_shader_shaker_main.lua")
 
