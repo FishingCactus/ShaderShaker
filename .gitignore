@@ -40,3 +40,6 @@ _ReSharper.*
 output2.ast
 *.deproj
 *.deuser
+Makefile
+*.make
+
