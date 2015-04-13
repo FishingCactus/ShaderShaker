@@ -76,7 +76,8 @@ HLSLGenerator11 = {
         if node[ 1 ] == "tex2D" then
             local sampler_name = node[2][1][1]
             local texture_name = sampler_name:sub( 1, string.len( sampler_name ) - 7 )
-            local uv_name = node[2][2][1]
+            local uv = node[2][2]
+            local uv_name = HLSLGenerator.ProcessNode( node[2][2] )
             
             output = output .. texture_name .. ".Sample(" .. sampler_name .. "," .. uv_name .. ")"
         else
