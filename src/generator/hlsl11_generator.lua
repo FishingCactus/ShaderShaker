@@ -27,15 +27,36 @@ HLSLGenerator11 = {
     end,
 
     ["process_struct_definition"] = function( node )
-        output = 'struct ' .. node[ 1 ] .. '\n{\n'
+        local structure_name = node[1]
+        local ends_with = function( name, end_string ) return string.sub( name, -string.len( end_string ) ) == end_string end
+        local is_input = ends_with( structure_name, "INPUT" )
+        local is_output = ends_with( structure_name, "OUTPUT" )
+        local shader_type = string.sub( structure_name, 1, 2 )
+        local is_pixel_shader = shader_type == "PS"
+        local is_vertex_shader = shader_type == "VS"
+
+        output = 'struct ' .. structure_name .. '\n{\n'
         
         local change_semantic_table = {
-            ["POSITION"] = "SV_Position",
-            ["COLOR"] = "SV_Target"
+            ["VPOS"] = function()
+                            return "SV_Position"
+                        end,
+            ["POSITION"] = function() 
+                                if is_output and is_vertex_shader then
+                                    return "SV_Position" 
+                                else
+                                    return "POSITION"
+                                end
+                            end,
+            ["COLOR"] = function()
+                            if is_output and is_pixel_shader then
+                                return "SV_Target"
+                            else
+                                return "COLOR"
+                            end
+                        end
         }
         
-        local change_color_output_semantic = node[ 1 ] == "PS_OUTPUT"
-
         for index, field in ipairs( node ) do
 
             if index ~= 1 then
@@ -50,7 +71,8 @@ HLSLGenerator11 = {
                             local semantic_str_len = string.len(key)
                             local semantic_no_number = semantic:sub(0,semantic_str_len)
                             local semantic_end_text = semantic:sub(semantic_str_len + 1)
-                            semantic = change_semantic_table[semantic_no_number] .. semantic_end_text
+                            
+                            semantic = change_semantic_table[semantic_no_number]() .. semantic_end_text
                             break
                         end
                     end
