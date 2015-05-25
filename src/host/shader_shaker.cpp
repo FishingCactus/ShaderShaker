@@ -1,13 +1,4 @@
-#if defined( SHADERSHAKER_FORCE_EXTERN_C ) || !defined( SHADERSHAKER_AS_SOURCE )
-extern "C"
-{
-#endif
-    #include "lua.h"
-    #include "lauxlib.h"
-    #include "lualib.h"
-#if defined( SHADERSHAKER_FORCE_EXTERN_C ) || !defined( SHADERSHAKER_AS_SOURCE )
-}
-#endif
+#include "lua.hpp"
 
 #include <iostream>
 #include <vector>
@@ -34,7 +25,7 @@ static bool load_builtin_scripts(lua_State* L, int argc, const char* const * arg
 
     static void log( const char * msg )
     {
-        printf( msg );
+        printf( "%s", msg );
     }
 
     int main(int argc, const char** argv)

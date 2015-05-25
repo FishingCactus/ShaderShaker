@@ -4,22 +4,14 @@
 struct Parameter;
 struct SamplerParameter;
 #include <string>
-
-#if defined( SHADERSHAKER_FORCE_EXTERN_C ) || !defined( SHADERSHAKER_AS_SOURCE )
-extern "C"
-{
-#endif
-    #include <lua.h>
-#if defined( SHADERSHAKER_FORCE_EXTERN_C ) || !defined( SHADERSHAKER_AS_SOURCE )
-}
-#endif
+#include <lua.hpp>
 
 class HLSLParserListener
 {
 public:
 
     HLSLParserListener( lua_State * state );
-    
+
     void PushNode();
     void PushNode( const char * name );
     void PushNode( const std::string & name ){ PushNode( name.c_str() ); }
@@ -28,12 +20,12 @@ public:
     void Assign();
     void PopNode();
     void SwapTopNodes();
-    
+
 private:
 
     lua_State
         * State;
-    
+
 };
 
 #define ast_push(...) Listener->PushNode( __VA_ARGS__ )
