@@ -153,6 +153,108 @@
             return{variable{"Output"}}
         }
     },
+    function
+    {
+        type{"VS_OUTPUT"},
+        ID{"RenderSceneVS1itbfba"},
+        argument_list
+        {
+            argument
+            {
+                type{"float4"},
+                ID{"vPos"},
+                semantic{"POSITION"}
+            },
+            argument
+            {
+                type{"float3"},
+                ID{"vNormal"},
+                semantic{"NORMAL"}
+            },
+            argument
+            {
+                type{"float2"},
+                ID{"vTexCoord0"},
+                semantic{"TEXCOORD"}
+            }
+        },
+        function_body
+        {
+            variable_declaration
+            {
+                storage{},
+                modifier{},
+                type{"VS_OUTPUT"},
+                variable{"Output"}
+            },
+            variable_declaration
+            {
+                storage{},
+                modifier{"const"},
+                type{"float"},
+                variable
+                {
+                    "d",
+                    float_literal{"1.0"}
+                }
+            },
+            variable_declaration
+            {
+                storage{},
+                modifier{"const"},
+                type{"float"},
+                variable
+                {
+                    "e",
+                    float_literal{"2.0"}
+                }
+            },
+            variable_declaration
+            {
+                storage{},
+                modifier{"const"},
+                type{"float"},
+                variable
+                {
+                    "f",
+                    float_literal{"3.0"}
+                }
+            },
+            variable_declaration
+            {
+                storage{},
+                modifier{"const"},
+                type{"float"},
+                variable
+                {
+                    "g",
+                    +
+                    {
+                        int_literal{"40"},
+                        variable{"scalar_float_with_value"}
+                    }
+                }
+            },
+            =_statement
+            {
+                swizzle
+                {
+                    postfix
+                    {
+                        variable{"output"},
+                        variable{"Position"}
+                    },
+                    "x"
+                },
+                +
+                {
+                    variable{"d"},
+                    variable{"e"}
+                }
+            },
+            return{variable{"Output"}}
+        }
+    },
     technique
     {
         "Default",
@@ -163,13 +265,7 @@
             {
                 "VertexShader",
                 "vs_3_0",
-                "RenderSceneVS",
-                argument_expression_list
-                {
-                    int_literal{"1"},
-                    bool_literal{"true"},
-                    bool_literal{"false"}
-                }
+                "RenderSceneVS1itbfba"
             }
         }
     }

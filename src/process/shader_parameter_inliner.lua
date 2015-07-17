@@ -1,6 +1,6 @@
 ShaderParameterInliner = {
-    ast_node = {},
-    constants_optimizer = {}
+    AstNode = {},
+    ConstantsOptimizer = {}
 }
 
 function ShaderParameterInliner:new( ast_node, constants_optimizer )
@@ -8,8 +8,8 @@ function ShaderParameterInliner:new( ast_node, constants_optimizer )
     setmetatable( instance, self )
 
     self.__index = self
-    self.ast_node = ast_node
-    self.constants_optimizer = constants_optimizer
+    self.AstNode = ast_node
+    self.ConstantsOptimizer = constants_optimizer
 
     return instance
 end
@@ -18,7 +18,7 @@ function ShaderParameterInliner:Process()
 
     local reimplemented_functions_table = {}
 
-    for node_index, node in pairs( self.ast_node ) do
+    for node_index, node in pairs( self.AstNode ) do
         if node.name == "technique" then
             local technique_name
 
@@ -37,16 +37,16 @@ function ShaderParameterInliner:Process()
                                 local function_name = function_to_call[ 2 ][ 1 ] .. self:HashArgumentList( parameters_table )
 
                                 if reimplemented_functions_table[ function_name ] == nil then
-                                    constants_optimizer:ReplaceConstants( function_to_call, constants_table )
+                                    self.ConstantsOptimizer:ReplaceConstants( function_to_call, constants_table )
 
                                     function_to_call[ 2 ][ 1 ] = function_name
 
-                                    replace_functions_call_inside_function( Function_GetBody( function_to_call ), constants_table )
+                                    self:ReplaceFunctionsCallInsideFunction( Function_GetBody( function_to_call ), constants_table )
 
                                     reimplemented_functions_table[ function_name ] = function_to_call
                                 end
 
-                                remove_shader_inlined_parameters( function_to_call, parameters_table )
+                                self:RemoveShaderInlinedParameters( function_to_call, parameters_table )
 
                                 pass_child_node[ 3 ] = function_name
                                 table.remove( pass_child_node, 4 )
@@ -77,7 +77,8 @@ function ShaderParameterInliner:HashArgumentList( arguments )
     return concatArguments( arguments )
 end
 
-function ShaderParameterInliner:CreateConstantsTableFromParametersTable( parameters_table, function_to_call )
+function ShaderParameterInliner:CreateConstantsTableFromParametersTable( parameters_value_table, function_to_call )
+
     local constants_table = {}
     local parameters_table = function_to_call[ 3 ]
     local parameters_starting_index = #parameters_table - #parameters_value_table
@@ -110,10 +111,10 @@ function ShaderParameterInliner:RemoveFunctionInlinedParameters( function_parame
 end
 
 function ShaderParameterInliner:DuplicateAndReturnFunction( shader_function_to_call )
-    for node_index, node in pairs( self.ast_node ) do
+    for node_index, node in pairs( self.AstNode ) do
         if node.name == "function" and node[ 2 ][ 1 ] == shader_function_to_call then
             local copied_function = DeepCopy( node )
-            table.insert( self.ast_node, node_index + 1, copied_function )
+            table.insert( self.AstNode, node_index + 1, copied_function )
 
             return copied_function
         end
@@ -141,7 +142,7 @@ function ShaderParameterInliner:ReplaceFunctionsCallInsideFunction( body, consta
     local reimplemented_functions_table = {}
 
     local find_function = function( shader_function_to_call )
-        for node_index, node in pairs( self.ast_node ) do
+        for node_index, node in pairs( self.AstNode ) do
             if node.name == "function" and node[ 2 ][ 1 ] == shader_function_to_call then
                 return node
             end
@@ -151,16 +152,16 @@ function ShaderParameterInliner:ReplaceFunctionsCallInsideFunction( body, consta
     for i, node in pairs( body ) do
         if node.name == "call" and not Function_IsIntrinsic( node[ 1 ] ) then
             local base_function = find_function( node[ 1 ] )
-            local function_constants_table = create_constants_sub_table_from_input_constants( constants_table, base_function )
+            local function_constants_table = self:CreateConstantsSubTableFromInputConstants( constants_table, base_function )
             local function_to_replace_name = base_function[ 2 ][ 1 ] .. self:HashArgumentList( function_constants_table )
 
             if function_to_replace_name ~= base_function[ 2 ][ 1 ] then
                 if reimplemented_functions_table[ function_to_replace_name ] == nil then
-                    local function_to_replace = duplicate_and_return_function( node[ 1 ] )
+                    local function_to_replace = self:DuplicateAndReturnFunction( node[ 1 ] )
 
                     self:ReplaceFunctionsCallInsideFunction( function_to_replace, function_constants_table )
 
-                    constants_optimizer:ReplaceConstants( function_to_replace, constants_table )
+                    self.ConstantsOptimizer:ReplaceConstants( function_to_replace, constants_table )
 
                     function_to_replace[ 2 ][ 1 ] = function_to_replace_name
 
