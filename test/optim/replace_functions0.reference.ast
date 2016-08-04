@@ -277,7 +277,7 @@
     function
     {
         type{"VS_OUTPUT"},
-        ID{"RenderSceneVS0lflfla"},
+        ID{"RenderSceneVS0ifbfba"},
         argument_list
         {
             argument
@@ -419,7 +419,7 @@
             {
                 "VertexShader",
                 "vs_3_0",
-                "RenderSceneVS0lflfla"
+                "RenderSceneVS0ifbfba"
             }
         }
     }

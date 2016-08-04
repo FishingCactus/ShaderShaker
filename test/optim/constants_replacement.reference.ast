@@ -1,5 +1,27 @@
 
 {
+    variable_declaration
+    {
+        storage{},
+        modifier{},
+        type{"bool"},
+        variable
+        {
+            "ItUsesVertexSkinning",
+            bool_literal{"false"}
+        }
+    },
+    variable_declaration
+    {
+        storage{},
+        modifier{},
+        type{"bool"},
+        variable
+        {
+            "ItUsesDiffuseColor",
+            bool_literal{"false"}
+        }
+    },
     function
     {
         type{"bool"},
@@ -19,64 +41,181 @@
         },
         function_body
         {
-            nop{},
-            block
+            if
             {
-                variable_declaration
+                if_block
                 {
-                    storage{},
-                    modifier{},
-                    type{"int"},
-                    variable
+                    variable{"ItUsesVertexSkinning"},
+                    block
                     {
-                        "i",
-                        literal{"9"}
+                        variable_declaration
+                        {
+                            storage{},
+                            modifier{},
+                            type{"int"},
+                            variable
+                            {
+                                "i",
+                                int_literal{"0"}
+                            }
+                        }
                     }
                 }
             },
-            block
+            if
             {
-                variable_declaration
+                if_block
                 {
-                    storage{},
-                    modifier{},
-                    type{"int"},
-                    variable
+                    unary_!{variable{"ItUsesVertexSkinning"}},
+                    block
                     {
-                        "i",
-                        literal{"1"}
+                        variable_declaration
+                        {
+                            storage{},
+                            modifier{},
+                            type{"int"},
+                            variable
+                            {
+                                "i",
+                                int_literal{"9"}
+                            }
+                        }
                     }
                 }
             },
-            block
+            if
             {
-                variable_declaration
+                if_block
                 {
-                    storage{},
-                    modifier{},
-                    type{"int"},
-                    variable
+                    variable{"ItUsesVertexSkinning"},
+                    block
                     {
-                        "i",
-                        literal{"3"}
+                        variable_declaration
+                        {
+                            storage{},
+                            modifier{},
+                            type{"int"},
+                            variable
+                            {
+                                "i",
+                                int_literal{"1"}
+                            }
+                        }
+                    }
+                },
+                else_block
+                {
+                    block
+                    {
+                        variable_declaration
+                        {
+                            storage{},
+                            modifier{},
+                            type{"int"},
+                            variable
+                            {
+                                "i",
+                                int_literal{"2"}
+                            }
+                        }
                     }
                 }
             },
-            block
+            if
             {
-                variable_declaration
+                if_block
                 {
-                    storage{},
-                    modifier{},
-                    type{"int"},
-                    variable
+                    unary_!{variable{"ItUsesVertexSkinning"}},
+                    block
                     {
-                        "i",
-                        literal{"6"}
+                        variable_declaration
+                        {
+                            storage{},
+                            modifier{},
+                            type{"int"},
+                            variable
+                            {
+                                "i",
+                                int_literal{"3"}
+                            }
+                        }
+                    }
+                },
+                else_block
+                {
+                    block
+                    {
+                        variable_declaration
+                        {
+                            storage{},
+                            modifier{},
+                            type{"int"},
+                            variable
+                            {
+                                "i",
+                                int_literal{"4"}
+                            }
+                        }
                     }
                 }
             },
-            return{literal{"true"}}
+            if
+            {
+                if_block
+                {
+                    unary_!{variable{"ItUsesVertexSkinning"}},
+                    block
+                    {
+                        variable_declaration
+                        {
+                            storage{},
+                            modifier{},
+                            type{"int"},
+                            variable
+                            {
+                                "i",
+                                int_literal{"6"}
+                            }
+                        }
+                    }
+                },
+                else_if_block
+                {
+                    unary_!{variable{"ItUsesDiffuseColor"}},
+                    block
+                    {
+                        variable_declaration
+                        {
+                            storage{},
+                            modifier{},
+                            type{"int"},
+                            variable
+                            {
+                                "i",
+                                int_literal{"7"}
+                            }
+                        }
+                    }
+                },
+                else_block
+                {
+                    block
+                    {
+                        variable_declaration
+                        {
+                            storage{},
+                            modifier{},
+                            type{"int"},
+                            variable
+                            {
+                                "i",
+                                int_literal{"8"}
+                            }
+                        }
+                    }
+                }
+            },
+            return{bool_literal{"true"}}
         }
     }
 }
